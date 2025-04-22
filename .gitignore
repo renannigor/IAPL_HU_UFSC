@@ -1,0 +1,6 @@
+# Ignore para pasta client
+/client/node_modules/
+
+# Ignore para pasta server
+/server/node_modules/
+/server/.env
