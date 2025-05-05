@@ -4,18 +4,15 @@ import UserController from "../controllers/userController.js";
 const router = Router();
 
 // Listar com ordenação e paginação
-router.get("/usuarios", UserController.filtrarUsuarios);
+router.get("/", UserController.filtrarUsuarios);
 
 // Atualizar permissão
-router.patch("/usuarios/:cpf/permissao", UserController.atualizarPermissao);
+router.patch("/:cpf/permissao", UserController.atualizarPermissao);
 
 // Atualizar informações pessoais
-router.patch(
-  "/usuarios/:cpf/info-pessoal",
-  UserController.atualizarInfoPessoal
-);
+router.patch("/:cpf/info-pessoal", UserController.atualizarInfoPessoal);
 
 // Excluir usuário
-router.delete("/usuarios/:cpf", UserController.deletarUsuario);
+router.delete("/:cpf", UserController.deletarUsuario);
 
 export default router;

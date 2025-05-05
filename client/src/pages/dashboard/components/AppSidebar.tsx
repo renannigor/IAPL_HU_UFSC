@@ -50,7 +50,7 @@ export function AppSidebar() {
         {/* Topo */}
         <div className="p-4 pb-2 flex justify-between items-center">
           <span
-            className={`text-xl font-bold text-green-800 overflow-hidden transition-all ${
+            className={`text-xl font-bold text-[#1F4D2C] overflow-hidden transition-all ${
               isCollapsed ? "w-0" : "w-auto"
             }`}
           >

@@ -8,7 +8,6 @@ import {
 } from "react";
 import api from "../api/api.ts";
 import { Usuario } from "../types/user.ts";
-import { useNavigate } from "react-router-dom";
 
 // Tipagem para o contexto de autenticação
 interface AuthContextType {
@@ -29,6 +28,8 @@ interface AuthContextType {
     numero: string
   ) => Promise<void>;
   esqueceuSenha: (email: string) => Promise<void>;
+  verificarTokenRedefinicaoSenha: (token: string) => Promise<void>;
+  redefinirSenha: (novaSenha: string, token: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -50,7 +51,6 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const navigate = useNavigate();
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [usuarioAtual, setUsuarioAtual] = useState<Usuario | null>(null);
   const [loading, setLoading] = useState(true);
@@ -59,14 +59,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await api.get("/auth/me", {
+        console.log("🔍 Buscando usuário...");
+        const response = await api.get("/api/auth/me", {
           withCredentials: true,
         });
-
+        console.log("✅ Usuário encontrado:", response.data.user);
         setAccessToken(response.data.accessToken);
         setUsuarioAtual(response.data.user);
       } catch (error) {
-        console.error("Erro ao buscar usuário:", error);
+        console.error("❌ Erro ao buscar usuário:", error);
         setAccessToken(null);
         setUsuarioAtual(null);
       } finally {
@@ -100,11 +101,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       (response) => response,
       async (error) => {
         const originalRequest = error.config;
+        // Verifica se a resposta é 401 e se o token de acesso já foi carregado
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
 
           try {
-            const response = await api.get("/auth/refresh-token", {
+            const response = await api.get("/api/auth/refresh-token", {
               withCredentials: true,
             });
 
@@ -115,7 +117,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             console.error("Erro ao renovar token:", refreshError);
             setAccessToken(null);
             setUsuarioAtual(null);
-            navigate("/entrar");
           }
         }
 
@@ -144,7 +145,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   ) => {
     try {
       const response = await api.post(
-        "/auth/cadastro",
+        "/api/auth/cadastro",
         {
           cpf,
           nome,
@@ -173,13 +174,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const login = async (email: string, senha: string) => {
     try {
       const response = await api.post(
-        "/auth/login",
+        "/api/auth/login",
         { email, senha },
         { withCredentials: true }
-      );
-
-      console.log(
-        "RESPONSE DO LOGIN: " + JSON.stringify(response.data.usuario, null, 2)
       );
 
       setAccessToken(response.data.accessToken);
@@ -194,8 +191,27 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const esqueceuSenha = async (email: string) => {
     try {
       await api.post(
-        "/auth/esqueceu-senha",
+        "/api/auth/esqueceu-senha",
         { email },
+        { withCredentials: true }
+      );
+    } catch (error) {
+      console.error("Erro no envio do email de redefinição de senha:", error);
+      throw error;
+    }
+  };
+
+  // Função para Verificar se Token de Redefinição de Senha já Expirou
+  const verificarTokenRedefinicaoSenha = async (token: string) => {
+    console.log(token);
+  };
+
+  // Função de Redefinir Senha
+  const redefinirSenha = async (novaSenha: string, token: string) => {
+    try {
+      await api.post(
+        `/api/auth/${token}/redefinir-senha`,
+        { novaSenha },
         { withCredentials: true }
       );
     } catch (error) {
@@ -208,7 +224,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const logout = async () => {
     try {
       await api.post(
-        "/auth/logout",
+        "/api/auth/logout",
         { cpf: usuarioAtual?.cpf },
         { withCredentials: true }
       );
@@ -229,6 +245,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         login,
         cadastrarUsuario,
         esqueceuSenha,
+        verificarTokenRedefinicaoSenha,
+        redefinirSenha,
         logout,
       }}
     >

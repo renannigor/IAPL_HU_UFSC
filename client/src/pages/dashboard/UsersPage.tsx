@@ -32,6 +32,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import StatusChip from "./components/StatusChip";
+import { Helpers } from "../../utils/helpers";
 
 const UsersPage = () => {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -127,29 +128,26 @@ const UsersPage = () => {
             <TableCaption>Lista de usuários cadastrados.</TableCaption>
             <TableHeader>
               <TableRow>
-                {["nome", "email", "online", "possui_acesso", "tipo"].map(
-                  (coluna) => (
-                    <TableHead
-                      key={coluna}
-                      className="cursor-pointer select-none"
-                      onClick={() => alternarOrdem(coluna)}
-                    >
-                      {coluna.charAt(0).toUpperCase() +
-                        coluna.slice(1).replace("_", " ")}
-                      {renderOrdenacaoIcone(coluna)}
-                    </TableHead>
-                  )
-                )}
+                {Helpers.atributosTabelaUsuarios.map((coluna) => (
+                  <TableHead
+                    key={coluna}
+                    className="cursor-pointer select-none"
+                    onClick={() => alternarOrdem(coluna)}
+                  >
+                    {coluna.charAt(0).toUpperCase() +
+                      coluna.slice(1).replace("_", " ")}
+                    {renderOrdenacaoIcone(coluna)}
+                  </TableHead>
+                ))}
                 <TableHead>Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {usuarios.map((usuario) => (
-                <TableRow key={usuario.id}>
+                <TableRow key={usuario.cpf}>
                   <TableCell className="py-4">{usuario.nome}</TableCell>
                   <TableCell className="py-4">{usuario.email}</TableCell>
                   <TableCell className="py-4">
-                    {" "}
                     <StatusChip ativo={usuario.online!} />
                   </TableCell>
                   <TableCell className="py-4">
@@ -176,13 +174,6 @@ const UsersPage = () => {
                           }}
                         >
                           Excluir usuário
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => {
-                            console.log("Gerar PDF para:", usuario.nome);
-                          }}
-                        >
-                          Gerar PDF
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -218,7 +209,7 @@ const UsersPage = () => {
           </div>
         </CardContent>
 
-        {/* ALERT DIALOG FOR EXCLUSION - FORA DO MAP */}
+        {/* ALERT DIALOG PARA EXCLUSÃO */}
         {usuarioParaExcluir && (
           <AlertDialog open={alertaAberto} onOpenChange={setAlertaAberto}>
             <AlertDialogContent>
@@ -232,6 +223,7 @@ const UsersPage = () => {
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
                 <AlertDialogAction
+                  className="bg-red-600 hover:bg-red-700"
                   onClick={() => {
                     if (usuarioParaExcluir) {
                       excluirUsuario(usuarioParaExcluir.cpf!);
@@ -239,7 +231,7 @@ const UsersPage = () => {
                     setAlertaAberto(false);
                   }}
                 >
-                  Excluir
+                  Confirmar Exclução
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

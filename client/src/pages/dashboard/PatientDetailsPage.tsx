@@ -1,0 +1,159 @@
+import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import api from "../../api/api";
+import { Paciente } from "../../types/patient";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import LabelInput from "../authentication/components/LabelInput";
+import { Button } from "@/components/ui/button";
+import { UserIcon, MoreVertical } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+
+const PatientDetailsPage = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [paciente, setPaciente] = useState<Paciente | null>(null);
+
+  useEffect(() => {
+    const fetchPaciente = async () => {
+      try {
+        const res = await api.get(`/api/pacientes/${id}`);
+        setPaciente(res.data);
+      } catch (error) {
+        console.error("Erro ao buscar paciente:", error);
+      }
+    };
+
+    if (id) fetchPaciente();
+  }, [id]);
+
+  if (!paciente) return <p>Carregando...</p>;
+
+  return (
+    <div className="space-y-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-full bg-green-200 flex items-center justify-center text-xl font-semibold text-green-800">
+            <UserIcon className="w-8 h-8" />
+          </div>
+          <div>
+            <p className="text-lg font-semibold">{paciente.nome_completo}</p>
+            <p className="text-sm text-muted-foreground">
+              {paciente.idade} anos
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            className="bg-green-800 text-white hover:bg-green-900 h-fit"
+            onClick={() =>
+              navigate(`/dashboard/pacientes/${id}/cadastrar-lesao`)
+            }
+          >
+            Cadastrar Lesão
+          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="border-gray-300">
+                <MoreVertical className="w-5 h-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem
+                onClick={() => alert("Gerar ficha em construção")}
+              >
+                Gerar ficha
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+
+      <Tabs defaultValue="info" className="w-full">
+        <TabsList className="mb-6">
+          <TabsTrigger value="info">Informações do Paciente</TabsTrigger>
+          <TabsTrigger value="lesoes">Lesões</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="info">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <LabelInput
+              id="dataNascimento"
+              label="Data de Nascimento"
+              value={paciente.data_nascimento}
+              disabled
+              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
+            />
+            <LabelInput
+              id="alergias"
+              label="Alergias"
+              value={paciente.alergias}
+              disabled
+              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
+            />
+            <LabelInput
+              id="cor"
+              label="Cor da Pele"
+              value={paciente.cor_pele}
+              disabled
+              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
+            />
+            <LabelInput
+              id="altura"
+              label="Altura"
+              value={paciente.altura?.toString()}
+              disabled
+              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
+            />
+            <LabelInput
+              id="peso"
+              label="Peso"
+              value={paciente.peso?.toString()}
+              disabled
+              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
+            />
+            <LabelInput
+              id="imc"
+              label="IMC"
+              value={paciente.imc?.toString()}
+              disabled
+              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
+            />
+            <LabelInput
+              id="comorbidades"
+              label="Comorbidades"
+              value={paciente.comorbidades}
+              disabled
+              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
+            />
+            <LabelInput
+              id="medicamentos"
+              label="Medicamentos em Uso"
+              value={paciente.medicamentos_uso}
+              disabled
+              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
+            />
+            <LabelInput
+              id="motivoInternacao"
+              label="Motivo de Internação"
+              value={paciente.motivo_internacao}
+              disabled
+              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
+            />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="lesoes">
+          <p>Conteúdo relacionado às lesões do paciente será exibido aqui.</p>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};
+
+export default PatientDetailsPage;

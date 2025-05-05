@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import patientRoutes from "./routes/patientRoutes.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
@@ -18,9 +19,9 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-app.use("/auth", authRoutes);
-app.use("/api", userRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/usuarios", userRoutes);
+app.use("/api/pacientes", patientRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

@@ -2,7 +2,6 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import {
   RegisterFormFields,
   RegisterFormSchema,
-  tiposUsuarios,
 } from "../../schemas/registerSchema";
 import { getAddress } from "../../services/addressService";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Helpers } from "@/utils/helpers";
 
 const RegisterPage = () => {
   const {
@@ -137,7 +137,7 @@ const RegisterPage = () => {
                   <SelectValue placeholder="Selecione um tipo" />
                 </SelectTrigger>
                 <SelectContent>
-                  {tiposUsuarios.map((tipo, index) => (
+                  {Helpers.tiposUsuarios.map((tipo, index) => (
                     <SelectItem key={index} value={tipo}>
                       {tipo}
                     </SelectItem>

@@ -1,22 +1,22 @@
-import { User, Users, Settings, FileText } from "lucide-react";
+import { User, Users2, Info, UserCircle } from "lucide-react";
 import { useAuth } from "../../components/AuthProvider";
 import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
-  const { usuarioAtual } = useAuth(); // ajustado para seu contexto
+  const { usuarioAtual } = useAuth();
   const navigate = useNavigate();
 
   const cards = [
     {
       title: "Pacientes",
       description: "Lista de pacientes cadastrados no sistema AGHU.",
-      icon: <Users size={40} />,
-      onClick: () => navigate("/dashboard/pacientes"), // caminho ajustado
+      icon: <UserCircle size={40} />,
+      onClick: () => navigate("/dashboard/pacientes"),
     },
     {
       title: "Usuários",
       description: "Gerencie usuários do sistema.",
-      icon: <FileText size={40} />,
+      icon: <Users2 size={40} />,
       onClick: () => navigate("/dashboard/usuarios"), // caminho ajustado
       onlyAdmin: true,
     },
@@ -29,7 +29,7 @@ const HomePage = () => {
     {
       title: "Sobre",
       description: "Sobre o sistema IAPL.",
-      icon: <Settings size={40} />,
+      icon: <Info size={40} />,
       onClick: () => navigate("/dashboard/sobre"),
     },
   ];

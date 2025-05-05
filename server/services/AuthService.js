@@ -172,7 +172,7 @@ class AuthService {
     await Tokens.criarToken(email, token, expires_at);
 
     // Criar link de redefinição
-    const resetLink = `http://localhost:3000/redefinir-senha?token=${token}`;
+    const resetLink = `http://localhost:5173/redefinir-senha?token=${token}`;
     const mensagem = `
         <h3>Redefinição de Senha</h3>
         <p>Olá, ${usuario.nome}!</p>

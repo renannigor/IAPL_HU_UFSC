@@ -17,9 +17,9 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import api from "../../api/api";
-
-import { tiposUsuarios } from "../../schemas/registerSchema";
+import { Helpers } from "@/utils/helpers";
 
 const ProfilePage = () => {
   const { usuarioAtual, logout } = useAuth();
@@ -90,68 +90,79 @@ const ProfilePage = () => {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <LabelInput
-          id="nome"
-          label="Nome Completo"
-          value={nome}
-          onChange={(e) => setNome(e.target.value)}
-          disabled={!isEditing}
-          inputClassName={`h-12 w-full border p-2 rounded-md ${
-            !isEditing ? "bg-gray-100" : "bg-white"
-          }`}
-        />
+      <Tabs defaultValue="info" className="w-full">
+        <TabsList className="mb-6">
+          <TabsTrigger value="info">Informações Pessoais</TabsTrigger>
+          <TabsTrigger value="config">Configurações</TabsTrigger>
+        </TabsList>
 
-        <LabelInput
-          id="email"
-          label="Email"
-          value={usuarioAtual?.email}
-          disabled
-          inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
-        />
-
-        <div className="flex flex-col">
-          <label className="block font-medium mb-1 text-sm">Sou:</label>
-          <Select
-            disabled={!isEditing}
-            value={tipo}
-            onValueChange={(value) => setTipo(value)}
-          >
-            <SelectTrigger
-              className={`min-h-[48px] w-full border p-2 rounded-md ${
-                isEditing ? "bg-white" : "bg-gray-100"
+        <TabsContent value="info">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <LabelInput
+              id="nome"
+              label="Nome Completo"
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              disabled={!isEditing}
+              inputClassName={`h-12 w-full border p-2 rounded-md ${
+                !isEditing ? "bg-gray-100" : "bg-white"
               }`}
+            />
+
+            <LabelInput
+              id="email"
+              label="Email"
+              value={usuarioAtual?.email}
+              disabled
+              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
+            />
+
+            <div className="flex flex-col">
+              <label className="block font-medium mb-1 text-sm">Sou:</label>
+              <Select
+                disabled={!isEditing}
+                value={tipo}
+                onValueChange={(value) => setTipo(value)}
+              >
+                <SelectTrigger
+                  className={`min-h-[48px] w-full border p-2 rounded-md ${
+                    isEditing ? "bg-white" : "bg-gray-100"
+                  }`}
+                >
+                  <SelectValue placeholder="Selecione um tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Helpers.tiposUsuarios.map((tipo, index) => (
+                    <SelectItem key={index} value={tipo}>
+                      {tipo}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <LabelInput
+              id="ultimo_acesso"
+              label="Último Acesso"
+              value={usuarioAtual?.ultimo_acesso}
+              disabled
+              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
+            />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="config">
+          <div className="pt-4 space-y-4">
+            <h3 className="text-lg font-semibold text-gray-700">Mais Opções</h3>
+            <button
+              onClick={() => setOpenDialog(true)}
+              className="px-6 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200"
             >
-              <SelectValue placeholder="Selecione um tipo" />
-            </SelectTrigger>
-            <SelectContent>
-              {tiposUsuarios.map((tipo, index) => (
-                <SelectItem key={index} value={tipo}>
-                  {tipo}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <LabelInput
-          id="ultimo_acesso"
-          label="Último Acesso"
-          value={usuarioAtual?.ultimo_acesso}
-          disabled
-          inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
-        />
-      </div>
-
-      <div className="pt-8 space-y-4">
-        <h3 className="text-lg font-semibold text-gray-700">Mais Opções</h3>
-        <button
-          onClick={() => setOpenDialog(true)}
-          className="px-6 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200"
-        >
-          Excluir sua Conta
-        </button>
-      </div>
+              Excluir sua Conta
+            </button>
+          </div>
+        </TabsContent>
+      </Tabs>
 
       <AlertDialog open={openDialog} onOpenChange={setOpenDialog}>
         <AlertDialogContent>

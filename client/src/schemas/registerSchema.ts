@@ -1,10 +1,5 @@
+import { Helpers } from "@/utils/helpers";
 import { z } from "zod";
-
-export const tiposUsuarios = [
-  "Acadêmico",
-  "Residente",
-  "Profissional",
-] as const;
 
 // registerSchema.ts
 const validateCPF = (cpf: string): boolean => {
@@ -30,7 +25,7 @@ export const RegisterFormSchema = z
   .object({
     nome: z.string().min(3, "Nome obrigatório"),
     email: z.string().email("Email inválido"),
-    tipoUsuario: z.enum(tiposUsuarios, {
+    tipoUsuario: z.enum(Helpers.tiposUsuarios, {
       errorMap: () => ({ message: "Tipo obrigatório" }),
     }),
     cpf: z.string().refine(validateCPF, {

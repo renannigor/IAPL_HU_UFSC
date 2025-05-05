@@ -5,7 +5,11 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { usuarioAtual, loading } = useAuth();
 
   if (loading) return <div>Carregando...</div>;
-  if (usuarioAtual) return <Navigate to="/dashboard" replace />;
+
+  // Redireciona para dashboard se estiver logado e tentar acessar outras rotas públicas
+  if (usuarioAtual) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return <>{children}</>;
 };
