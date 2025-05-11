@@ -1,4 +1,4 @@
-export class Helpers {
+export class Utilitarios {
   static tiposUsuarios = ["Acadêmico", "Residente", "Profissional"] as const;
 
   static porcentagens = [

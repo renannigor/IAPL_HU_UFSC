@@ -1,17 +1,16 @@
-import { SubmitHandler, useForm } from "react-hook-form";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import {
-  RegisterFormFields,
-  RegisterFormSchema,
-} from "../../schemas/registerSchema";
-import { getAddress } from "../../services/addressService";
+  CadastroUsuarioFields,
+  CadastroUsuarioFormSchema,
+} from "../../schemas/CadastroUsuarioSchema";
+import { obterEndereco } from "../../services/EnderecoService";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
-import { useAuth } from "../../components/AuthProvider";
+import { useAuth } from "../../components/auth/AuthProvider";
 import { isAxiosError } from "axios";
 import { Button } from "@/components/ui/button";
 import AuthNavCard from "./components/AuthNavCard";
-import LabelInput from "./components/LabelInput";
-import LabelPasswordInput from "./components/LabelPasswordInput";
+import Editor from "../../components/shared/Editor";
 import {
   Select,
   SelectContent,
@@ -19,23 +18,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Helpers } from "@/utils/helpers";
+import { Utilitarios } from "@/utils/utilitarios";
 
-const RegisterPage = () => {
+const CadastroUsuarioPage = () => {
   const {
+    control,
     register,
     handleSubmit,
     setValue,
     setError,
     formState: { errors, isSubmitting },
-  } = useForm<RegisterFormFields>({
-    resolver: zodResolver(RegisterFormSchema),
+  } = useForm<CadastroUsuarioFields>({
+    resolver: zodResolver(CadastroUsuarioFormSchema),
   });
 
   const { cadastrarUsuario } = useAuth();
   const [isReadOnly, setIsReadOnly] = useState(true);
 
-  const onSubmit: SubmitHandler<RegisterFormFields> = async (data) => {
+  const onSubmit: SubmitHandler<CadastroUsuarioFields> = async (data) => {
     try {
       await cadastrarUsuario(
         data.cpf,
@@ -58,32 +58,32 @@ const RegisterPage = () => {
     }
   };
 
-  const handleZipCodeChange = async (cep: string) => {
+  const verificaMudancaCep = async (cep: string) => {
     if (!cep || cep.length !== 8) {
       setError("cep", { message: "CEP inválido" });
-      resetAddressFields();
+      redefinirCamposEndereco();
       return;
     }
 
     try {
-      const address = await getAddress(cep);
-      if (!address) {
+      const endereco = await obterEndereco(cep);
+      if (!endereco) {
         setError("cep", { message: "CEP não encontrado" });
-        resetAddressFields();
+        redefinirCamposEndereco();
       } else {
-        setValue("logradouro", address.street);
-        setValue("bairro", address.neighborhood);
-        setValue("cidade", address.city);
-        setValue("estado", address.state);
+        setValue("logradouro", endereco.logradouro);
+        setValue("bairro", endereco.bairro);
+        setValue("cidade", endereco.cidade);
+        setValue("estado", endereco.uf);
         setIsReadOnly(false);
       }
     } catch {
       setError("cep", { message: "Erro ao buscar CEP" });
-      resetAddressFields();
+      redefinirCamposEndereco();
     }
   };
 
-  const resetAddressFields = () => {
+  const redefinirCamposEndereco = () => {
     setValue("logradouro", "");
     setValue("bairro", "");
     setValue("cidade", "");
@@ -104,18 +104,20 @@ const RegisterPage = () => {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-            <LabelInput
+            <Editor
               id="nome"
               label="Nome"
+              ehCampoSenha={false}
               register={register("nome")}
               error={errors.nome?.message}
               placeholder="Seu nome completo"
               className="h-12 w-full border p-2 rounded-md"
             />
 
-            <LabelInput
+            <Editor
               id="email"
               label="Email"
+              ehCampoSenha={false}
               register={register("email")}
               error={errors.email?.message}
               placeholder="exemplo@email.com"
@@ -125,25 +127,27 @@ const RegisterPage = () => {
 
             <div className="flex flex-col">
               <label className="block font-medium mb-1 text-sm">Sou:</label>
-              <Select
-                onValueChange={(value) =>
-                  setValue(
-                    "tipoUsuario",
-                    value as "Acadêmico" | "Residente" | "Profissional"
-                  )
-                }
-              >
-                <SelectTrigger className="min-h-[48px] w-full border p-2 rounded-md">
-                  <SelectValue placeholder="Selecione um tipo" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Helpers.tiposUsuarios.map((tipo, index) => (
-                    <SelectItem key={index} value={tipo}>
-                      {tipo}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Controller
+                control={control}
+                name="tipoUsuario"
+                render={({ field }) => (
+                  <Select
+                    value={field.value}
+                    onValueChange={(value) => field.onChange(value)}
+                  >
+                    <SelectTrigger className="min-h-[48px] w-full border p-2 rounded-md">
+                      <SelectValue placeholder="Selecione um tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Utilitarios.tiposUsuarios.map((tipo, index) => (
+                        <SelectItem key={index} value={tipo}>
+                          {tipo}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
               {errors.tipoUsuario && (
                 <p className="text-sm text-red-500 mt-1">
                   {errors.tipoUsuario.message}
@@ -151,9 +155,10 @@ const RegisterPage = () => {
               )}
             </div>
 
-            <LabelInput
+            <Editor
               id="cpf"
               label="CPF"
+              ehCampoSenha={false}
               register={register("cpf")}
               error={errors.cpf?.message}
               placeholder="Apenas números"
@@ -161,20 +166,22 @@ const RegisterPage = () => {
               maxLength={11}
             />
 
-            <LabelInput
+            <Editor
               id="cep"
               label="CEP"
+              ehCampoSenha={false}
               register={register("cep")}
               error={errors.cep?.message}
               placeholder="Somente números"
               maxLength={8}
               className="h-12 w-full border p-2 rounded-md"
-              onChange={(e) => handleZipCodeChange(e.target.value)}
+              onChange={(e) => verificaMudancaCep(e.target.value)}
             />
 
-            <LabelInput
+            <Editor
               id="numeroResidencial"
               label="Número"
+              ehCampoSenha={false}
               register={register("numeroResidencial")}
               error={errors.numeroResidencial?.message}
               placeholder="Ex: 83"
@@ -182,9 +189,10 @@ const RegisterPage = () => {
               min={1}
             />
 
-            <LabelInput
+            <Editor
               id="logradouro"
               label="Rua"
+              ehCampoSenha={false}
               register={register("logradouro")}
               error={errors.logradouro?.message}
               placeholder="Sua rua"
@@ -192,9 +200,10 @@ const RegisterPage = () => {
               readOnly={isReadOnly}
             />
 
-            <LabelInput
+            <Editor
               id="bairro"
               label="Bairro"
+              ehCampoSenha={false}
               register={register("bairro")}
               error={errors.bairro?.message}
               placeholder="Seu bairro"
@@ -202,9 +211,10 @@ const RegisterPage = () => {
               readOnly={isReadOnly}
             />
 
-            <LabelInput
+            <Editor
               id="cidade"
               label="Cidade"
+              ehCampoSenha={false}
               register={register("cidade")}
               error={errors.cidade?.message}
               placeholder="Sua cidade"
@@ -212,9 +222,10 @@ const RegisterPage = () => {
               readOnly={isReadOnly}
             />
 
-            <LabelInput
+            <Editor
               id="estado"
               label="Estado"
+              ehCampoSenha={false}
               register={register("estado")}
               error={errors.estado?.message}
               placeholder="Seu estado"
@@ -222,9 +233,10 @@ const RegisterPage = () => {
               readOnly={isReadOnly}
             />
 
-            <LabelPasswordInput
+            <Editor
               id="senha"
               label="Senha"
+              ehCampoSenha={true}
               register={register("senha")}
               error={errors.senha?.message}
               placeholder="Sua senha"
@@ -232,9 +244,10 @@ const RegisterPage = () => {
               labelClassName="block font-medium mb-1"
             />
 
-            <LabelPasswordInput
+            <Editor
               id="confirmarSenha"
               label="Confirmar senha"
+              ehCampoSenha={true}
               register={register("confirmarSenha")}
               error={errors.confirmarSenha?.message}
               placeholder="Repetir senha"
@@ -269,4 +282,4 @@ const RegisterPage = () => {
   );
 };
 
-export default RegisterPage;
+export default CadastroUsuarioPage;

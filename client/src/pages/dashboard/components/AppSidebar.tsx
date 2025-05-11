@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
-import { useAuth } from "../../../components/AuthProvider";
+import { useAuth } from "@/components/auth/AuthProvider";
 import clsx from "clsx";
 
 import {

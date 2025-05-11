@@ -1,18 +1,18 @@
 import { SubmitHandler, useForm } from "react-hook-form";
 import {
-  ResetPasswordFormFields,
-  ResetPasswordFormSchema,
-} from "../../schemas/resetPasswordSchema";
+  RedefinirSenhaFormFields,
+  RedefinirSenhaFormSchema,
+} from "../../schemas/RedefinirSenhaSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../components/AuthProvider";
+import { useAuth } from "../../components/auth/AuthProvider";
 import { isAxiosError } from "axios";
 import { Button } from "@/components/ui/button";
-import LabelPasswordInput from "./components/LabelPasswordInput";
+import Editor from "../../components/shared/Editor";
 import { useSearchParams } from "react-router-dom";
 import { useEffect } from "react";
 
-const ResetPasswordPage = () => {
+const RedefinirSenhaPage = () => {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token");
   const navigate = useNavigate();
@@ -22,8 +22,8 @@ const ResetPasswordPage = () => {
     setError,
     register,
     formState: { errors, isSubmitting },
-  } = useForm<ResetPasswordFormFields>({
-    resolver: zodResolver(ResetPasswordFormSchema),
+  } = useForm<RedefinirSenhaFormFields>({
+    resolver: zodResolver(RedefinirSenhaFormSchema),
   });
 
   const { redefinirSenha } = useAuth();
@@ -34,10 +34,9 @@ const ResetPasswordPage = () => {
     }
   }, [token, navigate]);
 
-  const onSubmit: SubmitHandler<ResetPasswordFormFields> = async (data) => {
+  const onSubmit: SubmitHandler<RedefinirSenhaFormFields> = async (data) => {
     try {
       if (token) {
-        console.log(token);
         await redefinirSenha(data.senha, token);
       }
     } catch (error) {
@@ -60,9 +59,10 @@ const ResetPasswordPage = () => {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <LabelPasswordInput
+          <Editor
             id="senha"
             label="Senha"
+            ehCampoSenha={true}
             register={register("senha")}
             error={errors.senha?.message}
             placeholder="Sua senha"
@@ -70,9 +70,10 @@ const ResetPasswordPage = () => {
             labelClassName="block font-medium mb-1"
           />
 
-          <LabelPasswordInput
+          <Editor
             id="confirmarSenha"
             label="Confirmar senha"
+            ehCampoSenha={true}
             register={register("confirmarSenha")}
             error={errors.confirmarSenha?.message}
             placeholder="Repetir senha"
@@ -109,4 +110,4 @@ const ResetPasswordPage = () => {
   );
 };
 
-export default ResetPasswordPage;
+export default RedefinirSenhaPage;

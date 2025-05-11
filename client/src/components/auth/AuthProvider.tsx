@@ -6,8 +6,9 @@ import {
   useState,
   ReactNode,
 } from "react";
-import api from "../api/api.ts";
-import { Usuario } from "../types/user.ts";
+import api from "@/api/api.ts";
+import { Usuario } from "@/types/usuario.ts";
+import AuthService from "@/services/AuthService.ts";
 
 // Tipagem para o contexto de autenticação
 interface AuthContextType {
@@ -60,14 +61,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const fetchUser = async () => {
       try {
         console.log("🔍 Buscando usuário...");
-        const response = await api.get("/api/auth/me", {
-          withCredentials: true,
-        });
-        console.log("✅ Usuário encontrado:", response.data.user);
-        setAccessToken(response.data.accessToken);
-        setUsuarioAtual(response.data.user);
-      } catch (error) {
-        console.error("❌ Erro ao buscar usuário:", error);
+        const data = await AuthService.getUsuarioAtual();
+        console.log("✅ Usuário encontrado:", data.user);
+        setAccessToken(data.accessToken);
+        setUsuarioAtual(data.user);
+      } catch {
         setAccessToken(null);
         setUsuarioAtual(null);
       } finally {
@@ -106,15 +104,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           originalRequest._retry = true;
 
           try {
-            const response = await api.get("/api/auth/refresh-token", {
-              withCredentials: true,
-            });
-
-            setAccessToken(response.data.accessToken);
-            originalRequest.headers.Authorization = `Bearer ${response.data.accessToken}`;
+            const data = await AuthService.refreshToken();
+            setAccessToken(data.accessToken);
+            originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
             return api(originalRequest);
-          } catch (refreshError) {
-            console.error("Erro ao renovar token:", refreshError);
+          } catch {
             setAccessToken(null);
             setUsuarioAtual(null);
           }
@@ -143,98 +137,53 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     estado: string,
     numero: string
   ) => {
-    try {
-      const response = await api.post(
-        "/api/auth/cadastro",
-        {
-          cpf,
-          nome,
-          email,
-          tipo,
-          senha,
-          cep,
-          logradouro,
-          bairro,
-          cidade,
-          estado,
-          numero,
-        },
-        { withCredentials: true }
-      );
-
-      setAccessToken(response.data.accessToken);
-      setUsuarioAtual(response.data.usuario);
-    } catch (error) {
-      console.error("Erro no cadastro:", error);
-      throw error;
-    }
+    const data = await AuthService.cadastrarUsuario(
+      cpf,
+      nome,
+      email,
+      tipo,
+      senha,
+      cep,
+      logradouro,
+      bairro,
+      cidade,
+      estado,
+      numero
+    );
+    setAccessToken(data.accessToken);
+    setUsuarioAtual(data.usuario);
   };
 
   // Função de login
   const login = async (email: string, senha: string) => {
-    try {
-      const response = await api.post(
-        "/api/auth/login",
-        { email, senha },
-        { withCredentials: true }
-      );
-
-      setAccessToken(response.data.accessToken);
-      setUsuarioAtual(response.data.usuario);
-    } catch (error) {
-      console.error("Erro no login:", error);
-      throw error;
-    }
+    const data = await AuthService.login(email, senha);
+    setAccessToken(data.accessToken);
+    setUsuarioAtual(data.usuario);
   };
 
   // Função de Esqueceu Senha
   const esqueceuSenha = async (email: string) => {
-    try {
-      await api.post(
-        "/api/auth/esqueceu-senha",
-        { email },
-        { withCredentials: true }
-      );
-    } catch (error) {
-      console.error("Erro no envio do email de redefinição de senha:", error);
-      throw error;
-    }
+    await AuthService.esqueceuSenha(email);
   };
 
   // Função para Verificar se Token de Redefinição de Senha já Expirou
   const verificarTokenRedefinicaoSenha = async (token: string) => {
-    console.log(token);
+    await AuthService.verificarTokenRedefinicaoSenha(token);
   };
 
   // Função de Redefinir Senha
   const redefinirSenha = async (novaSenha: string, token: string) => {
-    try {
-      await api.post(
-        `/api/auth/${token}/redefinir-senha`,
-        { novaSenha },
-        { withCredentials: true }
-      );
-    } catch (error) {
-      console.error("Erro no envio do email de redefinição de senha:", error);
-      throw error;
-    }
+    await AuthService.redefinirSenha(novaSenha, token);
   };
 
   // Função de logout
   const logout = async () => {
-    try {
-      await api.post(
-        "/api/auth/logout",
-        { cpf: usuarioAtual?.cpf },
-        { withCredentials: true }
-      );
-    } catch (error) {
-      console.error("Erro no logout:", error);
-    } finally {
-      setAccessToken(null);
-      setUsuarioAtual(null);
-      setLoading(false);
+    if (usuarioAtual?.cpf) {
+      await AuthService.logout(usuarioAtual.cpf);
     }
+    setAccessToken(null);
+    setUsuarioAtual(null);
+    setLoading(false);
   };
 
   return (

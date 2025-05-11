@@ -1,5 +1,5 @@
 import { User, Users2, Info, UserCircle } from "lucide-react";
-import { useAuth } from "../../components/AuthProvider";
+import { useAuth } from "../../components/auth/AuthProvider";
 import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
@@ -17,7 +17,7 @@ const HomePage = () => {
       title: "Usuários",
       description: "Gerencie usuários do sistema.",
       icon: <Users2 size={40} />,
-      onClick: () => navigate("/dashboard/usuarios"), // caminho ajustado
+      onClick: () => navigate("/dashboard/usuarios"), 
       onlyAdmin: true,
     },
     {

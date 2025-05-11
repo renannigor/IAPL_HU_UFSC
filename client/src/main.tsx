@@ -2,22 +2,22 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LoginPage from "./pages/authentication/LoginPage";
-import RegisterPage from "./pages/authentication/RegisterPage";
-import ForgotPasswordPage from "./pages/authentication/ForgotPasswordPage.tsx";
-import ResetPasswordPage from "./pages/authentication/ResetPasswordPage.tsx";
-import NotFoundPage from "./pages/NotFoundPage.tsx";
-import NoAccessPage from "./pages/NoAccessPage.tsx";
-import ProtectedRoute from "./components/ProtectedRoute.tsx";
-import PublicRoute from "./components/PublicRoute.tsx";
-import { AuthProvider } from "./components/AuthProvider.tsx";
+import CadastroUsuarioPage from "./pages/authentication/CadastroUsuarioPage.tsx";
+import EsqueceuSenhaPage from "./pages/authentication/EsqueceuSenhaPage.tsx";
+import RedefinirSenhaPage from "./pages/authentication/RedefinirSenhaPage.tsx";
+import Erro404Page from "./pages/Erro404Page.tsx";
+import AcessoNegadoPage from "./pages/AcessoNegadoPage.tsx";
+import RotaProtegida from "./components/auth/RotaProtegida.tsx";
+import RotaPublica from "./components/auth/RotaPublica.tsx";
+import { AuthProvider } from "./components/auth/AuthProvider.tsx";
 import DashboardLayout from "./pages/dashboard/components/DashboardLayout.tsx";
 import HomePage from "./pages/dashboard/HomePage";
-import ProfilePage from "./pages/dashboard/ProfilePage";
-import UsersPage from "./pages/dashboard/UsersPage";
-import PatientsPage from "./pages/dashboard/PatientsPage";
-import AboutPage from "./pages/dashboard/AboutPage";
+import PerfilPage from "./pages/dashboard/PerfilPage";
+import UsuariosPage from "./pages/dashboard/UsuariosPage";
+import PacientesPage from "./pages/dashboard/PacientesPage";
+import SobrePage from "./pages/dashboard/SobrePage";
 import "./index.css";
-import PatientDetailsPage from "./pages/dashboard/PatientDetailsPage.tsx";
+import DetalhesPacientePage from "./pages/dashboard/DetalhesPacientePage.tsx";
 import LesioFormPage from "./pages/dashboard/LesioFormPage.tsx";
 
 createRoot(document.getElementById("root")!).render(
@@ -29,59 +29,62 @@ createRoot(document.getElementById("root")!).render(
           <Route
             path="/"
             element={
-              <PublicRoute>
+              <RotaPublica>
                 <LoginPage />
-              </PublicRoute>
+              </RotaPublica>
             }
           />
           <Route
             path="/entrar"
             element={
-              <PublicRoute>
+              <RotaPublica>
                 <LoginPage />
-              </PublicRoute>
+              </RotaPublica>
             }
           />
           <Route
             path="/cadastrar"
             element={
-              <PublicRoute>
-                <RegisterPage />
-              </PublicRoute>
+              <RotaPublica>
+                <CadastroUsuarioPage />
+              </RotaPublica>
             }
           />
           <Route
             path="/esqueceu-senha"
             element={
-              <PublicRoute>
-                <ForgotPasswordPage />
-              </PublicRoute>
+              <RotaPublica>
+                <EsqueceuSenhaPage />
+              </RotaPublica>
             }
           />
 
-          <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
+          <Route path="/redefinir-senha" element={<RedefinirSenhaPage />} />
 
           {/* Rotas protegidas */}
-          <Route path="/sem-acesso" element={<NoAccessPage />} />
+          <Route path="/sem-acesso" element={<AcessoNegadoPage />} />
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute>
+              <RotaProtegida>
                 <DashboardLayout />
-              </ProtectedRoute>
+              </RotaProtegida>
             }
           >
             <Route index element={<HomePage />} />
-            <Route path="pacientes" element={<PatientsPage />} />
-            <Route path="pacientes/:id" element={<PatientDetailsPage />} />
-            <Route path="pacientes/:id/cadastrar-lesao" element={<LesioFormPage />} />
-            <Route path="usuarios" element={<UsersPage />} />
-            <Route path="perfil" element={<ProfilePage />} />
-            <Route path="sobre" element={<AboutPage />} />
+            <Route path="pacientes" element={<PacientesPage />} />
+            <Route path="pacientes/:id" element={<DetalhesPacientePage />} />
+            <Route
+              path="pacientes/:id/cadastrar-lesao"
+              element={<LesioFormPage />}
+            />
+            <Route path="usuarios" element={<UsuariosPage />} />
+            <Route path="perfil" element={<PerfilPage />} />
+            <Route path="sobre" element={<SobrePage />} />
           </Route>
 
           {/* Página 404 */}
-          <Route path="*" element={<NotFoundPage />} />
+          <Route path="*" element={<Erro404Page />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

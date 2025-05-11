@@ -1,7 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "./AuthProvider";
 
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+const RotaProtegida = ({ children }: { children: React.ReactNode }) => {
   const { usuarioAtual, loading } = useAuth();
 
   if (loading) return <p>Carregando...</p>;
@@ -11,4 +11,4 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-export default ProtectedRoute;
+export default RotaProtegida;

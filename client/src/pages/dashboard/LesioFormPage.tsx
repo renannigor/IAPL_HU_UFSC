@@ -1,18 +1,27 @@
-import { useForm, Controller, useWatch } from "react-hook-form";
+import { useForm, Controller, useWatch, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { LesaoFormFields, LesaoFormSchema } from "@/schemas/lesaoSchema";
-import { Helpers } from "@/utils/helpers";
+import { LesaoFormFields, LesaoFormSchema } from "@/schemas/LesaoSchema";
+import { Utilitarios } from "@/utils/utilitarios";
 import { ArrowLeft } from "lucide-react";
-import { renderCheckboxGroup } from "./components/renderCheckboxGroup";
+import { carregarCheckboxGroup } from "@/pages/dashboard/components/CarregarCheckboxGroup";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const LesaoFormPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const {
+    register,
     handleSubmit,
     control,
     formState: { errors, isSubmitting },
@@ -47,7 +56,7 @@ const LesaoFormPage = () => {
     name: "tecido.estruturasNobres",
   });
 
-  const onSubmit = (data: LesaoFormFields) => {
+  const onSubmit: SubmitHandler<LesaoFormFields> = async (data) => {
     console.log(data);
   };
 
@@ -75,10 +84,10 @@ const LesaoFormPage = () => {
           <p className="text-green-700 font-semibold mb-2">
             Etiologia da Lesão
           </p>
-          {renderCheckboxGroup({
+          {carregarCheckboxGroup({
             control,
             fieldName: "etiologias",
-            options: Helpers.etiologiaLesoes,
+            options: Utilitarios.etiologiaLesoes,
           })}
           {errors.etiologias && (
             <p className="text-red-500 text-sm mt-1">
@@ -93,10 +102,10 @@ const LesaoFormPage = () => {
             <p className="text-green-700 font-semibold mb-2">
               Classificação da Lesão por Pressão
             </p>
-            {renderCheckboxGroup({
+            {carregarCheckboxGroup({
               control,
               fieldName: "classificacoes",
-              options: Helpers.classificacoesLesaoPorPressao,
+              options: Utilitarios.classificacoesLesaoPorPressao,
             })}
             {errors.classificacoes && (
               <p className="text-red-500 text-sm mt-1">
@@ -111,10 +120,10 @@ const LesaoFormPage = () => {
           <p className="text-green-700 font-semibold mb-2">
             Região Perilesional
           </p>
-          {renderCheckboxGroup({
+          {carregarCheckboxGroup({
             control,
             fieldName: "regioesPerilesionais",
-            options: Helpers.regioesPerilesionais,
+            options: Utilitarios.regioesPerilesionais,
           })}
 
           {regioesPerilesionais.includes("Outro") && (
@@ -147,10 +156,10 @@ const LesaoFormPage = () => {
         {/* Bordas */}
         <div className="border rounded p-4 mb-6">
           <p className="text-green-700 font-semibold mb-2">Bordas</p>
-          {renderCheckboxGroup({
+          {carregarCheckboxGroup({
             control,
             fieldName: "bordas",
-            options: Helpers.bordas,
+            options: Utilitarios.bordas,
           })}
           {errors.bordas && (
             <p className="text-red-500 text-sm mt-1">{errors.bordas.message}</p>
@@ -168,10 +177,10 @@ const LesaoFormPage = () => {
               <p className="text-green-700 mb-2">
                 Exposição de Estruturas Nobres
               </p>
-              {renderCheckboxGroup({
+              {carregarCheckboxGroup({
                 control,
                 fieldName: "tecido.estruturasNobres",
-                options: Helpers.estruturasNobres,
+                options: Utilitarios.estruturasNobres,
               })}
 
               {estruturasNobres.includes("Outro") && (
@@ -207,7 +216,7 @@ const LesaoFormPage = () => {
               {errors.tecido && (
                 <p className="text-red-500 text-sm">{errors.tecido.message}</p>
               )}
-              {Helpers.porcentagens.map(([key, label]) => (
+              {Utilitarios.porcentagens.map(([key, label]) => (
                 <div key={key} className="mb-3">
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     {label}
@@ -269,6 +278,180 @@ const LesaoFormPage = () => {
                   </p>
                 );
               })()}
+            </div>
+          </div>
+        </div>
+
+        {/* Exsudato, Odor e Tamanho */}
+        <div className="border rounded p-4 mb-6 space-y-4">
+          <div className="flex flex-col md:flex-row gap-6">
+            {/* Coluna 1: Quantidade de Exsudato e Odor */}
+            <div className="flex-1 space-y-4">
+              {/* Quantidade de Exsudato */}
+              <div>
+                <Controller
+                  name="exsudato"
+                  control={control}
+                  render={({ field }) => (
+                    <div>
+                      <Label className="text-green-700 font-semibold mb-2">
+                        Exsudato
+                      </Label>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Utilitarios.exsudato.map((item) => (
+                            <SelectItem key={item} value={item}>
+                              {item}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                />
+                {errors.exsudato && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.exsudato.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Odor */}
+              <div>
+                <Controller
+                  name="odor"
+                  control={control}
+                  render={({ field }) => (
+                    <div>
+                      <Label className="text-green-700 font-semibold mb-2">
+                        Odor
+                      </Label>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Utilitarios.odores.map((item) => (
+                            <SelectItem key={item} value={item}>
+                              {item}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                />
+                {errors.odor && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.odor.message}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Coluna 2: Tipo de Exsudato e Tamanho */}
+            <div className="flex-1 space-y-4">
+              {/* Tipo de Exsudato */}
+              <div>
+                <Controller
+                  name="tipoExsudato"
+                  control={control}
+                  render={({ field }) => (
+                    <div>
+                      <Label className="text-green-700 font-semibold mb-2">
+                        Tipo de Exsudato
+                      </Label>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Selecione" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {Utilitarios.tiposExsudato.map((item) => (
+                            <SelectItem key={item} value={item}>
+                              {item}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                />
+                {errors.tipoExsudato && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.tipoExsudato.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Tamanho */}
+              <div className="flex gap-2">
+                {/* Comprimento */}
+                <div className="flex-1">
+                  <Label className="text-green-700 font-semibold mb-2">
+                    Comprimento (cm)
+                  </Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    {...register("tamanho.comprimento", {
+                      valueAsNumber: true,
+                    })}
+                  />
+                  {errors.tamanho?.comprimento && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.tamanho.comprimento.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Largura */}
+                <div className="flex-1">
+                  <Label className="text-green-700 font-semibold mb-2">
+                    Largura (cm)
+                  </Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    {...register("tamanho.largura", { valueAsNumber: true })}
+                  />
+                  {errors.tamanho?.largura && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.tamanho.largura.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Profundidade */}
+                <div className="flex-1">
+                  <Label className="text-green-700 font-semibold mb-2">
+                    Profundidade (cm)
+                  </Label>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    {...register("tamanho.profundidade", {
+                      valueAsNumber: true,
+                    })}
+                  />
+                  {errors.tamanho?.profundidade && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.tamanho.profundidade.message}
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>

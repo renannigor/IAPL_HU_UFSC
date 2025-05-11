@@ -1,9 +1,8 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import api from "../../api/api";
-import { Paciente } from "../../types/patient";
+import { Paciente } from "@/types/paciente";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import LabelInput from "../authentication/components/LabelInput";
+import Editor from "@/components/shared/Editor";
 import { Button } from "@/components/ui/button";
 import { UserIcon, MoreVertical } from "lucide-react";
 import {
@@ -12,20 +11,17 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import PacienteService from "@/services/PacienteService";
 
-const PatientDetailsPage = () => {
+const DetalhesPacientePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [paciente, setPaciente] = useState<Paciente | null>(null);
 
   useEffect(() => {
     const fetchPaciente = async () => {
-      try {
-        const res = await api.get(`/api/pacientes/${id}`);
-        setPaciente(res.data);
-      } catch (error) {
-        console.error("Erro ao buscar paciente:", error);
-      }
+      const data = await PacienteService.obterPaciente(id!);
+      setPaciente(data);
     };
 
     if (id) fetchPaciente();
@@ -78,69 +74,88 @@ const PatientDetailsPage = () => {
         <TabsList className="mb-6">
           <TabsTrigger value="info">Informações do Paciente</TabsTrigger>
           <TabsTrigger value="lesoes">Lesões</TabsTrigger>
+          <TabsTrigger value="pendencias">Pendências</TabsTrigger>
         </TabsList>
 
         <TabsContent value="info">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <LabelInput
+            <Editor
               id="dataNascimento"
               label="Data de Nascimento"
+              placeholder="Data de nascimento do paciente"
+              ehCampoSenha={false}
               value={paciente.data_nascimento}
               disabled
               inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
             />
-            <LabelInput
+            <Editor
               id="alergias"
               label="Alergias"
+              placeholder="Alergias do paciente"
+              ehCampoSenha={false}
               value={paciente.alergias}
               disabled
               inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
             />
-            <LabelInput
+            <Editor
               id="cor"
               label="Cor da Pele"
+              placeholder="Cor da pele do paciente"
+              ehCampoSenha={false}
               value={paciente.cor_pele}
               disabled
               inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
             />
-            <LabelInput
+            <Editor
               id="altura"
               label="Altura"
+              placeholder="Altura do paciente"
+              ehCampoSenha={false}
               value={paciente.altura?.toString()}
               disabled
               inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
             />
-            <LabelInput
+            <Editor
               id="peso"
               label="Peso"
+              placeholder="Peso do paciente"
+              ehCampoSenha={false}
               value={paciente.peso?.toString()}
               disabled
               inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
             />
-            <LabelInput
+            <Editor
               id="imc"
               label="IMC"
+              placeholder="IMC do paciente"
+              ehCampoSenha={false}
               value={paciente.imc?.toString()}
               disabled
               inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
             />
-            <LabelInput
+            <Editor
               id="comorbidades"
               label="Comorbidades"
+              placeholder="Comorbidades do paciente"
+              ehCampoSenha={false}
               value={paciente.comorbidades}
               disabled
               inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
             />
-            <LabelInput
+            <Editor
               id="medicamentos"
               label="Medicamentos em Uso"
+              placeholder="Medicamentos em uso pelo paciente"
+              ehCampoSenha={false}
               value={paciente.medicamentos_uso}
               disabled
               inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
             />
-            <LabelInput
+            <Editor
               id="motivoInternacao"
               label="Motivo de Internação"
+              placeholder="Motivo de internação do paciente"
+              ehCampoSenha={false}
               value={paciente.motivo_internacao}
               disabled
               inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
@@ -151,9 +166,16 @@ const PatientDetailsPage = () => {
         <TabsContent value="lesoes">
           <p>Conteúdo relacionado às lesões do paciente será exibido aqui.</p>
         </TabsContent>
+
+        <TabsContent value="pendencias">
+          <p>
+            Conteúdo relacionado às lesões do paciente cadastradas pelos
+            acadêmicos.
+          </p>
+        </TabsContent>
       </Tabs>
     </div>
   );
 };
 
-export default PatientDetailsPage;
+export default DetalhesPacientePage;

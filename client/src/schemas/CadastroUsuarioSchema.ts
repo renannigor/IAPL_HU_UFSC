@@ -1,8 +1,7 @@
-import { Helpers } from "@/utils/helpers";
+import { Utilitarios } from "@/utils/utilitarios";
 import { z } from "zod";
 
-// registerSchema.ts
-const validateCPF = (cpf: string): boolean => {
+const validaCPF = (cpf: string): boolean => {
   cpf = cpf.replace(/[^\d]+/g, "");
   if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) return false;
 
@@ -21,14 +20,14 @@ const validateCPF = (cpf: string): boolean => {
   return true;
 };
 
-export const RegisterFormSchema = z
+export const CadastroUsuarioFormSchema = z
   .object({
     nome: z.string().min(3, "Nome obrigatório"),
     email: z.string().email("Email inválido"),
-    tipoUsuario: z.enum(Helpers.tiposUsuarios, {
+    tipoUsuario: z.enum(Utilitarios.tiposUsuarios, {
       errorMap: () => ({ message: "Tipo obrigatório" }),
     }),
-    cpf: z.string().refine(validateCPF, {
+    cpf: z.string().refine(validaCPF, {
       message: "CPF inválido",
     }),
     cep: z.string().length(8, "CEP deve ter 8 dígitos"),
@@ -45,4 +44,4 @@ export const RegisterFormSchema = z
     message: "As senhas não coincidem",
   });
 
-export type RegisterFormFields = z.infer<typeof RegisterFormSchema>;
+export type CadastroUsuarioFields = z.infer<typeof CadastroUsuarioFormSchema>;

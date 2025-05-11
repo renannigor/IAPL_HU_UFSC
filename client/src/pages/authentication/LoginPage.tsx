@@ -1,13 +1,15 @@
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LoginFormFields, LoginFormSchema } from "../../schemas/loginSchema";
+import {
+  LoginUsuarioFormFields,
+  LoginUsuarioFormSchema,
+} from "../../schemas/LoginUsuarioSchema";
 import { Link } from "react-router-dom";
-import { useAuth } from "../../components/AuthProvider";
+import { useAuth } from "../../components/auth/AuthProvider";
 import { isAxiosError } from "axios";
 import { Button } from "@/components/ui/button";
 import AuthNavCard from "./components/AuthNavCard";
-import LabelInput from "./components/LabelInput";
-import LabelPasswordInput from "./components/LabelPasswordInput";
+import Editor from "../../components/shared/Editor";
 
 const LoginPage = () => {
   const {
@@ -15,13 +17,13 @@ const LoginPage = () => {
     setError,
     control,
     formState: { errors, isSubmitting },
-  } = useForm<LoginFormFields>({
-    resolver: zodResolver(LoginFormSchema),
+  } = useForm<LoginUsuarioFormFields>({
+    resolver: zodResolver(LoginUsuarioFormSchema),
   });
 
   const { login } = useAuth();
 
-  const onSubmit: SubmitHandler<LoginFormFields> = async (data) => {
+  const onSubmit: SubmitHandler<LoginUsuarioFormFields> = async (data) => {
     try {
       await login(data.email, data.senha);
     } catch (error) {
@@ -45,9 +47,10 @@ const LoginPage = () => {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <LabelInput
+          <Editor
             id="email"
             label="Email"
+            ehCampoSenha={false}
             register={control.register("email")}
             error={errors.email?.message}
             placeholder="Seu email"
@@ -57,9 +60,10 @@ const LoginPage = () => {
             errorClassName="text-red-500 text-sm mt-1"
           />
 
-          <LabelPasswordInput
+          <Editor
             id="senha"
             label="Senha"
+            ehCampoSenha={true}
             register={control.register("senha")}
             error={errors.senha?.message}
             placeholder="Sua senha"

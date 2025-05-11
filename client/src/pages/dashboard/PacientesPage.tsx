@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { Paciente } from "../../types/patient";
-import api from "../../api/api";
+import { Paciente } from "@/types/paciente";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MoreVertical } from "lucide-react";
@@ -20,9 +19,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
-import { Helpers } from "../../utils/helpers";
+import { Utilitarios } from "../../utils/utilitarios";
+import PacienteService from "@/services/PacienteService";
 
-const PatientsPage = () => {
+const PacientesPage = () => {
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [paginaAtual, setPaginaAtual] = useState<number>(1);
   const [totalPacientes, setTotalPacientes] = useState<number>(0);
@@ -33,20 +33,12 @@ const PatientsPage = () => {
   const navigate = useNavigate();
 
   const carregarPacientes = async (): Promise<void> => {
-    try {
-      const res = await api.get("/api/pacientes/todos", {
-        params: {
-          pagina: paginaAtual,
-        },
-      });
+    const data = await PacienteService.carregarPacientes(paginaAtual);
 
-      const pacientesData = Array.isArray(res.data) ? res.data : [];
+    const pacientesData = Array.isArray(data) ? data : [];
 
-      setPacientes(pacientesData);
-      setTotalPacientes(pacientesData.length);
-    } catch (error) {
-      console.error("Erro ao carregar pacientes:", error);
-    }
+    setPacientes(pacientesData);
+    setTotalPacientes(pacientesData.length);
   };
 
   const gerarDocumento = (paciente: Paciente): void => {
@@ -133,7 +125,7 @@ const PatientsPage = () => {
             <TableCaption>Pacientes internados avaliados.</TableCaption>
             <TableHeader>
               <TableRow>
-                {Helpers.atributosTabelaPacientes.map((coluna) => (
+                {Utilitarios.atributosTabelaPacientes.map((coluna) => (
                   <TableHead key={coluna}>
                     {coluna
                       .split("_")
@@ -218,4 +210,4 @@ const PatientsPage = () => {
   );
 };
 
-export default PatientsPage;
+export default PacientesPage;

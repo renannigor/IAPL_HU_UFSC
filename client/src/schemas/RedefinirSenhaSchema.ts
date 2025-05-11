@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const ResetPasswordFormSchema = z
+export const RedefinirSenhaFormSchema = z
   .object({
     senha: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
     confirmarSenha: z.string(),
@@ -10,4 +10,4 @@ export const ResetPasswordFormSchema = z
     message: "As senhas não coincidem",
   });
 
-export type ResetPasswordFormFields = z.infer<typeof ResetPasswordFormSchema>;
+export type RedefinirSenhaFormFields = z.infer<typeof RedefinirSenhaFormSchema>;

@@ -1,28 +1,28 @@
 import { SubmitHandler, useForm } from "react-hook-form";
 import {
-  ForgotPasswordFormFields,
-  ForgotPasswordFormSchema,
-} from "../../schemas/forgotPasswordSchema";
+  EsqueceuSenhaFormFields,
+  EsqueceuSenhaFormSchema,
+} from "../../schemas/EsqueceuSenhaSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link } from "react-router-dom";
-import { useAuth } from "../../components/AuthProvider";
+import { useAuth } from "../../components/auth/AuthProvider";
 import { isAxiosError } from "axios";
 import { Button } from "@/components/ui/button";
-import LabelInput from "./components/LabelInput";
+import Editor from "../../components/shared/Editor";
 
-const ForgotPasswordPage = () => {
+const EsqueceuSenhaPage = () => {
   const {
     handleSubmit,
     setError,
     register,
     formState: { errors, isSubmitting },
-  } = useForm<ForgotPasswordFormFields>({
-    resolver: zodResolver(ForgotPasswordFormSchema),
+  } = useForm<EsqueceuSenhaFormFields>({
+    resolver: zodResolver(EsqueceuSenhaFormSchema),
   });
 
   const { esqueceuSenha } = useAuth();
 
-  const onSubmit: SubmitHandler<ForgotPasswordFormFields> = async (data) => {
+  const onSubmit: SubmitHandler<EsqueceuSenhaFormFields> = async (data) => {
     try {
       await esqueceuSenha(data.email);
     } catch (error) {
@@ -46,9 +46,10 @@ const ForgotPasswordPage = () => {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <LabelInput
+          <Editor
             id="email"
             label="Email"
+            ehCampoSenha={false}
             register={register("email")}
             error={errors.email?.message}
             placeholder="Seu email"
@@ -84,4 +85,4 @@ const ForgotPasswordPage = () => {
   );
 };
 
-export default ForgotPasswordPage;
+export default EsqueceuSenhaPage;

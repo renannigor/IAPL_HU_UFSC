@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { Usuario } from "../../types/user";
+import { Usuario } from "../../types/usuario";
 import api from "../../api/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { ChevronDown, ChevronUp, MoreVertical } from "lucide-react";
-import { useAuth } from "../../components/AuthProvider";
+import { useAuth } from "../../components/auth/AuthProvider";
 import {
   Table,
   TableBody,
@@ -32,9 +32,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import StatusChip from "./components/StatusChip";
-import { Helpers } from "../../utils/helpers";
+import { Utilitarios } from "../../utils/utilitarios";
 
-const UsersPage = () => {
+const UsuariosPage = () => {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [paginaAtual, setPaginaAtual] = useState<number>(1);
   const [totalUsuarios, setTotalUsuarios] = useState<number>(0);
@@ -128,7 +128,7 @@ const UsersPage = () => {
             <TableCaption>Lista de usuários cadastrados.</TableCaption>
             <TableHeader>
               <TableRow>
-                {Helpers.atributosTabelaUsuarios.map((coluna) => (
+                {Utilitarios.atributosTabelaUsuarios.map((coluna) => (
                   <TableHead
                     key={coluna}
                     className="cursor-pointer select-none"
@@ -242,4 +242,4 @@ const UsersPage = () => {
   );
 };
 
-export default UsersPage;
+export default UsuariosPage;

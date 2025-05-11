@@ -7,7 +7,7 @@ interface Props {
   options: string[];
 }
 
-export function renderCheckboxGroup({ control, fieldName, options }: Props) {
+export function carregarCheckboxGroup({ control, fieldName, options }: Props) {
   return (
     <Controller
       name={fieldName}

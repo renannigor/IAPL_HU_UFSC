@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { AlertTriangle } from "lucide-react";
 
-const NotFoundPage = () => {
+const Erro404Page = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
       <div className="w-full max-w-4xl min-h-screen bg-white p-16 flex flex-col justify-center overflow-y-auto">
@@ -28,4 +28,4 @@ const NotFoundPage = () => {
   );
 };
 
-export default NotFoundPage;
+export default Erro404Page;

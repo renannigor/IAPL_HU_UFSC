@@ -1,13 +1,13 @@
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../components/AuthProvider";
+import { useAuth } from "../components/auth/AuthProvider";
 
-const NoAccessPage = () => {
+const AcessoNegadoPage = () => {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    await logout(); // Faz o logout
-    navigate("/entrar"); // Redireciona manualmente
+  const realizarLogout = async () => {
+    await logout();
+    navigate("/entrar");
   };
 
   return (
@@ -37,7 +37,7 @@ const NoAccessPage = () => {
         </p>
         <button
           className="mt-6 h-12 w-full bg-[#1F4D2C] text-white p-2 rounded-md hover:bg-[#173B21] transition"
-          onClick={handleLogout}
+          onClick={realizarLogout}
         >
           Voltar ao Formulário
         </button>
@@ -46,4 +46,4 @@ const NoAccessPage = () => {
   );
 };
 
-export default NoAccessPage;
+export default AcessoNegadoPage;
