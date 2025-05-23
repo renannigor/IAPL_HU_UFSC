@@ -53,13 +53,13 @@ CREATE TABLE IF NOT EXISTS tipos_exsudato (
     nome VARCHAR(255) UNIQUE NOT NULL
 );
 
--- ETIOLOGIAS (TIPOS DE LESÃO)
+-- ETIOLOGIAS
 CREATE TABLE IF NOT EXISTS etiologias (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(255) UNIQUE NOT NULL
 );
 
--- CLASSIFICAÇÃO DE LESÃO POR PRESSÃO
+-- CLASSIFICAÇÕES DE LESÃO POR PRESSÃO
 CREATE TABLE IF NOT EXISTS classificacoes_lesao_por_pressao (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(255) UNIQUE NOT NULL
@@ -89,84 +89,15 @@ CREATE TABLE IF NOT EXISTS estruturas_nobres (
     nome VARCHAR(255) UNIQUE NOT NULL
 );
 
--- LESÕES
-CREATE TABLE IF NOT EXISTS lesoes (
-    id SERIAL PRIMARY KEY,
-    cpf_usuario TEXT REFERENCES usuarios(cpf) ON DELETE CASCADE,
-    cadastrado_por_academico BOOLEAN NOT NULL,
-    possui_dor TEXT NOT NULL,
-    escala_dor INTEGER NOT NULL,
-    -- de 1 até 10
-    exsudato INTEGER REFERENCES exsudatos(id),
-    tipo_exsudato INTEGER REFERENCES tipos_exsudato(id),
-    odor INTEGER REFERENCES odores(id),
-    comprimento INTEGER NOT NULL,
-    largura INTEGER NOT NULL,
-    profundidade INTEGER NOT NULL
-);
-
--- TECIDOS (quantificação)
+-- TECIDOS
 CREATE TABLE IF NOT EXISTS tecidos (
     id SERIAL PRIMARY KEY,
-    lesao_id INTEGER REFERENCES lesoes(id) ON DELETE CASCADE,
     epitelizado INTEGER NOT NULL,
     granulacao INTEGER NOT NULL,
     hipergranulacao INTEGER NOT NULL,
     necrose_umida INTEGER NOT NULL,
     necrose_seca INTEGER NOT NULL,
     esfacelo INTEGER NOT NULL
-);
-
--- 📌 TABELAS DE RELAÇÃO (MUITOS PARA MUITOS)
--- LESÃO x ETIOLOGIA
-CREATE TABLE IF NOT EXISTS lesoes_etiologias (
-    id SERIAL PRIMARY KEY,
-    lesao_id INTEGER REFERENCES lesoes(id) ON DELETE CASCADE,
-    etiologia_id INTEGER REFERENCES etiologias(id)
-);
-
--- LESÃO x CLASSIFICAÇÃO DE LESÃO POR PRESSÃO
-CREATE TABLE IF NOT EXISTS lesoes_classificacoes_lesao_por_pressao (
-    id SERIAL PRIMARY KEY,
-    lesao_id INTEGER REFERENCES lesoes(id) ON DELETE CASCADE,
-    classificacao_id INTEGER REFERENCES classificacoes_lesao_por_pressao(id)
-);
-
--- LESÃO x REGIÃO PERILESIONAL
-CREATE TABLE IF NOT EXISTS lesoes_regioes_perilesionais (
-    id SERIAL PRIMARY KEY,
-    lesao_id INTEGER REFERENCES lesoes(id) ON DELETE CASCADE,
-    regiao_id INTEGER REFERENCES regioes_perilesionais(id),
-    descricao_outro TEXT
-);
-
--- LESÃO x BORDA
-CREATE TABLE IF NOT EXISTS lesoes_bordas (
-    id SERIAL PRIMARY KEY,
-    lesao_id INTEGER REFERENCES lesoes(id) ON DELETE CASCADE,
-    borda_id INTEGER REFERENCES bordas(id)
-);
-
--- LESÃO x QUANTIFICAÇÃO DE DOR
-CREATE TABLE IF NOT EXISTS lesoes_quantificacoes_dor (
-    id SERIAL PRIMARY KEY,
-    lesao_id INTEGER REFERENCES lesoes(id) ON DELETE CASCADE,
-    quantificacao_id INTEGER REFERENCES quantificacoes_dor(id)
-);
-
--- LESÃO x TECIDO
-CREATE TABLE IF NOT EXISTS lesoes_tecidos (
-    id SERIAL PRIMARY KEY,
-    lesao_id INTEGER REFERENCES lesoes(id) ON DELETE CASCADE,
-    tecido_id INTEGER REFERENCES tecidos(id) ON DELETE CASCADE
-);
-
--- TECIDO x ESTRUTURA NOBRE
-CREATE TABLE IF NOT EXISTS tecidos_estruturas_nobres (
-    id SERIAL PRIMARY KEY,
-    tecido_id INTEGER REFERENCES tecidos(id) ON DELETE CASCADE,
-    estrutura_id INTEGER REFERENCES estruturas_nobres(id),
-    descricao_outro TEXT
 );
 
 -- COBERTURA UTILIZADA
@@ -207,3 +138,180 @@ CREATE TABLE IF NOT EXISTS fechamento_curativo (
     rede_tubular_6 INTEGER NOT NULL,
     chumaco_atadura INTEGER NOT NULL
 );
+
+-- LESÕES
+CREATE TABLE IF NOT EXISTS lesoes (
+    id SERIAL PRIMARY KEY,
+    id_paciente TEXT NOT NULL,
+    criado_por VARCHAR(14) REFERENCES usuarios(cpf) ON DELETE
+    SET
+        NULL,
+        modificado_por VARCHAR(14) REFERENCES usuarios(cpf) ON DELETE
+    SET
+        NULL,
+        aprovado_por VARCHAR(14) REFERENCES usuarios(cpf) ON DELETE
+    SET
+        NULL,
+        cadastrado_por_academico BOOLEAN NOT NULL,
+        possui_dor TEXT NOT NULL,
+        escala_dor INTEGER NOT NULL CHECK (
+            escala_dor >= 1
+            AND escala_dor <= 10
+        ),
+        exsudato INTEGER REFERENCES exsudatos(id),
+        tipo_exsudato INTEGER REFERENCES tipos_exsudato(id),
+        odor INTEGER REFERENCES odores(id),
+        comprimento INTEGER NOT NULL,
+        largura INTEGER NOT NULL,
+        profundidade INTEGER NOT NULL,
+        tecido_id INTEGER REFERENCES tecidos(id),
+        cobertura_utilizada_id INTEGER REFERENCES cobertura_utilizada(id),
+        fechamento_curativo_id INTEGER REFERENCES fechamento_curativo(id)
+);
+
+-- RELAÇÃO: LESÃO x ETIOLOGIA
+CREATE TABLE IF NOT EXISTS lesoes_etiologias (
+    id SERIAL PRIMARY KEY,
+    lesao_id INTEGER REFERENCES lesoes(id) ON DELETE CASCADE,
+    etiologia_id INTEGER REFERENCES etiologias(id)
+);
+
+-- RELAÇÃO: LESÃO x CLASSIFICAÇÃO
+CREATE TABLE IF NOT EXISTS lesoes_classificacoes_lesao_por_pressao (
+    id SERIAL PRIMARY KEY,
+    lesao_id INTEGER REFERENCES lesoes(id) ON DELETE CASCADE,
+    classificacao_id INTEGER REFERENCES classificacoes_lesao_por_pressao(id)
+);
+
+-- RELAÇÃO: LESÃO x REGIÃO PERILESIONAL
+CREATE TABLE IF NOT EXISTS lesoes_regioes_perilesionais (
+    id SERIAL PRIMARY KEY,
+    lesao_id INTEGER REFERENCES lesoes(id) ON DELETE CASCADE,
+    regiao_id INTEGER REFERENCES regioes_perilesionais(id),
+    descricao_outro TEXT
+);
+
+-- RELAÇÃO: LESÃO x BORDA
+CREATE TABLE IF NOT EXISTS lesoes_bordas (
+    id SERIAL PRIMARY KEY,
+    lesao_id INTEGER REFERENCES lesoes(id) ON DELETE CASCADE,
+    borda_id INTEGER REFERENCES bordas(id)
+);
+
+-- RELAÇÃO: LESÃO x QUANTIFICAÇÃO DE DOR
+CREATE TABLE IF NOT EXISTS lesoes_quantificacoes_dor (
+    id SERIAL PRIMARY KEY,
+    lesao_id INTEGER REFERENCES lesoes(id) ON DELETE CASCADE,
+    quantificacao_id INTEGER REFERENCES quantificacoes_dor(id)
+);
+
+-- RELAÇÃO: TECIDO x ESTRUTURA NOBRE
+CREATE TABLE IF NOT EXISTS tecidos_estruturas_nobres (
+    id SERIAL PRIMARY KEY,
+    tecido_id INTEGER REFERENCES tecidos(id) ON DELETE CASCADE,
+    estrutura_id INTEGER REFERENCES estruturas_nobres(id),
+    descricao_outro TEXT
+);
+
+-- 📌 INSERÇÃO DE VALORES 
+-- INSERINDO OS VALORES DAS ETIOLOGIAS
+INSERT INTO
+    etiologias(nome)
+VALUES
+    ('Arterial'),
+    ('Venosa'),
+    ('Neuropática'),
+    ('Neoplásica'),
+    ('Autoimune'),
+    ('Abrasão'),
+    ('Deiscência'),
+    ('Fricção'),
+    ('Por umidade'),
+    ('Contusa'),
+    ('Laceração'),
+    ('Lesão por Pressão');
+
+-- INSERINDO OS VALORES DAS CLASSIFICAÇÕES DE LESÃO POR PRESSÃO
+INSERT INTO
+    classificacoes_lesao_por_pressao(nome)
+VALUES
+    ('Estágio 1'),
+    ('Estágio 2'),
+    ('Estágio 3'),
+    ('Estágio 4'),
+    ('Não classificável'),
+    ('Lesão tissular profunda'),
+    ('Relacionada a dispositivo'),
+    ('Membrana mucosa');
+
+-- INSERINDO OS VALORES DAS REGIÕES PERILESIONAIS
+INSERT INTO
+    regioes_perilesionais(nome)
+VALUES
+    ('Sem alterações'),
+    ('Hipocorada'),
+    ('Hipopigmentada'),
+    ('Hiperpigmentada'),
+    ('Eritema'),
+    ('Macerada'),
+    ('Bolhas'),
+    ('Outro');
+
+-- INSERINDO OS VALORES DAS BORDAS
+INSERT INTO
+    bordas(nome)
+VALUES
+    ('Regular'),
+    ('Irregular'),
+    ('Aderida'),
+    ('Descolamento'),
+    ('Epibolia'),
+    ('Hiperemiada'),
+    ('Macerada'),
+    ('Hiperqueratosa');
+
+-- INSERINDO OS VALORES DAS ESTRUTURAS NOBRES
+INSERT INTO
+    estruturas_nobres(nome)
+VALUES
+    ('Músculos'),
+    ('Tendões'),
+    ('Ossos'),
+    ('Outro');
+
+-- INSERINDO AS QUANTIFICAÇÕES DE DOR
+INSERT INTO
+    quantificacoes_dor(nome)
+VALUES
+    ('Aguda'),
+    ('Crônica'),
+    ('Recorrente'),
+    ('Necessidade de analgesia prévia a procedimento');
+
+-- INSERINDO OS EXSUDATOS
+INSERT INTO
+    exsudatos(nome)
+VALUES
+    ('Não exsudativa'),
+    ('Pequena <25%'),
+    ('Moderada 25 a 70%'),
+    ('Abundante ≥ 70%');
+
+-- INSERINDO OS TIPOS DE EXSUDATOS
+INSERT INTO
+    tipos_exsudato(nome)
+VALUES
+    ('Seroso'),
+    ('Serosanguinolento'),
+    ('Sanguinolento'),
+    ('Purulento'),
+    ('Piossanguinolento');
+
+-- INSERINDO OS ODORES
+INSERT INTO
+    odores(nome)
+VALUES
+    ('Sem odor'),
+    ('Odor característico'),
+    ('Odor fétido'),
+    ('Odor pútrido');

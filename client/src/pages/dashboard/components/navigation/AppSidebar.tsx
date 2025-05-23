@@ -1,10 +1,5 @@
 import {
-  LayoutDashboard,
-  UserCircle,
-  Users2,
-  Info,
   LogOut,
-  User,
   Menu,
   ChevronLeft,
 } from "lucide-react";
@@ -25,23 +20,23 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-export function AppSidebar() {
+// Tipagem dos itens do menu
+type MenuItem = {
+  title: string;
+  url: string;
+  icon: React.ElementType;
+};
+
+type AppSidebarProps = {
+  menuItems: MenuItem[];
+};
+
+export function AppSidebar({ menuItems }: AppSidebarProps) {
   const { pathname } = useLocation();
   const { usuarioAtual, logout } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   const isActive = (path: string) => pathname === path;
-
-  const menuItems = [
-    { label: "Início", path: "/dashboard", icon: LayoutDashboard },
-    { label: "Pacientes", path: "/dashboard/pacientes", icon: UserCircle },
-    ...(usuarioAtual?.admin
-      ? [{ label: "Usuários", path: "/dashboard/usuarios", icon: Users2 }]
-      : []),
-    { label: "Perfil", path: "/dashboard/perfil", icon: User },
-    { label: "Sobre", path: "/dashboard/sobre", icon: Info },
-  ];
-
   const toggleSidebar = () => setIsCollapsed((prev) => !prev);
 
   return (
@@ -66,12 +61,12 @@ export function AppSidebar() {
 
         {/* Itens de navegação */}
         <ul className="flex-1 px-3 mt-2 text-gray-800">
-          {menuItems.map(({ label, path, icon: Icon }) => {
-            const active = isActive(path);
+          {menuItems.map(({ title, url, icon: Icon }) => {
+            const active = isActive(url);
             return (
               <li
-                key={path}
-                onClick={() => (window.location.href = path)}
+                key={url}
+                onClick={() => (window.location.href = url)}
                 className={clsx(
                   "relative flex items-center py-2 px-3 my-1 font-medium rounded-md cursor-pointer transition-colors group",
                   active
@@ -86,7 +81,7 @@ export function AppSidebar() {
                     isCollapsed ? "w-0" : "w-52 ml-3"
                   )}
                 >
-                  {label}
+                  {title}
                 </span>
                 {isCollapsed && (
                   <div
@@ -96,7 +91,7 @@ export function AppSidebar() {
                       "group-hover:visible group-hover:opacity-100 group-hover:translate-x-0"
                     )}
                   >
-                    {label}
+                    {title}
                   </div>
                 )}
               </li>

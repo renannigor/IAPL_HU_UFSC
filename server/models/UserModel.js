@@ -1,11 +1,6 @@
 import db from "../config/db.js";
 
 const Usuarios = {
-  async carregarTodosUsuarios(email) {
-    const result = await db.query("SELECT * FROM Usuarios");
-    return result.rows[0];
-  },
-
   async buscarPorEmail(email) {
     const result = await db.query("SELECT * FROM Usuarios WHERE email = $1", [
       email,

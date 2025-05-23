@@ -11,7 +11,7 @@ const pool = new Pool({
 });
 
 pool
-  .connect()
+  .query("SELECT 1")
   .then(() => console.log("Conectado ao banco de dados!"))
   .catch((err) => console.error("Erro ao conectar:", err));
 

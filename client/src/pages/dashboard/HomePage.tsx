@@ -10,7 +10,7 @@ const HomePage = () => {
     {
       title: "Pacientes",
       description: "Lista de pacientes cadastrados no sistema AGHU.",
-      icon: <UserCircle size={40} />,
+      icon: <User size={40} />,
       onClick: () => navigate("/dashboard/pacientes"),
     },
     {
@@ -23,7 +23,7 @@ const HomePage = () => {
     {
       title: "Perfil",
       description: "Veja e edite seu perfil.",
-      icon: <User size={40} />,
+      icon: <UserCircle size={40} />,
       onClick: () => navigate("/dashboard/perfil"),
     },
     {

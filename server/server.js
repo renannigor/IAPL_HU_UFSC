@@ -3,6 +3,7 @@ import express from "express";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import patientRoutes from "./routes/patientRoutes.js";
+import LesaoRoutes from "./routes/LesaoRoutes.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
@@ -22,6 +23,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/usuarios", userRoutes);
 app.use("/api/pacientes", patientRoutes);
+app.use("/api/lesoes", LesaoRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

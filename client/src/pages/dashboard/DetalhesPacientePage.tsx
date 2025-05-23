@@ -4,7 +4,7 @@ import { Paciente } from "@/types/paciente";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import Editor from "@/components/shared/Editor";
 import { Button } from "@/components/ui/button";
-import { UserIcon, MoreVertical } from "lucide-react";
+import { UserIcon, MoreVertical, ArrowLeft } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -47,7 +47,7 @@ const DetalhesPacientePage = () => {
           <Button
             className="bg-green-800 text-white hover:bg-green-900 h-fit"
             onClick={() =>
-              navigate(`/dashboard/pacientes/${id}/cadastrar-lesao`)
+              navigate(`/dashboard/pacientes/${id}/lesoes/cadastrar-lesao`)
             }
           >
             Cadastrar Lesão

@@ -18,7 +18,7 @@ import PacientesPage from "./pages/dashboard/PacientesPage";
 import SobrePage from "./pages/dashboard/SobrePage";
 import "./index.css";
 import DetalhesPacientePage from "./pages/dashboard/DetalhesPacientePage.tsx";
-import LesioFormPage from "./pages/dashboard/LesioFormPage.tsx";
+import LesaoFormPage from "./pages/dashboard/LesaoFormPage.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -75,8 +75,12 @@ createRoot(document.getElementById("root")!).render(
             <Route path="pacientes" element={<PacientesPage />} />
             <Route path="pacientes/:id" element={<DetalhesPacientePage />} />
             <Route
-              path="pacientes/:id/cadastrar-lesao"
-              element={<LesioFormPage />}
+              path="/dashboard/pacientes/:id_paciente/lesoes/cadastrar-lesao"
+              element={<LesaoFormPage />}
+            />
+            <Route
+              path="/dashboard/pacientes/:id_paciente/lesoes/:id_lesao/editar-lesao"
+              element={<LesaoFormPage />}
             />
             <Route path="usuarios" element={<UsuariosPage />} />
             <Route path="perfil" element={<PerfilPage />} />

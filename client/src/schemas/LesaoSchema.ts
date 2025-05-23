@@ -3,19 +3,27 @@ import { z } from "zod";
 export const LesaoFormSchema = z
   .object({
     etiologias: z
-      .array(z.string())
-      .nonempty("Selecione pelo menos uma etiologia."),
-    classificacoes: z.array(z.string()).optional(),
+      .array(z.string(), {
+        required_error: "Selecione pelo menos uma etiologia.",
+      })
+      .min(1, "Selecione pelo menos uma etiologia."),
+    classificacoesLesaoPressao: z.array(z.string()).optional(),
     regioesPerilesionais: z
-      .array(z.string())
-      .nonempty("Selecione pelo menos uma região perilesional."),
+      .array(z.string(), {
+        required_error: "Selecione pelo menos uma região perilesional.",
+      })
+      .min(1, "Selecione pelo menos uma região perilesional."),
     outraRegiaoPerilesional: z.string().optional(),
-    bordas: z.array(z.string()).nonempty("Selecione pelo menos uma borda."),
+    bordas: z
+      .array(z.string(), { required_error: "Selecione pelo menos uma borda." })
+      .min(1, "Selecione pelo menos uma borda."),
     tecido: z.object({
       estruturasNobres: z
-        .array(z.string())
-        .nonempty("Selecione pelo menos uma estrutura nobre."),
-      outroEstruturaNobre: z.string().optional(),
+        .array(z.string(), {
+          required_error: "Selecione pelo menos uma estrutura nobre.",
+        })
+        .min(1, "Selecione pelo menos uma estrutura nobre."),
+      outraEstruturaNobre: z.string().optional(),
       epitelizado: z
         .number({ invalid_type_error: "Informe um número" })
         .min(0, "O valor deve ser no mínimo 0%")
@@ -41,12 +49,20 @@ export const LesaoFormSchema = z
         .min(0, "O valor deve ser no mínimo 0%")
         .max(100, "O valor deve ser no máximo 100%"),
     }),
-    dor: z.string(),
-    dorAvaliacao: z.string(),
-    dorQuantificacao: z.string(),
-    exsudato: z.string({ required_error: "Selecione o exsudato." }),
-    odor: z.string({ required_error: "Selecione o odor." }),
-    tipoExsudato: z.string({ required_error: "Selecione o tipo de exsudato." }),
+    dor: z.enum(["sim", "nao"], {
+      required_error: "Por favor, selecione uma opção.",
+    }),
+    nivelDor: z.number().min(1).max(10).optional(),
+    quantificacoesDor: z
+      .array(z.string(), {
+        required_error: "Selecione pelo menos uma quantificação da dor.",
+      })
+      .min(1, "Selecione pelo menos uma quantificação da dor."),
+    exsudato: z.string({ required_error: "Exsudato é obrigatório." }),
+    odor: z.string({ required_error: "Odor é obrigatório." }),
+    tipoExsudato: z.string({
+      required_error: "Tipo de exsudato é obrigatório.",
+    }),
     tamanho: z.object({
       comprimento: z
         .number({ invalid_type_error: "Informe um número" })
@@ -132,6 +148,23 @@ export const LesaoFormSchema = z
         .number({ invalid_type_error: "Informe um número" })
         .min(0, "O valor deve ser maior que 0"),
     }),
+    fechamentoCurativo: z.object({
+      peliculaTransparenteRoloCurativos: z
+        .number({ invalid_type_error: "Informe um número" })
+        .min(0, "O valor deve ser maior que 0"),
+      botaUnna: z
+        .number({ invalid_type_error: "Informe um número" })
+        .min(0, "O valor deve ser maior que 0"),
+      redeTubular3: z
+        .number({ invalid_type_error: "Informe um número" })
+        .min(0, "O valor deve ser maior que 0"),
+      redeTubular6: z
+        .number({ invalid_type_error: "Informe um número" })
+        .min(0, "O valor deve ser maior que 0"),
+      chumacoAtadura: z
+        .number({ invalid_type_error: "Informe um número" })
+        .min(0, "O valor deve ser maior que 0"),
+    }),
   })
   // Valida "outraRegiaoPerilesional" se "Outro" estiver selecionado
   .refine(
@@ -148,9 +181,10 @@ export const LesaoFormSchema = z
   .refine(
     (data) =>
       !data.etiologias.includes("Lesão por Pressão") ||
-      (data.classificacoes && data.classificacoes.length > 0),
+      (data.classificacoesLesaoPressao &&
+        data.classificacoesLesaoPressao.length > 0),
     {
-      path: ["classificacoes"],
+      path: ["classificacoesLesaoPressao"],
       message: "Informe a classificação da Lesão por Pressão",
     }
   )
@@ -176,10 +210,10 @@ export const LesaoFormSchema = z
   .refine(
     (data) =>
       !data.tecido.estruturasNobres.includes("Outro") ||
-      (data.tecido.outroEstruturaNobre &&
-        data.tecido.outroEstruturaNobre.trim() !== ""),
+      (data.tecido.outraEstruturaNobre &&
+        data.tecido.outraEstruturaNobre.trim() !== ""),
     {
-      path: ["tecido", "outroEstruturaNobre"],
+      path: ["tecido", "outraEstruturaNobre"],
       message: "Informe a outra estrutura nobre",
     }
   );

@@ -11,18 +11,25 @@ class LesaoService {
     }
   }
 
-  static async cadastrarLesao(data: {}) {
+  static async cadastrarLesao(
+    cpf_usuario: string,
+    id_paciente: string,
+    dados: {}
+  ) {
     try {
-      await api.post("/api/lesoes/cadastrar", data);
+      await api.post(
+        `/api/lesoes/cadastrar/${cpf_usuario}/${id_paciente}`,
+        dados
+      );
     } catch (error) {
       console.error("Erro ao cadastrar lesão", error);
       throw error;
     }
   }
 
-  static async atualizarInfoLesao(id: string, data: {}) {
+  static async atualizarLesao(id: string, dados: {}) {
     try {
-      await api.put(`/api/lesoes/${id}/atualizar-info`, data);
+      await api.put(`/api/lesoes/${id}/atualizar-info`, dados);
     } catch (error) {
       console.error("Erro ao editar lesão", error);
       throw error;
