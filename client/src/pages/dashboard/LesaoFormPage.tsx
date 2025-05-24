@@ -65,7 +65,7 @@ const LesaoFormPage = () => {
     if (!isEditMode) return;
     const fetchLesao = async () => {
       const data = await LesaoService.obterLesao(id_lesao!);
-      reset(data);
+      reset(data.dados);
     };
     fetchLesao();
   }, [isEditMode, id_lesao, reset]);
@@ -100,11 +100,11 @@ const LesaoFormPage = () => {
   const onSubmit: SubmitHandler<LesaoFormFields> = async (data) => {
     console.log(data);
     if (isEditMode) {
-      //await LesaoService.atualizarLesao(id_lesao, data);
+      await LesaoService.atualizarLesao(id_lesao, data);
     } else {
       await LesaoService.cadastrarLesao(usuarioAtual?.cpf!, id_paciente!, data);
     }
-    //navigate(`/dashboard/pacientes/${id_paciente}`);
+    navigate(`/dashboard/pacientes/${id_paciente}`);
   };
 
   const etiologias = useWatch({ control, name: "etiologias" }) || [];

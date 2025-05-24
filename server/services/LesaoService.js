@@ -22,9 +22,24 @@ class LesaoService {
     await LesaoModel.cadastrarLesao(cpf_usuario, id_paciente, dados);
   }
 
+  static async atualizarLesao(cpf_usuario, id_paciente, dados) {
+    // Atualizar a lesão
+    await LesaoModel.cadastrarLesao(cpf_usuario, id_paciente, dados);
+  }
+
   static async obterLesao(id_lesao) {
     // Obter a lesão
-    await LesaoModel.obterLesao(id_lesao);
+    const dadosLesao = await LesaoModel.obterLesao(id_lesao);
+    return dadosLesao;
+  }
+
+  static async obterTodasLesoesPacientes(idPaciente, cadastradoPorAcademico) {
+    // Obter todas as lesões do paciente
+    const dadosLesao = await LesaoModel.obterTodasLesoesPacientes(
+      idPaciente,
+      cadastradoPorAcademico
+    );
+    return dadosLesao;
   }
 }
 

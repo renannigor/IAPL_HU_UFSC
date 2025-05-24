@@ -18,12 +18,15 @@ import PacientesPage from "./pages/dashboard/PacientesPage";
 import SobrePage from "./pages/dashboard/SobrePage";
 import "./index.css";
 import DetalhesPacientePage from "./pages/dashboard/DetalhesPacientePage.tsx";
+import DetalhesLesaoPage from "./pages/dashboard/DetalhesLesaoPage.tsx";
 import LesaoFormPage from "./pages/dashboard/LesaoFormPage.tsx";
+import { Toaster } from "sonner";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
       <AuthProvider>
+        <Toaster richColors position="top-right" />
         <Routes>
           {/* Rotas públicas - bloqueadas para usuários logados */}
           <Route
@@ -75,12 +78,16 @@ createRoot(document.getElementById("root")!).render(
             <Route path="pacientes" element={<PacientesPage />} />
             <Route path="pacientes/:id" element={<DetalhesPacientePage />} />
             <Route
-              path="/dashboard/pacientes/:id_paciente/lesoes/cadastrar-lesao"
+              path="pacientes/:id_paciente/lesoes/cadastrar"
               element={<LesaoFormPage />}
             />
             <Route
-              path="/dashboard/pacientes/:id_paciente/lesoes/:id_lesao/editar-lesao"
+              path="pacientes/:id_paciente/lesoes/:id_lesao/editar"
               element={<LesaoFormPage />}
+            />
+            <Route
+              path="pacientes/:id_paciente/lesoes/:id_lesao/detalhes"
+              element={<DetalhesLesaoPage />}
             />
             <Route path="usuarios" element={<UsuariosPage />} />
             <Route path="perfil" element={<PerfilPage />} />

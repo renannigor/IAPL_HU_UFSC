@@ -34,12 +34,34 @@ class LesaoController {
     try {
       const { id_lesao } = req.params;
 
-      await LesaoService.obterLesao(id_lesao);
-      res.status(200).json({ mensagem: "Lesão recuperada com sucesso!" });
+      const dadosLesao = await LesaoService.obterLesao(id_lesao);
+      res
+        .status(200)
+        .json({ mensagem: "Lesão recuperada com sucesso!", dados: dadosLesao });
     } catch (error) {
       console.error("Erro ao recuperar uma lesão: ", error);
       res.status(500).json({
         mensagem: "Erro ao recuperar uma lesão.",
+      });
+    }
+  }
+
+  static async obterTodasLesoesPacientes(req, res) {
+    try {
+      const { idPaciente, cadastradoPorAcademico } = req.query;
+
+      const dadosLesao = await LesaoService.obterTodasLesoesPacientes(
+        idPaciente,
+        cadastradoPorAcademico
+      );
+      res.status(200).json({
+        mensagem: "Lesões recuperadas com sucesso!",
+        dados: dadosLesao,
+      });
+    } catch (error) {
+      console.error("Erro ao recuperar as lesões: ", error);
+      res.status(500).json({
+        mensagem: "Erro ao recuperar as lesões.",
       });
     }
   }

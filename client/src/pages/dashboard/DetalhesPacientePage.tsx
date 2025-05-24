@@ -1,22 +1,28 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Paciente } from "@/types/paciente";
+import { Lesao } from "@/types/lesao";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import Editor from "@/components/shared/Editor";
 import { Button } from "@/components/ui/button";
-import { UserIcon, MoreVertical, ArrowLeft } from "lucide-react";
+import { UserIcon, MoreVertical } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+
 import PacienteService from "@/services/PacienteService";
+import LesaoService from "@/services/LesaoService";
+import CardLesao from "./components/CardLesao";
 
 const DetalhesPacientePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [paciente, setPaciente] = useState<Paciente | null>(null);
+  const [lesoesAcademicos, setLesoesAcademicos] = useState<Lesao[]>([]);
+  const [lesoesNaoAcademicos, setLesoesNaoAcademicos] = useState<Lesao[]>([]);
 
   useEffect(() => {
     const fetchPaciente = async () => {
@@ -26,6 +32,19 @@ const DetalhesPacientePage = () => {
 
     if (id) fetchPaciente();
   }, [id]);
+
+  useEffect(() => {
+    const fetchLesoes = async () => {
+      const [academicos, naoAcademicos] = await Promise.all([
+        LesaoService.obterTodasLesoes(id!, true),
+        LesaoService.obterTodasLesoes(id!, false),
+      ]);
+      setLesoesAcademicos(Array.isArray(academicos) ? academicos : []);
+      setLesoesNaoAcademicos(Array.isArray(naoAcademicos) ? naoAcademicos : []);
+    };
+
+    fetchLesoes();
+  }, []);
 
   if (!paciente) return <p>Carregando...</p>;
 
@@ -47,7 +66,7 @@ const DetalhesPacientePage = () => {
           <Button
             className="bg-green-800 text-white hover:bg-green-900 h-fit"
             onClick={() =>
-              navigate(`/dashboard/pacientes/${id}/lesoes/cadastrar-lesao`)
+              navigate(`/dashboard/pacientes/${id}/lesoes/cadastrar`)
             }
           >
             Cadastrar Lesão
@@ -164,14 +183,25 @@ const DetalhesPacientePage = () => {
         </TabsContent>
 
         <TabsContent value="lesoes">
-          <p>Conteúdo relacionado às lesões do paciente será exibido aqui.</p>
+          <div className="space-y-6">
+            <p className="text-muted-foreground">Lesões do paciente</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <CardLesao lesoes={lesoesNaoAcademicos} />
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="pendencias">
-          <p>
-            Conteúdo relacionado às lesões do paciente cadastradas pelos
-            acadêmicos.
-          </p>
+          <div className="space-y-6">
+            <p className="text-muted-foreground">
+              Informações sobre as lesões do paciente, cadastradas pelos
+              acadêmicos, para revisão.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <CardLesao lesoes={lesoesAcademicos} />
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

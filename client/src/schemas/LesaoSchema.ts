@@ -7,7 +7,11 @@ export const LesaoFormSchema = z
         required_error: "Selecione pelo menos uma etiologia.",
       })
       .min(1, "Selecione pelo menos uma etiologia."),
-    classificacoesLesaoPressao: z.array(z.string()).optional(),
+    classificacoesLesaoPressao: z
+      .array(z.string(), {
+        required_error: "Selecione pelo menos uma classificação.",
+      })
+      .optional(),
     regioesPerilesionais: z
       .array(z.string(), {
         required_error: "Selecione pelo menos uma região perilesional.",
@@ -52,12 +56,17 @@ export const LesaoFormSchema = z
     dor: z.enum(["sim", "nao"], {
       required_error: "Por favor, selecione uma opção.",
     }),
-    nivelDor: z.number().min(1).max(10).optional(),
+    nivelDor: z
+      .number({ invalid_type_error: "Informe um número" })
+      .min(1)
+      .max(10)
+      .optional(),
     quantificacoesDor: z
       .array(z.string(), {
         required_error: "Selecione pelo menos uma quantificação da dor.",
       })
-      .min(1, "Selecione pelo menos uma quantificação da dor."),
+      .min(1, "Selecione pelo menos uma quantificação da dor.")
+      .optional(),
     exsudato: z.string({ required_error: "Exsudato é obrigatório." }),
     odor: z.string({ required_error: "Odor é obrigatório." }),
     tipoExsudato: z.string({
@@ -166,56 +175,85 @@ export const LesaoFormSchema = z
         .min(0, "O valor deve ser maior que 0"),
     }),
   })
-  // Valida "outraRegiaoPerilesional" se "Outro" estiver selecionado
-  .refine(
-    (data) =>
-      !data.regioesPerilesionais.includes("Outro") ||
-      (data.outraRegiaoPerilesional &&
-        data.outraRegiaoPerilesional.trim() !== ""),
-    {
-      path: ["outraRegiaoPerilesional"],
-      message: "Informe a outra região perilesional",
+  .superRefine((data, ctx) => {
+    // 1. Valida classificacoesLesaoPressao se "Lesão por Pressão" estiver nas etiologias
+    if (
+      data.etiologias.includes("Lesão por Pressão") &&
+      (!data.classificacoesLesaoPressao ||
+        data.classificacoesLesaoPressao.length === 0)
+    ) {
+      ctx.addIssue({
+        path: ["classificacoesLesaoPressao"],
+        code: z.ZodIssueCode.custom,
+        message: "Informe a classificação da Lesão por Pressão",
+      });
     }
-  )
-  // Valida "classificacoes" se "Lesão por Pressão" estiver nas etiologias
-  .refine(
-    (data) =>
-      !data.etiologias.includes("Lesão por Pressão") ||
-      (data.classificacoesLesaoPressao &&
-        data.classificacoesLesaoPressao.length > 0),
-    {
-      path: ["classificacoesLesaoPressao"],
-      message: "Informe a classificação da Lesão por Pressão",
-    }
-  )
-  // Valida soma das porcentagens
-  .refine(
-    (data) => {
-      const total =
-        data.tecido.epitelizado +
-        data.tecido.granulacao +
-        data.tecido.hipergranulacao +
-        data.tecido.necroseSeca +
-        data.tecido.necroseUmida +
-        data.tecido.esfacelo;
-      return total === 100;
-    },
-    {
-      message: "A soma das porcentagens deve ser 100%",
-      path: ["tecido"],
-    }
-  )
 
-  // Valida "outroEstruturaNobre" se "Outro" estiver selecionado nas estruturasNobres
-  .refine(
-    (data) =>
-      !data.tecido.estruturasNobres.includes("Outro") ||
-      (data.tecido.outraEstruturaNobre &&
-        data.tecido.outraEstruturaNobre.trim() !== ""),
-    {
-      path: ["tecido", "outraEstruturaNobre"],
-      message: "Informe a outra estrutura nobre",
+    // 2. Valida outraRegiaoPerilesional se "Outro" estiver nas regioesPerilesionais
+    if (
+      data.regioesPerilesionais.includes("Outro") &&
+      (!data.outraRegiaoPerilesional ||
+        data.outraRegiaoPerilesional.trim() === "")
+    ) {
+      ctx.addIssue({
+        path: ["outraRegiaoPerilesional"],
+        code: z.ZodIssueCode.custom,
+        message: "Informe a outra região perilesional",
+      });
     }
-  );
+
+    // 3. Valida outraEstruturaNobre se "Outro" estiver nas estruturasNobres
+    if (
+      data.tecido.estruturasNobres.includes("Outro") &&
+      (!data.tecido.outraEstruturaNobre ||
+        data.tecido.outraEstruturaNobre.trim() === "")
+    ) {
+      ctx.addIssue({
+        path: ["tecido", "outraEstruturaNobre"],
+        code: z.ZodIssueCode.custom,
+        message: "Informe a outra estrutura nobre",
+      });
+    }
+
+    // 4. Valida nivelDor e quantificacoesDor se dor for "sim"
+    if (data.dor === "sim") {
+      if (
+        data.nivelDor === undefined ||
+        data.nivelDor < 1 ||
+        data.nivelDor > 10
+      ) {
+        ctx.addIssue({
+          path: ["nivelDor"],
+          code: z.ZodIssueCode.custom,
+          message: "Informe o nível da dor entre 1 e 10",
+        });
+      }
+
+      if (!data.quantificacoesDor || data.quantificacoesDor.length === 0) {
+        ctx.addIssue({
+          path: ["quantificacoesDor"],
+          code: z.ZodIssueCode.custom,
+          message: "Informe pelo menos uma quantificação da dor",
+        });
+      }
+    }
+
+    // 5. Valida soma dos tecidos = 100
+    const somaTecidos =
+      data.tecido.epitelizado +
+      data.tecido.granulacao +
+      data.tecido.hipergranulacao +
+      data.tecido.necroseSeca +
+      data.tecido.necroseUmida +
+      data.tecido.esfacelo;
+
+    if (somaTecidos !== 100) {
+      ctx.addIssue({
+        path: ["tecido"],
+        code: z.ZodIssueCode.custom,
+        message: "A soma das porcentagens dos tecidos deve ser igual a 100%",
+      });
+    }
+  });
 
 export type LesaoFormFields = z.infer<typeof LesaoFormSchema>;

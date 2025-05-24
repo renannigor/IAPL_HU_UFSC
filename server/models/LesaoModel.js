@@ -2,11 +2,21 @@ import db from "../config/db.js";
 import Usuarios from "./UserModel.js";
 
 const LesaoModel = {
+  async obterTodasLesoesPacientes(idPaciente, cadastradoPorAcademico) {
+    try {
+      const result = await db.query(
+        "SELECT * FROM lesoes WHERE id_paciente = $1 AND cadastrado_por_academico = $2",
+        [idPaciente, cadastradoPorAcademico]
+      );
+      return result.rows;
+    } catch (error) {
+      console.error("Erro ao obter todas as lesões:", error);
+    }
+  },
+
   async obterLesao(id) {
     const client = await db.connect();
     try {
-      console.log("HELLOOO");
-
       // Buscar dados principais da lesão com campos explicitados para evitar conflito
       const res = await client.query(
         `
@@ -32,8 +42,6 @@ const LesaoModel = {
           `,
         [id]
       );
-
-      console.log(res.rows[0]);
 
       if (res.rowCount === 0) {
         throw new Error("Lesão não encontrada");
@@ -114,6 +122,21 @@ const LesaoModel = {
       const outraEstruturaNobre =
         estruturaOutroRes.rows[0]?.descricao_outro ?? null;
 
+      // Buscar exsudato, tipo exsudato e odor
+      const exsudato = await client.query(
+        `SELECT nome FROM exsudatos WHERE id = $1`,
+        [lesao.exsudato]
+      );
+
+      const tipoExsudato = await client.query(
+        `SELECT nome FROM tipos_exsudato WHERE id = $1`,
+        [lesao.tipo_exsudato]
+      );
+
+      const odor = await client.query(`SELECT nome FROM odores WHERE id = $1`, [
+        lesao.odor,
+      ]);
+
       return {
         etiologias,
         classificacoesLesaoPressao,
@@ -130,12 +153,12 @@ const LesaoModel = {
           necroseUmida: lesao.necrose_umida,
           esfacelo: lesao.esfacelo,
         },
-        dor: lesao.dor,
-        nivelDor: lesao.nivel_dor,
+        dor: lesao.possui_dor,
+        nivelDor: lesao.escala_dor,
         quantificacoesDor,
-        exsudato: lesao.exsudato,
-        tipoExsudato: lesao.tipo_exsudato,
-        odor: lesao.odor,
+        exsudato: exsudato.rows[0].nome,
+        tipoExsudato: tipoExsudato.rows[0].nome,
+        odor: odor.rows[0].nome,
         tamanho: {
           comprimento: lesao.comprimento,
           largura: lesao.largura,
@@ -266,7 +289,7 @@ const LesaoModel = {
           cpfUsuario,
           cadastradoPorAcademico,
           dados.dor,
-          dados.nivelDor,
+          dados.nivelDor ?? null,
           dados.exsudato,
           dados.tipoExsudato,
           dados.odor,
@@ -291,12 +314,14 @@ const LesaoModel = {
       }
 
       // CLASSIFICAÇÃO LESÃO POR PRESSÃO
-      for (const nome of dados.classificacoesLesaoPressao) {
-        await client.query(
-          `INSERT INTO lesoes_classificacoes_lesao_por_pressao (lesao_id, classificacao_id)
+      if (Array.isArray(dados.classificacoesLesaoPressao)) {
+        for (const nome of dados.classificacoesLesaoPressao) {
+          await client.query(
+            `INSERT INTO lesoes_classificacoes_lesao_por_pressao (lesao_id, classificacao_id)
                VALUES ($1, (SELECT id FROM classificacoes_lesao_por_pressao WHERE nome = $2))`,
-          [lesaoId, nome]
-        );
+            [lesaoId, nome]
+          );
+        }
       }
 
       // REGIÕES PERILESIONAIS
@@ -323,12 +348,14 @@ const LesaoModel = {
       }
 
       // QUANTIFICAÇÕES DA DOR
-      for (const nome of dados.quantificacoesDor) {
-        await client.query(
-          `INSERT INTO lesoes_quantificacoes_dor (lesao_id, quantificacao_id)
+      if (Array.isArray(dados.quantificacoesDor)) {
+        for (const nome of dados.quantificacoesDor) {
+          await client.query(
+            `INSERT INTO lesoes_quantificacoes_dor (lesao_id, quantificacao_id)
                VALUES ($1, (SELECT id FROM quantificacoes_dor WHERE nome = $2))`,
-          [lesaoId, nome]
-        );
+            [lesaoId, nome]
+          );
+        }
       }
 
       // ESTRUTURAS NOBRES
@@ -354,6 +381,39 @@ const LesaoModel = {
     } finally {
       client.release();
     }
+  },
+
+  async atualizarLesao(cpfUsuario, idLesao, dados) {
+    const client = await db.connect();
+    try {
+      await client.query("BEGIN");
+
+      // 1. Atualizar os dados simples da lesão na tabela lesoes
+      // Pega os IDs relacionados (exsudato, tipo_exsudato, odor) a partir dos nomes enviados em dados
+      const exsudatoId = await getIdByName(client, "exsudatos", dados.exsudato);
+      const tipoExsudatoId = await getIdByName(
+        client,
+        "tipos_exsudato",
+        dados.tipoExsudato
+      );
+      const odorId = await getIdByName(client, "odores", dados.odor);
+
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK");
+      console.error("Erro ao inserir lesão:", error);
+      throw error;
+    } finally {
+      client.release();
+    }
+  },
+
+  // Função auxiliar para buscar ID pelo nome
+  async getIdByName(client, tabela, nome) {
+    const res = await client.query(`SELECT id FROM ${tabela} WHERE nome = $1`, [
+      nome,
+    ]);
+    return res.rows.length ? res.rows[0].id : null;
   },
 };
 

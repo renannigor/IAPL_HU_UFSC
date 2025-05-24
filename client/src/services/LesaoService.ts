@@ -1,9 +1,27 @@
 import api from "@/api/api";
 
 class LesaoService {
+  static async obterTodasLesoes(
+    idPaciente: string,
+    cadastradoPorAcademico: boolean
+  ) {
+    try {
+      const response = await api.get(`/api/lesoes/obter`, {
+        params: {
+          idPaciente: idPaciente,
+          cadastradoPorAcademico: cadastradoPorAcademico,
+        },
+      });
+      return response.data.dados;
+    } catch (error) {
+      console.error("Erro ao obter lesão", error);
+      throw error;
+    }
+  }
+
   static async obterLesao(id: string) {
     try {
-      const response = await api.get(`/api/lesoes/${id}`);
+      const response = await api.get(`/api/lesoes/obter/${id}`);
       return response.data;
     } catch (error) {
       console.error("Erro ao obter lesão", error);

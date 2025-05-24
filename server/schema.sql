@@ -154,7 +154,7 @@ CREATE TABLE IF NOT EXISTS lesoes (
         NULL,
         cadastrado_por_academico BOOLEAN NOT NULL,
         possui_dor TEXT NOT NULL,
-        escala_dor INTEGER NOT NULL CHECK (
+        escala_dor INTEGER CHECK (
             escala_dor >= 1
             AND escala_dor <= 10
         ),
