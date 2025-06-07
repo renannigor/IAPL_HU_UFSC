@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import StatusChip from "./components/StatusChip";
 import { Utilitarios } from "../../utils/utilitarios";
+import { BreadcrumbNav } from "@/pages/dashboard/components/BreadcrumbNav";
 
 const UsuariosPage = () => {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -115,6 +116,15 @@ const UsuariosPage = () => {
 
   return (
     <div className="space-y-4">
+      <div>
+        <BreadcrumbNav
+          itens={[
+            { titulo: "Home", href: "/" },
+            { titulo: "Usuários", href: "/dashboard/usuarios" },
+          ]}
+        />
+      </div>
+
       <div>
         <h2 className="text-2xl font-bold tracking-tight">Usuários</h2>
         <p className="text-muted-foreground">

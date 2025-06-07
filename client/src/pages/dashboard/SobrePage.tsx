@@ -1,6 +1,17 @@
+import { BreadcrumbNav } from "@/pages/dashboard/components/BreadcrumbNav";
+
 const SobrePage = () => {
   return (
     <div className="max-w-3xl mx-auto px-4 py-10 space-y-6">
+      <div>
+        <BreadcrumbNav
+          itens={[
+            { titulo: "Home", href: "/" },
+            { titulo: "Sobre", href: "/dashboard/sobre" },
+          ]}
+        />
+      </div>
+
       <h1 className="text-3xl font-bold text-green-800">Sobre o Sistema</h1>
       <p className="text-muted-foreground text-lg">
         Lorem Ipsum is simply dummy text of the printing and typesetting

@@ -10,26 +10,38 @@ class LesaoService {
       regioesPerilesionais: await DadosFormLesaoModel.getRegioesPerilesionais(),
       bordas: await DadosFormLesaoModel.getBordas(),
       estruturasNobres: await DadosFormLesaoModel.getEstruturasNobres(),
+      tecidos: await DadosFormLesaoModel.getTecidos(),
       quantificacoesDor: await DadosFormLesaoModel.getQuantificacoesDor(),
       exsudatos: await DadosFormLesaoModel.getExsudatos(),
       tiposExsudato: await DadosFormLesaoModel.getTiposExsudato(),
       odores: await DadosFormLesaoModel.getOdores(),
+      limpezas: await DadosFormLesaoModel.getLimpezas(),
+      desbridamentos: await DadosFormLesaoModel.getDesbridamentos(),
+      protecoes: await DadosFormLesaoModel.getProtecoes(),
+      coberturas: await DadosFormLesaoModel.getCoberturas(),
+      tiposFechamentoCurativo:
+        await DadosFormLesaoModel.getTiposFechamentoCurativo(),
     };
   }
 
-  static async cadastrarLesao(cpf_usuario, id_paciente, dados) {
+  static async cadastrarLesao(cpfUsuario, idPaciente, dados) {
     // Salva a lesão
-    await LesaoModel.cadastrarLesao(cpf_usuario, id_paciente, dados);
+    await LesaoModel.cadastrarLesao(cpfUsuario, idPaciente, dados);
   }
 
-  static async atualizarLesao(cpf_usuario, id_paciente, dados) {
+  static async atualizarLesao(cpfUsuario, idLesao, dados) {
     // Atualizar a lesão
-    await LesaoModel.cadastrarLesao(cpf_usuario, id_paciente, dados);
+    await LesaoModel.atualizarLesao(cpfUsuario, idLesao, dados);
   }
 
-  static async obterLesao(id_lesao) {
+  static async deletarLesao(idLesao) {
+    // Deletar a lesão
+    await LesaoModel.deletarLesao(idLesao);
+  }
+
+  static async obterLesao(idLesao) {
     // Obter a lesão
-    const dadosLesao = await LesaoModel.obterLesao(id_lesao);
+    const dadosLesao = await LesaoModel.obterLesao(idLesao);
     return dadosLesao;
   }
 

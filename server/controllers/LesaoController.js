@@ -30,6 +30,37 @@ class LesaoController {
     }
   }
 
+  static async atualizarLesao(req, res) {
+    try {
+      const dados = req.body;
+      const { cpf_usuario, id_lesao } = req.params;
+
+      console.log(dados);
+
+      await LesaoService.atualizarLesao(cpf_usuario, id_lesao, dados);
+      res.status(200).json({ mensagem: "Lesão atualizada com sucesso!" });
+    } catch (error) {
+      console.error("Erro ao atualizar a lesão: ", error);
+      res.status(500).json({
+        mensagem: "Erro ao atualizar a lesão.",
+      });
+    }
+  }
+
+  static async deletarLesao(req, res) {
+    try {
+      const { id_lesao } = req.params;
+
+      await LesaoService.deletarLesao(id_lesao);
+      res.status(200).json({ mensagem: "Lesão deletada com sucesso!" });
+    } catch (error) {
+      console.error("Erro ao atualizar a lesão: ", error);
+      res.status(500).json({
+        mensagem: "Erro ao atualizar a lesão.",
+      });
+    }
+  }
+
   static async obterLesao(req, res) {
     try {
       const { id_lesao } = req.params;

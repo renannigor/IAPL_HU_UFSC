@@ -16,6 +16,7 @@ import {
 import PacienteService from "@/services/PacienteService";
 import LesaoService from "@/services/LesaoService";
 import CardLesao from "./components/CardLesao";
+import { BreadcrumbNav } from "@/pages/dashboard/components/BreadcrumbNav";
 
 const DetalhesPacientePage = () => {
   const { id } = useParams();
@@ -50,6 +51,16 @@ const DetalhesPacientePage = () => {
 
   return (
     <div className="space-y-8">
+      <div>
+        <BreadcrumbNav
+          itens={[
+            { titulo: "Home", href: "/" },
+            { titulo: "Pacientes", href: "/dashboard/pacientes" },
+            { titulo: id!, href: `/dashboard/pacientes/${id}` },
+          ]}
+        />
+      </div>
+
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-green-200 flex items-center justify-center text-xl font-semibold text-green-800">
@@ -198,7 +209,7 @@ const DetalhesPacientePage = () => {
               acadêmicos, para revisão.
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
               <CardLesao lesoes={lesoesAcademicos} />
             </div>
           </div>

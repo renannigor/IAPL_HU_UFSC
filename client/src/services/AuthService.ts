@@ -22,7 +22,7 @@ class AuthService {
       throw error;
     }
   }
-  
+
   static async login(email: string, senha: string) {
     try {
       const response = await api.post(
@@ -41,7 +41,7 @@ class AuthService {
     cpf: string,
     nome: string,
     email: string,
-    tipo: string,
+    tipo: number,
     senha: string,
     cep: string,
     logradouro: string,

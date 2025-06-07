@@ -305,7 +305,7 @@ const pacientes = [
   },
 ];
 
-class PatientsController {
+class PacienteController {
   static async obterPaciente(req, res) {
     try {
       const { id } = req.params;
@@ -331,4 +331,4 @@ class PatientsController {
   }
 }
 
-export default PatientsController;
+export default PacienteController;

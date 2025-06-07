@@ -1,8 +1,8 @@
 import "dotenv/config";
 import express from "express";
-import authRoutes from "./routes/authRoutes.js";
-import userRoutes from "./routes/userRoutes.js";
-import patientRoutes from "./routes/patientRoutes.js";
+import AuthRoutes from "./routes/AuthRoutes.js";
+import UsuarioRoutes from "./routes/UsuarioRoutes.js";
+import patientRoutes from "./routes/PacienteRoutes.js";
 import LesaoRoutes from "./routes/LesaoRoutes.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -20,8 +20,8 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use("/api/auth", authRoutes);
-app.use("/api/usuarios", userRoutes);
+app.use("/api/auth", AuthRoutes);
+app.use("/api/usuarios", UsuarioRoutes);
 app.use("/api/pacientes", patientRoutes);
 app.use("/api/lesoes", LesaoRoutes);
 

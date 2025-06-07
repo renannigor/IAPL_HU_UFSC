@@ -5,12 +5,13 @@ import {
 } from "../../schemas/CadastroUsuarioSchema";
 import { obterEndereco } from "../../services/EnderecoService";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../../components/auth/AuthProvider";
 import { isAxiosError } from "axios";
 import { Button } from "@/components/ui/button";
 import AuthNavCard from "./components/AuthNavCard";
 import Editor from "../../components/shared/Editor";
+import { Opcao } from "@/types/opcao";
 import {
   Select,
   SelectContent,
@@ -18,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Utilitarios } from "@/utils/utilitarios";
+import UsuarioService from "@/services/UsuarioService";
 
 const CadastroUsuarioPage = () => {
   const {
@@ -34,6 +35,17 @@ const CadastroUsuarioPage = () => {
 
   const { cadastrarUsuario } = useAuth();
   const [isReadOnly, setIsReadOnly] = useState(true);
+  const [tiposUsuario, setTiposUsuario] = useState<Opcao[]>([]);
+
+  // Carregar tipos de usuários
+  useEffect(() => {
+    const fetchTiposUsuario = async () => {
+      const dados = await UsuarioService.obterTiposUsuario();
+      console.log(dados);
+      setTiposUsuario(dados);
+    };
+    fetchTiposUsuario();
+  }, []);
 
   const onSubmit: SubmitHandler<CadastroUsuarioFields> = async (data) => {
     try {
@@ -48,7 +60,7 @@ const CadastroUsuarioPage = () => {
         data.bairro,
         data.cidade,
         data.estado,
-        data.numeroResidencial
+        data.numeroResidencial!
       );
     } catch (error) {
       const message = isAxiosError(error)
@@ -132,16 +144,16 @@ const CadastroUsuarioPage = () => {
                 name="tipoUsuario"
                 render={({ field }) => (
                   <Select
-                    value={field.value}
-                    onValueChange={(value) => field.onChange(value)}
+                    value={String(field.value ?? "")}
+                    onValueChange={(val) => field.onChange(Number(val))}
                   >
                     <SelectTrigger className="min-h-[48px] w-full border p-2 rounded-md">
                       <SelectValue placeholder="Selecione um tipo" />
                     </SelectTrigger>
                     <SelectContent>
-                      {Utilitarios.tiposUsuarios.map((tipo, index) => (
-                        <SelectItem key={index} value={tipo}>
-                          {tipo}
+                      {tiposUsuario.map((tipo, index) => (
+                        <SelectItem key={index} value={String(tipo.id)}>
+                          {tipo.nome}
                         </SelectItem>
                       ))}
                     </SelectContent>

@@ -21,6 +21,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { Utilitarios } from "../../utils/utilitarios";
 import PacienteService from "@/services/PacienteService";
+import { BreadcrumbNav } from "@/pages/dashboard/components/BreadcrumbNav";
 
 const PacientesPage = () => {
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
@@ -105,6 +106,15 @@ const PacientesPage = () => {
 
   return (
     <div className="space-y-4">
+      <div>
+        <BreadcrumbNav
+          itens={[
+            { titulo: "Home", href: "/" },
+            { titulo: "Pacientes", href: "/dashboard/pacientes" },
+          ]}
+        />
+      </div>
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Pacientes</h2>

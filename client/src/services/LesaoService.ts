@@ -45,11 +45,24 @@ class LesaoService {
     }
   }
 
-  static async atualizarLesao(id: string, dados: {}) {
+  static async atualizarLesao(
+    cpf_usuario: string,
+    id_lesao: string,
+    dados: {}
+  ) {
     try {
-      await api.put(`/api/lesoes/${id}/atualizar-info`, dados);
+      await api.put(`/api/lesoes/atualizar/${cpf_usuario}/${id_lesao}`, dados);
     } catch (error) {
       console.error("Erro ao editar lesão", error);
+      throw error;
+    }
+  }
+
+  static async deletarLesao(id_lesao: string) {
+    try {
+      await api.put(`/api/lesoes/deletar/${id_lesao}`);
+    } catch (error) {
+      console.error("Erro ao deletar lesão", error);
       throw error;
     }
   }

@@ -1,8 +1,8 @@
 import "dotenv/config";
 import { hash, compare } from "bcrypt";
 import pkg from "jsonwebtoken";
-import Enderecos from "../models/AddressModel.js";
-import Usuarios from "../models/UserModel.js";
+import Enderecos from "../models/EnderecoModel.js";
+import Usuarios from "../models/UsuarioModel.js";
 import Tokens from "../models/TokenModel.js";
 import EmailService from "./EmailService.js";
 import crypto from "crypto";

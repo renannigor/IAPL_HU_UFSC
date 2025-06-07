@@ -1,4 +1,3 @@
-import { Utilitarios } from "@/utils/utilitarios";
 import { z } from "zod";
 
 const validaCPF = (cpf: string): boolean => {
@@ -22,20 +21,18 @@ const validaCPF = (cpf: string): boolean => {
 
 export const CadastroUsuarioFormSchema = z
   .object({
-    nome: z.string().min(3, "Nome obrigatório"),
-    email: z.string().email("Email inválido"),
-    tipoUsuario: z.enum(Utilitarios.tiposUsuarios, {
-      errorMap: () => ({ message: "Tipo obrigatório" }),
-    }),
+    nome: z.string().min(3, "Campo obrigatório!"),
+    email: z.string().email("Email inválido!"),
+    tipoUsuario: z.number({ required_error: "Campo obrigatório!" }),
     cpf: z.string().refine(validaCPF, {
       message: "CPF inválido",
     }),
     cep: z.string().length(8, "CEP deve ter 8 dígitos"),
-    logradouro: z.string().min(1, "Rua obrigatória"),
-    bairro: z.string().min(1, "Bairro obrigatório"),
-    cidade: z.string().min(1, "Cidade obrigatória"),
-    estado: z.string().min(2, "Estado obrigatório"),
-    numeroResidencial: z.string().min(1, { message: "Campo obrigatório" }),
+    logradouro: z.string().min(1, "Campo obrigatório!"),
+    bairro: z.string().min(1, "Campo obrigatório!"),
+    cidade: z.string().min(1, "Campo obrigatório!"),
+    estado: z.string().min(2, "Campo obrigatório!"),
+    numeroResidencial: z.string().optional(),
     senha: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
     confirmarSenha: z.string(),
   })

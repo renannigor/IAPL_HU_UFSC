@@ -1,11 +1,13 @@
 import { Control, Controller } from "react-hook-form";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import React from "react";
+import { Opcao } from "@/types/opcao";
 
 interface Props {
   control: Control<any>;
   fieldName: string;
-  options: string[];
+  options: Opcao[];
   errorClassName?: string;
   error?: string;
 }
@@ -22,7 +24,7 @@ export const CarregarCheckboxGroup: React.FC<Props> = ({
       name={fieldName}
       control={control}
       render={({ field }) => {
-        const selectedValues: string[] = field.value || [];
+        const selectedValues: number[] = field.value || [];
         const isSingleColumn = options.length < 5;
 
         return (
@@ -34,23 +36,24 @@ export const CarregarCheckboxGroup: React.FC<Props> = ({
                   : "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mt-4"
               }
             >
-              {options.map((option, i) => (
-                <label
-                  key={`${option}-${i}`}
+              {options.map((option, _) => (
+                <Label
+                  htmlFor={`${fieldName}-${option.id}`}
+                  key={`${option.nome}-${option.id}`}
                   className="flex items-center gap-2 cursor-pointer"
                 >
                   <Checkbox
-                    checked={selectedValues.includes(option)}
+                    checked={selectedValues.includes(option.id)}
                     onCheckedChange={(checked) => {
                       const newValue = checked
-                        ? [...selectedValues, option]
-                        : selectedValues.filter((v) => v !== option);
+                        ? [...selectedValues, option.id]
+                        : selectedValues.filter((v) => v !== option.id);
                       field.onChange(newValue);
                     }}
-                    id={`${fieldName}-${option}`}
+                    id={`${fieldName}-${option.id}`}
                   />
-                  <span>{option}</span>
-                </label>
+                  {option.nome}
+                </Label>
               ))}
             </div>
             {error && (

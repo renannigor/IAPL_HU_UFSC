@@ -1,8 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import Editor from "@/components/shared/Editor";
-import { Utilitarios } from "@/utils/utilitarios";
-
 import {
   Select,
   SelectTrigger,
@@ -20,11 +18,14 @@ import {
 import { isAxiosError } from "axios";
 import ConfirmDialog from "./components/ConfirmDialog";
 import UsuarioService from "@/services/UsuarioService";
+import { Opcao } from "@/types/opcao";
+import { BreadcrumbNav } from "@/pages/dashboard/components/BreadcrumbNav";
 
 const PerfilPage = () => {
   const { usuarioAtual, logout } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
+  const [tiposUsuario, setTiposUsuario] = useState<Opcao[]>([]);
 
   const {
     register,
@@ -36,12 +37,22 @@ const PerfilPage = () => {
     resolver: zodResolver(PerfilUsuarioSchema),
     defaultValues: {
       nome: usuarioAtual?.nome || "",
-      tipo: usuarioAtual?.tipo || "",
+      tipo: Number(usuarioAtual?.tipo_id),
       email: usuarioAtual?.email || "",
     },
   });
 
   const firstLetter = usuarioAtual?.nome?.charAt(0).toUpperCase() || "?";
+
+  // Carregar tipos de usuários
+  useEffect(() => {
+    const fetchTiposUsuario = async () => {
+      const dados = await UsuarioService.obterTiposUsuario();
+      console.log(dados);
+      setTiposUsuario(dados);
+    };
+    fetchTiposUsuario();
+  }, []);
 
   const onSubmit: SubmitHandler<PerfilUsuarioFields> = async (data) => {
     if (!isEditing) {
@@ -77,6 +88,15 @@ const PerfilPage = () => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+      <div>
+        <BreadcrumbNav
+          itens={[
+            { titulo: "Home", href: "/" },
+            { titulo: "Perfil", href: "/dashboard/perfil" },
+          ]}
+        />
+      </div>
+
       <div>
         <h2 className="text-2xl font-bold tracking-tight">Meu Perfil</h2>
         <p className="text-muted-foreground">
@@ -146,8 +166,8 @@ const PerfilPage = () => {
                 render={({ field }) => (
                   <Select
                     disabled={!isEditing}
-                    value={field.value}
-                    onValueChange={field.onChange}
+                    value={String(field.value ?? "")}
+                    onValueChange={(val) => field.onChange(Number(val))}
                   >
                     <SelectTrigger
                       className={`min-h-[48px] w-full border p-2 rounded-md ${
@@ -157,9 +177,9 @@ const PerfilPage = () => {
                       <SelectValue placeholder="Selecione um tipo" />
                     </SelectTrigger>
                     <SelectContent>
-                      {Utilitarios.tiposUsuarios.map((tipo, index) => (
-                        <SelectItem key={index} value={tipo}>
-                          {tipo}
+                      {tiposUsuario.map((tipo, index) => (
+                        <SelectItem key={index} value={String(tipo.id)}>
+                          {tipo.nome}
                         </SelectItem>
                       ))}
                     </SelectContent>

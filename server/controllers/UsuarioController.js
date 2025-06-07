@@ -1,6 +1,6 @@
-import Usuarios from "../models/UserModel.js";
+import Usuarios from "../models/UsuarioModel.js";
 
-class UserController {
+class UsuarioController {
   static async filtrarUsuarios(req, res) {
     try {
       const {
@@ -62,6 +62,17 @@ class UserController {
       res.status(500).json({ erro: "Erro ao atualizar informações pessoais!" });
     }
   }
+
+  static async buscarTiposUsuario(req, res) {
+    try {
+      const usuarios = await Usuarios.buscarTiposUsuario();
+      console.log(usuarios)
+      res.status(200).json(usuarios);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ erro: "Erro ao buscar os tipos de usuário" });
+    }
+  }
 }
 
-export default UserController;
+export default UsuarioController;

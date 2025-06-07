@@ -3,7 +3,6 @@ import { Outlet } from "react-router-dom";
 import { AppSidebar } from "@/pages/dashboard/components/navigation/AppSidebar";
 import { BottomNavigation } from "@/pages/dashboard/components/navigation/BottomNavigation";
 import { useAuth } from "@/components/auth/AuthProvider";
-
 import { Home, Info, User, Users2, UserCircle } from "lucide-react";
 
 export default function DashboardLayout() {
@@ -34,11 +33,19 @@ export default function DashboardLayout() {
     : baseItems;
 
   return (
-    <div className="flex h-screen flex-col md:flex-row">
-      {!isMobile && <AppSidebar menuItems={menuItems} />}
-      <main className="flex-1 overflow-y-auto p-6 bg-gray-50 mb-14 md:mb-0">
-        <Outlet />
-      </main>
+    <div className="flex flex-col bg-gray-50">
+      {/* Header fixo */}
+      <header className="fixed top-0 left-0 right-0 h-16 bg-white shadow-md z-20 flex items-center px-4">
+        <AppSidebar menuItems={menuItems} />
+      </header>
+
+      {/* Conteúdo principal abaixo do header */}
+      <div className="flex flex-1 pt-16 overflow-hidden">
+        <main className="flex-1 overflow-y-auto p-6">
+          <Outlet />
+        </main>
+      </div>
+
       {isMobile && <BottomNavigation menuItems={menuItems} />}
     </div>
   );

@@ -83,10 +83,10 @@ const DetalhesLesaoPage = () => {
             label="Regiões Perilesionais"
             value={dadosLesao.regioesPerilesionais.join(", ")}
           />
-          {dadosLesao.outraRegiaoPerilesional && (
+          {dadosLesao.regiaoPerilesionalOutro && (
             <LabelValue
               label="Outra Região Perilesional"
-              value={dadosLesao.outraRegiaoPerilesional}
+              value={dadosLesao.regiaoPerilesionalOutro}
             />
           )}
           <LabelValue label="Bordas" value={dadosLesao.bordas.join(", ")} />
@@ -103,10 +103,10 @@ const DetalhesLesaoPage = () => {
             label="Estruturas Nobres"
             value={dadosLesao.tecido.estruturasNobres.join(", ")}
           />
-          {dadosLesao.tecido.outraEstruturaNobre && (
+          {dadosLesao.tecido.estruturaNobreOutro && (
             <LabelValue
               label="Outra Estrutura Nobre"
-              value={dadosLesao.tecido.outraEstruturaNobre}
+              value={dadosLesao.tecido.estruturaNobreOutro}
             />
           )}
           {Object.entries(dadosLesao.tecido).map(([key, value]) => {

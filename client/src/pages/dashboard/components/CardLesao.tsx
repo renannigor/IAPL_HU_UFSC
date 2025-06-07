@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Lesao } from "@/types/lesao";
-import { Badge } from "@/components/ui/badge";
-import { Pencil, Trash, Eye } from "lucide-react";
+import { Pencil, Trash, Eye, AlertCircle, Activity } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface CardLesaoProps {
@@ -12,101 +11,100 @@ const CardLesao = ({ lesoes }: CardLesaoProps) => {
   const navigate = useNavigate();
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-1 xl:grid-cols-2 gap-6">
-      {lesoes.map((lesao, index) => (
-        <div
-          key={lesao.id}
-          className="rounded-2xl bg-white shadow-lg p-6 min-h-[240px] border border-gray-200 flex flex-col justify-between transition-shadow hover:shadow-xl"
-        >
-          <div className="space-y-4">
-            <div className="flex flex-col gap-1">
-              <h3 className="text-xl font-bold text-[#1F4D2C]">
-                Lesão #{index + 1}
-              </h3>
-              <p className="text-sm text-gray-700">
-                Dimensões:{" "}
-                <span className="font-medium">
-                  {lesao.comprimento} × {lesao.largura} × {lesao.profundidade}{" "}
-                  cm
-                </span>
-              </p>
-              <p className="text-sm text-gray-700">
-                Dor:{" "}
-                <Badge
-                  variant={
-                    lesao.possui_dor === "Sim" ? "destructive" : "outline"
-                  }
-                  className="text-xs"
-                >
-                  {lesao.possui_dor}
-                </Badge>
-              </p>
-            </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      {lesoes.map((lesao, index) => {
+        const possuiDor = lesao.possui_dor?.toLowerCase() === "sim";
 
-            {(lesao.modificado_por || lesao.aprovado_por) && (
-              <div className="text-xs text-gray-600 border-t border-gray-200 pt-2 space-y-1">
-                <p>
-                  Criado por:{" "}
-                  <span className="font-medium">{lesao.criado_por}</span>
-                </p>
-                {lesao.modificado_por && (
-                  <p>
-                    Modificado por:{" "}
-                    <span className="font-medium">{lesao.modificado_por}</span>
-                  </p>
-                )}
-                {lesao.aprovado_por && (
-                  <p>
-                    Aprovado por:{" "}
-                    <span className="font-medium">{lesao.aprovado_por}</span>
-                  </p>
-                )}
+        return (
+          <div
+            key={lesao.id}
+            className="relative rounded-xl bg-white border border-gray-200 shadow-sm p-5 flex flex-col justify-between"
+          >
+            {/* Status pendente */}
+            {lesao.cadastrado_por_academico && (
+              <div className="absolute top-2 right-2 bg-yellow-100 text-yellow-800 text-xs font-semibold px-2 py-1 rounded-full z-10">
+                Pendente
               </div>
             )}
-          </div>
 
-          <div className="flex justify-end items-center mt-6 gap-2 flex-wrap">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-[#1F4D2C] hover:bg-[#1F4D2C]/10 border border-transparent hover:border-[#1F4D2C]/20 transition-colors"
-              onClick={() =>
-                navigate(
-                  `/dashboard/pacientes/${lesao.id_paciente}/lesoes/${lesao.id}/detalhes`
-                )
-              }
-            >
-              <Eye className="w-4 h-4 mr-1" /> Ver
-            </Button>
+            {/* Header */}
+            <div className="flex items-center gap-2 text-[#FF6B00] text-sm font-semibold mb-3">
+              <AlertCircle className="w-4 h-4" />
+              Lesão #{index + 1}
+            </div>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              className="bg-[#1F4D2C]/90 text-white hover:bg-[#1F4D2C] transition-colors shadow-sm"
-              onClick={() =>
-                navigate(
-                  `/dashboard/pacientes/${lesao.id_paciente}/lesoes/${lesao.id}/editar`
-                )
-              }
-            >
-              <Pencil className="w-4 h-4 mr-1" /> Editar
-            </Button>
+            {/* Conteúdo principal */}
+            <div className="space-y-2 text-sm text-gray-700">
+              <div>
+                <span className="font-semibold">Presença de túnel:</span>{" "}
+                {lesao.presenca_tunel}
+              </div>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-red-600 hover:bg-red-100 transition-colors"
-              onClick={() => {
-                if (confirm("Tem certeza que deseja excluir esta lesão?")) {
-                  // deletar
+              <div>
+                <span className="font-semibold">Dor:</span>{" "}
+                <span className={possuiDor ? "text-red-500" : "text-gray-500"}>
+                  {possuiDor ? "Com dor" : "Sem dor"}
+                </span>
+              </div>
+
+              {possuiDor && (
+                <div className="flex items-center gap-1">
+                  <span className="font-semibold">Escala da dor:</span>{" "}
+                  {lesao.escala_dor} / 10
+                  <Activity className="w-4 h-4 text-gray-500" />
+                </div>
+              )}
+
+              <div>
+                <span className="font-semibold">Dimensões:</span>{" "}
+                {lesao.comprimento} × {lesao.largura} × {lesao.profundidade} cm
+              </div>
+            </div>
+
+            {/* Botões */}
+            <div className="flex justify-end items-center mt-5 gap-2 flex-wrap">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-[#1F4D2C] hover:bg-[#1F4D2C]/10 border border-transparent hover:border-[#1F4D2C]/20 transition-colors"
+                onClick={() =>
+                  navigate(
+                    `/dashboard/pacientes/${lesao.paciente_id}/lesoes/${lesao.id}/detalhes`
+                  )
                 }
-              }}
-            >
-              <Trash className="w-4 h-4 mr-1" /> Excluir
-            </Button>
+              >
+                <Eye className="w-4 h-4 mr-1" /> Ver
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="bg-[#1F4D2C]/90 text-white hover:bg-[#1F4D2C] transition-colors shadow-sm"
+                onClick={() =>
+                  navigate(
+                    `/dashboard/pacientes/${lesao.paciente_id}/lesoes/${lesao.id}/editar`
+                  )
+                }
+              >
+                <Pencil className="w-4 h-4 mr-1" /> Editar
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-red-500 hover:bg-red-100 transition-colors"
+                onClick={() => {
+                  if (confirm("Tem certeza que deseja excluir esta lesão?")) {
+                    // deletar
+                  }
+                }}
+              >
+                <Trash className="w-4 h-4 mr-1" /> Excluir
+              </Button>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };

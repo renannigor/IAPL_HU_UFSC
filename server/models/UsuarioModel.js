@@ -1,6 +1,18 @@
 import db from "../config/db.js";
 
 const Usuarios = {
+  async buscarTiposUsuario() {
+    const result = await db.query("SELECT * FROM tipos_usuario");
+    return result.rows;
+  },
+
+  async buscarTipoUsuario(id) {
+    const result = await db.query("SELECT * FROM tipos_usuario WHERE id = $1", [
+      id,
+    ]);
+    return result.rows;
+  },
+
   async buscarPorEmail(email) {
     const result = await db.query("SELECT * FROM Usuarios WHERE email = $1", [
       email,
@@ -18,7 +30,7 @@ const Usuarios = {
   async criar(dados) {
     const { cpf, nome, email, tipo, senha } = dados;
     const result = await db.query(
-      `INSERT INTO usuarios (cpf, nome, email, tipo, senha, admin, possui_acesso, online, criado_em, ultimo_acesso) 
+      `INSERT INTO usuarios (cpf, nome, email, tipo_id, senha, admin, possui_acesso, online, criado_em, ultimo_acesso) 
              VALUES ($1, $2, $3, $4, $5, false, false, true, NOW(), NOW()) RETURNING *`,
       [cpf, nome, email, tipo, senha]
     );
@@ -84,7 +96,7 @@ const Usuarios = {
   },
 
   async atualizarInfoPessoal(nome, tipo, cpf) {
-    await db.query("UPDATE usuarios SET nome = $1, tipo = $2 WHERE cpf = $3", [
+    await db.query("UPDATE usuarios SET nome = $1, tipo_id = $2 WHERE cpf = $3", [
       nome,
       tipo,
       cpf,

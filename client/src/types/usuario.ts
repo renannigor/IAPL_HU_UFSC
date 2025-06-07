@@ -3,7 +3,7 @@ export type Usuario = {
     email: string;
     cpf?: string;
     nome?: string;
-    tipo?: string;
+    tipo_id: string;
     admin?: boolean;
     possui_acesso?: boolean;
     online?: boolean;

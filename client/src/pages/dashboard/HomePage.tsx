@@ -39,7 +39,7 @@ const HomePage = () => {
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800 mb-1">
-            Bem-vindo, {usuarioAtual?.nome}
+            Olá, {usuarioAtual?.nome}
           </h1>
           <p className="text-gray-600">
             Escolha uma opção abaixo para continuar.
