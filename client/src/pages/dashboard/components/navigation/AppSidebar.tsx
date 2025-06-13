@@ -2,18 +2,8 @@ import { LogOut, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/components/auth/AuthProvider";
+import ConfirmDialog from "@/pages/dashboard/components/ConfirmDialog";
 import clsx from "clsx";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 
 type MenuItem = {
   title: string;
@@ -28,27 +18,27 @@ type AppSidebarProps = {
 export function AppSidebar({ menuItems }: AppSidebarProps) {
   const { pathname } = useLocation();
   const { usuarioAtual, logout } = useAuth();
-  const [isOpen, setIsOpen] = useState(false);
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
 
   const isActive = (path: string) => pathname === path;
-  const toggleSidebar = () => setIsOpen((prev) => !prev);
-  const closeSidebar = () => setIsOpen(false);
 
   return (
     <>
       {/* Botão que abre o drawer */}
       <button
-        onClick={toggleSidebar}
+        onClick={() => setSidebarOpen(true)}
         className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200"
-        >
+      >
         <Menu />
       </button>
 
       {/* Backdrop */}
-      {isOpen && (
+      {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/40 z-40"
-          onClick={closeSidebar}
+          onClick={() => setSidebarOpen(false)}
         />
       )}
 
@@ -56,7 +46,7 @@ export function AppSidebar({ menuItems }: AppSidebarProps) {
       <aside
         className={clsx(
           "fixed top-0 left-0 w-64 h-full bg-white z-50 shadow-lg transform transition-transform duration-300",
-          isOpen ? "translate-x-0" : "-translate-x-full"
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <nav className="h-full flex flex-col border-r border-gray-200">
@@ -64,7 +54,7 @@ export function AppSidebar({ menuItems }: AppSidebarProps) {
           <div className="p-4 pb-2 flex justify-between items-center">
             <span className="text-xl font-bold text-[#1F4D2C]">IAPL</span>
             <button
-              onClick={closeSidebar}
+              onClick={() => setSidebarOpen(false)}
               className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200"
             >
               <X />
@@ -80,7 +70,7 @@ export function AppSidebar({ menuItems }: AppSidebarProps) {
                   key={url}
                   onClick={() => {
                     window.location.href = url;
-                    closeSidebar();
+                    setSidebarOpen(false);
                   }}
                   className={clsx(
                     "flex items-center py-2 px-3 my-1 font-medium rounded-md cursor-pointer transition-colors",
@@ -98,30 +88,23 @@ export function AppSidebar({ menuItems }: AppSidebarProps) {
 
           {/* Botão de logout */}
           <ul className="px-3 pb-3">
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <button className="flex items-center gap-2 px-4 py-2 w-full text-red-600 hover:bg-red-100 transition">
-                  <LogOut className="h-5 w-5" />
-                  <span>Sair</span>
-                </button>
-              </AlertDialogTrigger>
-
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    Tem certeza que deseja sair?
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Você será desconectado do sistema.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction onClick={logout}>Sair</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <button
+              onClick={() => setLogoutDialogOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 w-full text-red-600 hover:bg-red-100 transition"
+            >
+              <LogOut className="h-5 w-5" />
+              <span>Sair</span>
+            </button>
+            <ConfirmDialog
+              open={logoutDialogOpen}
+              onOpenChange={setLogoutDialogOpen}
+              title="Tem certeza que deseja sair?"
+              description="Você será desconectado do sistema."
+              confirmLabel="Sair"
+              cancelLabel="Cancelar"
+              onConfirm={logout}
+              icon={<LogOut className="w-5 h-5 text-600" />}
+            />
           </ul>
 
           {/* Rodapé */}

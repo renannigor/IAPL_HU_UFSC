@@ -2,20 +2,31 @@ import db from "../config/db.js";
 
 const DadosFormLesaoModel = {
   async getEtiologias() {
-    const result = await db.query("SELECT * FROM etiologias");
+    const result = await db.query("SELECT * FROM etiologias ORDER BY id");
     return result.rows;
   },
 
   async getClassificacoesLesaoPressao() {
     const result = await db.query(
-      "SELECT * FROM classificacoes_lesao_por_pressao"
+      "SELECT * FROM classificacoes_lesao_por_pressao ORDER BY id"
     );
     return result.rows;
   },
 
   async getRegioesPerilesionais() {
-    const result = await db.query("SELECT * FROM regioes_perilesionais");
+    const result = await db.query(
+      "SELECT * FROM regioes_perilesionais ORDER BY id"
+    );
     return result.rows;
+  },
+
+  async getIdOpcaoOutro(tabela) {
+    const result = await db.query(
+      `SELECT id FROM ${tabela} WHERE nome = 'Outro'`
+    );
+
+    const resultOutro = result.rows[0].id ?? null;
+    return resultOutro;
   },
 
   async getRegiaoPerilesional(id) {
@@ -27,12 +38,14 @@ const DadosFormLesaoModel = {
   },
 
   async getBordas() {
-    const result = await db.query("SELECT * FROM bordas");
+    const result = await db.query("SELECT * FROM bordas ORDER BY id");
     return result.rows;
   },
 
   async getEstruturasNobres() {
-    const result = await db.query("SELECT * FROM estruturas_nobres");
+    const result = await db.query(
+      "SELECT * FROM estruturas_nobres ORDER BY id"
+    );
     return result.rows;
   },
 
@@ -45,7 +58,7 @@ const DadosFormLesaoModel = {
   },
 
   async getTecidos() {
-    const result = await db.query("SELECT * FROM tecidos");
+    const result = await db.query("SELECT * FROM tecidos ORDER BY id");
     return result.rows;
   },
 
@@ -55,27 +68,29 @@ const DadosFormLesaoModel = {
   },
 
   async getQuantificacoesDor() {
-    const result = await db.query("SELECT * FROM quantificacoes_dor");
+    const result = await db.query(
+      "SELECT * FROM quantificacoes_dor ORDER BY id"
+    );
     return result.rows;
   },
 
   async getExsudatos() {
-    const result = await db.query("SELECT * FROM exsudatos");
+    const result = await db.query("SELECT * FROM exsudatos ORDER BY id");
     return result.rows;
   },
 
   async getTiposExsudato() {
-    const result = await db.query("SELECT * FROM tipos_exsudato");
+    const result = await db.query("SELECT * FROM tipos_exsudato ORDER BY id");
     return result.rows;
   },
 
   async getOdores() {
-    const result = await db.query("SELECT * FROM odores");
+    const result = await db.query("SELECT * FROM odores ORDER BY id");
     return result.rows;
   },
 
   async getLimpezas() {
-    const result = await db.query("SELECT * FROM limpezas");
+    const result = await db.query("SELECT * FROM limpezas ORDER BY id");
     return result.rows;
   },
 
@@ -85,19 +100,20 @@ const DadosFormLesaoModel = {
   },
 
   async getDesbridamentos() {
-    const result = await db.query("SELECT * FROM desbridamento");
+    const result = await db.query("SELECT * FROM desbridamentos ORDER BY id");
     return result.rows;
   },
 
   async getDesbridamento(id) {
-    const result = await db.query("SELECT * FROM desbridamento WHERE id = $1", [
-      id,
-    ]);
+    const result = await db.query(
+      "SELECT * FROM desbridamentos WHERE id = $1",
+      [id]
+    );
     return result.rows;
   },
 
   async getProtecoes() {
-    const result = await db.query("SELECT * FROM protecoes");
+    const result = await db.query("SELECT * FROM protecoes ORDER BY id");
     return result.rows;
   },
 
@@ -109,7 +125,7 @@ const DadosFormLesaoModel = {
   },
 
   async getCoberturas() {
-    const result = await db.query("SELECT * FROM coberturas");
+    const result = await db.query("SELECT * FROM coberturas ORDER BY id");
     return result.rows;
   },
 
@@ -121,7 +137,9 @@ const DadosFormLesaoModel = {
   },
 
   async getTiposFechamentoCurativo() {
-    const result = await db.query("SELECT * FROM tipos_fechamento_curativo");
+    const result = await db.query(
+      "SELECT * FROM tipos_fechamento_curativo ORDER BY id"
+    );
     return result.rows;
   },
 

@@ -8,8 +8,11 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import { ReactNode } from "react";
 
-interface ConfirmDialogProps {
+type ConfirmColor = "danger" | "primary" | "default";
+
+export interface ConfirmDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
@@ -17,10 +20,23 @@ interface ConfirmDialogProps {
   confirmLabel?: string;
   cancelLabel?: string;
   onConfirm: () => void;
-  confirmColor?: string;
+  confirmColor?: ConfirmColor;
+  icon?: ReactNode;
+  loading?: boolean;
 }
 
-const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
+const getButtonClass = (color: ConfirmColor = "default") => {
+  switch (color) {
+    case "danger":
+      return "bg-red-600 hover:bg-red-700 text-white";
+    case "primary":
+      return "bg-[#1F4D2C]/90 hover:bg-[#1F4D2C] text-white";
+    default:
+      return "";
+  }
+};
+
+const ConfirmDialog = ({
   open,
   onOpenChange,
   title,
@@ -28,13 +44,18 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   confirmLabel = "Confirmar",
   cancelLabel = "Cancelar",
   onConfirm,
-  confirmColor = "bg-red-600 hover:bg-red-700",
-}) => {
+  confirmColor = "default",
+  icon,
+  loading = false,
+}: ConfirmDialogProps) => {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogTitle className="flex items-center gap-2">
+            {icon}
+            {title}
+          </AlertDialogTitle>
           {description && (
             <AlertDialogDescription className="text-sm text-muted-foreground">
               {description}
@@ -42,9 +63,13 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           )}
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>{cancelLabel}</AlertDialogCancel>
-          <AlertDialogAction className={confirmColor} onClick={onConfirm}>
-            {confirmLabel}
+          <AlertDialogCancel disabled={loading}>{cancelLabel}</AlertDialogCancel>
+          <AlertDialogAction
+            className={getButtonClass(confirmColor)}
+            onClick={onConfirm}
+            disabled={loading}
+          >
+            {loading ? "Carregando..." : confirmLabel}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

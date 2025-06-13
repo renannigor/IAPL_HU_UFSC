@@ -45,11 +45,11 @@ class LesaoService {
     return dadosLesao;
   }
 
-  static async obterTodasLesoesPacientes(idPaciente, cadastradoPorAcademico) {
+  static async obterTodasLesoesPacientes(pacienteId, precisaAprovacao) {
     // Obter todas as lesões do paciente
     const dadosLesao = await LesaoModel.obterTodasLesoesPacientes(
-      idPaciente,
-      cadastradoPorAcademico
+      pacienteId,
+      precisaAprovacao
     );
     return dadosLesao;
   }

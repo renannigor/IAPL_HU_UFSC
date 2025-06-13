@@ -76,7 +76,7 @@ export const LesaoFormSchema = (dadosEspeciais: DadosEspeciaisFormulario) =>
           invalid_type_error: "Informe um número",
           required_error: "Campo obrigatório!",
         })
-        .min(1, "O valor deve ser maior ou igual a 1")
+        .min(0)
         .max(10)
         .optional(),
 
@@ -180,18 +180,25 @@ export const LesaoFormSchema = (dadosEspeciais: DadosEspeciaisFormulario) =>
     })
     .superRefine((data, ctx) => {
       // 1. Valida classificacoesLesaoPressao se "Lesão por Pressão" estiver nas etiologias
-      if (
-        data.etiologias.includes(
-          dadosEspeciais.etiologiaLesaoPorPressao?.id!
-        ) &&
-        (!data.classificacoesLesaoPressao ||
-          data.classificacoesLesaoPressao.length === 0)
-      ) {
-        ctx.addIssue({
-          path: ["classificacoesLesaoPressao"],
-          code: z.ZodIssueCode.custom,
-          message: "Informe a classificação da Lesão por Pressão",
-        });
+      const lesaoPorPressaoId = dadosEspeciais.etiologiaLesaoPorPressao?.id;
+      const isLesaoPorPressaoSelecionada = data.etiologias.includes(
+        lesaoPorPressaoId!
+      );
+
+      if (isLesaoPorPressaoSelecionada) {
+        if (
+          !data.classificacoesLesaoPressao ||
+          data.classificacoesLesaoPressao.length === 0
+        ) {
+          ctx.addIssue({
+            path: ["classificacoesLesaoPressao"],
+            code: z.ZodIssueCode.custom,
+            message: "Informe a classificação da Lesão por Pressão",
+          });
+        }
+      } else {
+        // Limpando o campo classificacoesLesaoPressao
+        data.classificacoesLesaoPressao = [];
       }
 
       // 2. Valida regiaoPerilesionalOutro se "Outro" estiver nas regioesPerilesionais
@@ -244,6 +251,10 @@ export const LesaoFormSchema = (dadosEspeciais: DadosEspeciaisFormulario) =>
             message: "Informe pelo menos uma quantificação da dor",
           });
         }
+      } else {
+        // Limpando os campos nivelDor e quantificacoesDor
+        data.nivelDor = 0;
+        data.quantificacoesDor = [];
       }
 
       // 5. Valida soma dos tecidos = 100

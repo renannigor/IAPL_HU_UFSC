@@ -141,11 +141,11 @@ CREATE TABLE IF NOT EXISTS lesoes (
         aprovado_por VARCHAR(14) REFERENCES usuarios(cpf) ON DELETE
     SET
         NULL,
-        cadastrado_por_academico BOOLEAN NOT NULL,
+        precisa_aprovacao BOOLEAN NOT NULL,
         presenca_tunel TEXT NOT NULL,
         possui_dor TEXT NOT NULL,
         escala_dor INTEGER CHECK (
-            escala_dor >= 1
+            escala_dor >= 0
             AND escala_dor <= 10
         ),
         exsudato_id INTEGER REFERENCES exsudatos(id),
@@ -162,21 +162,21 @@ CREATE TABLE IF NOT EXISTS lesoes (
 CREATE TABLE IF NOT EXISTS lesoes_etiologias (
     id SERIAL PRIMARY KEY,
     lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
-    etiologia_id INTEGER NOT NULL REFERENCES etiologias(id)
+    etiologia_id INTEGER NOT NULL REFERENCES etiologias(id) ON DELETE CASCADE
 );
 
 -- RELAÇÃO: LESÃO x CLASSIFICAÇÃO
 CREATE TABLE IF NOT EXISTS lesoes_classificacoes_lesao_por_pressao (
     id SERIAL PRIMARY KEY,
     lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
-    classificacao_id INTEGER NOT NULL REFERENCES classificacoes_lesao_por_pressao(id)
+    classificacao_id INTEGER NOT NULL REFERENCES classificacoes_lesao_por_pressao(id) ON DELETE CASCADE
 );
 
 -- RELAÇÃO: LESÃO x REGIÃO PERILESIONAL
 CREATE TABLE IF NOT EXISTS lesoes_regioes_perilesionais (
     id SERIAL PRIMARY KEY,
     lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
-    regiao_id INTEGER NOT NULL REFERENCES regioes_perilesionais(id),
+    regiao_id INTEGER NOT NULL REFERENCES regioes_perilesionais(id) ON DELETE CASCADE,
     descricao_outro TEXT
 );
 
@@ -184,21 +184,21 @@ CREATE TABLE IF NOT EXISTS lesoes_regioes_perilesionais (
 CREATE TABLE IF NOT EXISTS lesoes_bordas (
     id SERIAL PRIMARY KEY,
     lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
-    borda_id INTEGER NOT NULL REFERENCES bordas(id)
+    borda_id INTEGER NOT NULL REFERENCES bordas(id) ON DELETE CASCADE
 );
 
 -- RELAÇÃO: LESÃO x QUANTIFICAÇÃO DE DOR
 CREATE TABLE IF NOT EXISTS lesoes_quantificacoes_dor (
     id SERIAL PRIMARY KEY,
     lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
-    quantificacao_id INTEGER NOT NULL REFERENCES quantificacoes_dor(id)
+    quantificacao_id INTEGER NOT NULL REFERENCES quantificacoes_dor(id) ON DELETE CASCADE
 );
 
 -- RELAÇÃO: TECIDO x 
 CREATE TABLE IF NOT EXISTS lesoes_tecidos (
     id SERIAL PRIMARY KEY,
     lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
-    tecido_id INTEGER NOT NULL REFERENCES tecidos(id),
+    tecido_id INTEGER NOT NULL REFERENCES tecidos(id) ON DELETE CASCADE,
     percentual INTEGER NOT NULL CHECK (
         percentual BETWEEN 0
         AND 100
@@ -209,23 +209,23 @@ CREATE TABLE IF NOT EXISTS lesoes_tecidos (
 CREATE TABLE IF NOT EXISTS lesoes_estruturas_nobres (
     id SERIAL PRIMARY KEY,
     lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
-    estrutura_id INTEGER NOT NULL REFERENCES estruturas_nobres(id),
+    estrutura_id INTEGER NOT NULL REFERENCES estruturas_nobres(id) ON DELETE CASCADE,
     descricao_outro TEXT
 );
 
 -- RELAÇÃO: LESÃO x COBERTURAS
 CREATE TABLE IF NOT EXISTS lesoes_coberturas (
     id SERIAL PRIMARY KEY,
-    lesao_id INTEGER NOT NULL REFERENCES lesoes(id),
-    cobertura_id INTEGER NOT NULL REFERENCES coberturas(id),
+    lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
+    cobertura_id INTEGER NOT NULL REFERENCES coberturas(id) ON DELETE CASCADE,
     quantidade INTEGER NOT NULL CHECK (quantidade >= 0)
 );
 
 -- RELAÇÃO: LESÃO x TIPOS FECHAMENTO
 CREATE TABLE IF NOT EXISTS lesoes_fechamento_curativo (
     id SERIAL PRIMARY KEY,
-    lesao_id INTEGER NOT NULL REFERENCES lesoes(id),
-    fechamento_curativo_id INTEGER NOT NULL REFERENCES tipos_fechamento_curativo(id),
+    lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
+    fechamento_curativo_id INTEGER NOT NULL REFERENCES tipos_fechamento_curativo(id) ON DELETE CASCADE,
     quantidade INTEGER NOT NULL CHECK (quantidade >= 0)
 );
 
@@ -233,7 +233,7 @@ CREATE TABLE IF NOT EXISTS lesoes_fechamento_curativo (
 CREATE TABLE IF NOT EXISTS lesoes_limpezas (
     id SERIAL PRIMARY KEY,
     lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
-    limpeza_id INTEGER NOT NULL REFERENCES limpezas(id),
+    limpeza_id INTEGER NOT NULL REFERENCES limpezas(id) ON DELETE CASCADE,
     descricao_outro TEXT
 );
 
@@ -241,7 +241,7 @@ CREATE TABLE IF NOT EXISTS lesoes_limpezas (
 CREATE TABLE IF NOT EXISTS lesoes_desbridamentos (
     id SERIAL PRIMARY KEY,
     lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
-    desbridamento_id INTEGER NOT NULL REFERENCES desbridamentos(id),
+    desbridamento_id INTEGER NOT NULL REFERENCES desbridamentos(id) ON DELETE CASCADE,
     descricao_outro TEXT
 );
 
@@ -249,7 +249,7 @@ CREATE TABLE IF NOT EXISTS lesoes_desbridamentos (
 CREATE TABLE IF NOT EXISTS lesoes_protecoes (
     id SERIAL PRIMARY KEY,
     lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
-    protecao_id INTEGER NOT NULL REFERENCES protecoes(id),
+    protecao_id INTEGER NOT NULL REFERENCES protecoes(id) ON DELETE CASCADE,
     descricao_outro TEXT
 );
 

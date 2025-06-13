@@ -22,8 +22,12 @@ const DetalhesPacientePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [paciente, setPaciente] = useState<Paciente | null>(null);
-  const [lesoesAcademicos, setLesoesAcademicos] = useState<Lesao[]>([]);
-  const [lesoesNaoAcademicos, setLesoesNaoAcademicos] = useState<Lesao[]>([]);
+  const [lesoesPrecisaAprovacao, setLesoesPrecisaAprovacao] = useState<Lesao[]>(
+    []
+  );
+  const [lesoesNaoPrecisaAprovacao, setLesoesNaoPrecisaAprovacao] = useState<
+    Lesao[]
+  >([]);
 
   useEffect(() => {
     const fetchPaciente = async () => {
@@ -36,12 +40,20 @@ const DetalhesPacientePage = () => {
 
   useEffect(() => {
     const fetchLesoes = async () => {
-      const [academicos, naoAcademicos] = await Promise.all([
+      const [precisaAprovacao, naoPrecisaAprovacao] = await Promise.all([
         LesaoService.obterTodasLesoes(id!, true),
         LesaoService.obterTodasLesoes(id!, false),
       ]);
-      setLesoesAcademicos(Array.isArray(academicos) ? academicos : []);
-      setLesoesNaoAcademicos(Array.isArray(naoAcademicos) ? naoAcademicos : []);
+
+      console.log(precisaAprovacao)
+      console.log(naoPrecisaAprovacao)
+
+      setLesoesPrecisaAprovacao(
+        Array.isArray(precisaAprovacao) ? precisaAprovacao : []
+      );
+      setLesoesNaoPrecisaAprovacao(
+        Array.isArray(naoPrecisaAprovacao) ? naoPrecisaAprovacao : []
+      );
     };
 
     fetchLesoes();
@@ -196,21 +208,18 @@ const DetalhesPacientePage = () => {
         <TabsContent value="lesoes">
           <div className="space-y-6">
             <p className="text-muted-foreground">Lesões do paciente</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <CardLesao lesoes={lesoesNaoAcademicos} />
-            </div>
+            <CardLesao lesoes={lesoesNaoPrecisaAprovacao} />
           </div>
         </TabsContent>
 
         <TabsContent value="pendencias">
           <div className="space-y-6">
             <p className="text-muted-foreground">
-              Informações sobre as lesões do paciente, cadastradas pelos
-              acadêmicos, para revisão.
+              Lesões do paciente, cadastradas pelos acadêmicos, para revisão.
             </p>
 
             <div>
-              <CardLesao lesoes={lesoesAcademicos} />
+              <CardLesao lesoes={lesoesPrecisaAprovacao} />
             </div>
           </div>
         </TabsContent>

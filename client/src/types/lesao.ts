@@ -1,16 +1,13 @@
 export interface Lesao {
   id: number;
   paciente_id: string;
-  criado_por: string;
-  modificado_por: string;
-  aprovado_por: string;
-  cadastrado_por_academico: boolean;
+  nome_criador: string;
+  nome_modificador: string;
+  nome_aprovador: string;
+  precisa_aprovacao: boolean;
   presenca_tunel: string;
   possui_dor: string;
   escala_dor: number;
-  exsudato_id: number;
-  tipo_exsudato_id: number;
-  odor_id: number;
   comprimento: number;
   largura: number;
   profundidade: number;

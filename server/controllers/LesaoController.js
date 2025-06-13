@@ -79,11 +79,11 @@ class LesaoController {
 
   static async obterTodasLesoesPacientes(req, res) {
     try {
-      const { idPaciente, cadastradoPorAcademico } = req.query;
+      const { pacienteId, precisaAprovacao } = req.query;
 
       const dadosLesao = await LesaoService.obterTodasLesoesPacientes(
-        idPaciente,
-        cadastradoPorAcademico
+        pacienteId,
+        precisaAprovacao
       );
       res.status(200).json({
         mensagem: "Lesões recuperadas com sucesso!",

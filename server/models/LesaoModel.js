@@ -11,11 +11,31 @@ const LesaoModel = {
     }
   },
 
-  async obterTodasLesoesPacientes(idPaciente, cadastradoPorAcademico) {
+  async obterTodasLesoesPacientes(pacienteId, precisaAprovacao) {
     try {
       const result = await db.query(
-        "SELECT * FROM lesoes WHERE paciente_id = $1 AND cadastrado_por_academico = $2",
-        [idPaciente, cadastradoPorAcademico]
+        `
+        SELECT 
+          l.id,
+          l.paciente_id,
+          criador.nome AS nome_criador,
+          modificador.nome AS nome_modificador,
+          aprovador.nome AS nome_aprovador,
+          l.precisa_aprovacao,
+          l.presenca_tunel,
+          l.possui_dor,
+          l.escala_dor,
+          l.comprimento,
+          l.largura,
+          l.profundidade
+        FROM lesoes l
+        LEFT JOIN usuarios criador ON l.criado_por = criador.cpf
+        LEFT JOIN usuarios modificador ON l.modificado_por = modificador.cpf
+        LEFT JOIN usuarios aprovador ON l.aprovado_por = aprovador.cpf
+        WHERE l.precisa_aprovacao = $1
+          AND l.paciente_id = $2
+        `,
+        [precisaAprovacao, pacienteId]
       );
       return result.rows;
     } catch (error) {
@@ -83,7 +103,7 @@ const LesaoModel = {
 
       // DESBRIDAMENTOS
       const desbridamentosRes = await client.query(
-        `SELECT desbridamento_id, descricao_outro FROM lesoes_desbridamento WHERE lesao_id = $1`,
+        `SELECT desbridamento_id, descricao_outro FROM lesoes_desbridamentos WHERE lesao_id = $1`,
         [lesaoData.id]
       );
 
@@ -147,6 +167,12 @@ const LesaoModel = {
       const limpezaOutro = limpezasRes.rows.find(
         (item) => item.descricao_outro !== null
       )?.descricao_outro;
+
+      console.log(regiaoPerilesionalOutro);
+      console.log(estruturaNobreOutro);
+      console.log(protecaoOutro);
+      console.log(desbridamentoOutro);
+      console.log(limpezaOutro);
 
       // Obtendo os dados de tecidos, coberturas e tiposFechamentoCurativo
       const tecidos = await this.tecidosData(tecidosRes);
@@ -249,12 +275,12 @@ const LesaoModel = {
       // 1. Inserir Lesão
       const usuario = await Usuarios.buscarPorCPF(cpfUsuario);
       const tipoUsuario = await Usuarios.buscarTipoUsuario(usuario.tipo_id);
-      const cadastradoPorAcademico = tipoUsuario[0].nome === "Acadêmico";
+      const precisaAprovacao = tipoUsuario[0].nome === "Acadêmico";
 
       const lesaoRes = await client.query(
         `INSERT INTO lesoes (
           paciente_id, criado_por, modificado_por, aprovado_por,
-          cadastrado_por_academico, presenca_tunel, possui_dor, escala_dor,
+          precisa_aprovacao, presenca_tunel, possui_dor, escala_dor,
           exsudato_id, tipo_exsudato_id, odor_id,
           comprimento, largura, profundidade
         ) VALUES (
@@ -263,7 +289,7 @@ const LesaoModel = {
         [
           idPaciente,
           cpfUsuario,
-          cadastradoPorAcademico,
+          precisaAprovacao,
           dados.presencaTunel,
           dados.dor,
           dados.nivelDor,
@@ -321,8 +347,10 @@ const LesaoModel = {
 
       // REGIÕES PERILESIONAIS
       for (const regiaoId of dados.regioesPerilesionais) {
-        const regiao = await DadosFormLesao.getRegiaoPerilesional(regiaoId);
-        const isOutro = regiao[0].nome === "Outro";
+        const regiaoOutroId = await DadosFormLesao.getIdOpcaoOutro(
+          "regioes_perilesionais"
+        );
+        const isOutro = regiaoOutroId === regiaoId;
         await client.query(
           `INSERT INTO lesoes_regioes_perilesionais (lesao_id, regiao_id, descricao_outro)
                VALUES (
@@ -336,11 +364,11 @@ const LesaoModel = {
 
       // ESTRUTURAS NOBRES
       for (const estruturaNobreId of dados.estruturasNobres) {
-        const estruturaNobre = await DadosFormLesao.getEstruturaNobre(
-          estruturaNobreId
+        const estruturaNobreOutroId = await DadosFormLesao.getIdOpcaoOutro(
+          "estruturas_nobres"
         );
 
-        const isOutro = estruturaNobre[0].nome === "Outro";
+        const isOutro = estruturaNobreOutroId === estruturaNobreId;
         await client.query(
           `INSERT INTO lesoes_estruturas_nobres (lesao_id, estrutura_id, descricao_outro)
                VALUES (
@@ -358,8 +386,10 @@ const LesaoModel = {
 
       // PROTEÇÕES
       for (const protecaoId of dados.protecoes) {
-        const protecao = await DadosFormLesao.getProtecao(protecaoId);
-        const isOutro = protecao.nome === "Outro";
+        const protecaoOutroId = await DadosFormLesao.getIdOpcaoOutro(
+          "protecoes"
+        );
+        const isOutro = protecaoOutroId === protecaoId;
         await client.query(
           `INSERT INTO lesoes_protecoes (lesao_id, protecao_id, descricao_outro)
                VALUES (
@@ -373,12 +403,12 @@ const LesaoModel = {
 
       // DESBRIDAMENTOS
       for (const desbridamentoId of dados.desbridamentos) {
-        const desbridamento = await DadosFormLesao.getDesbridamento(
-          desbridamentoId
+        const desbridamentoOutroId = await DadosFormLesao.getIdOpcaoOutro(
+          "desbridamentos"
         );
-        const isOutro = desbridamento.nome === "Outro";
+        const isOutro = desbridamentoOutroId === desbridamentoId;
         await client.query(
-          `INSERT INTO lesoes_desbridamento (lesao_id, desbridamento_id, descricao_outro)
+          `INSERT INTO lesoes_desbridamentos (lesao_id, desbridamento_id, descricao_outro)
                VALUES (
                  $1,
                  $2,
@@ -390,8 +420,8 @@ const LesaoModel = {
 
       // LIMPEZAS
       for (const limpezaId of dados.limpezas) {
-        const limpeza = await DadosFormLesao.getLimpeza(limpezaId);
-        const isOutro = limpeza.nome === "Outro";
+        const limpezaOutroId = await DadosFormLesao.getIdOpcaoOutro("limpezas");
+        const isOutro = limpezaOutroId === limpezaId;
         await client.query(
           `INSERT INTO lesoes_limpezas (lesao_id, limpeza_id, descricao_outro)
                VALUES (
@@ -454,10 +484,201 @@ const LesaoModel = {
     }
   },
 
-  async atualizarLesao(cpfUsuario, idLesao, dados) {
+  async atualizarLesao(cpfUsuario, lesaoId, dados) {
     const client = await db.connect();
     try {
       await client.query("BEGIN");
+
+      console.log("ID LESAO: ", lesaoId);
+      console.log("ID LESAO: ", cpfUsuario);
+      console.log("ID LESAO: ", dados);
+
+      // 1. Atualizando a lesão
+      await client.query(
+        `UPDATE lesoes
+         SET modificado_por = $1,
+             presenca_tunel = $2,
+             possui_dor = $3,
+             escala_dor = $4,
+             exsudato_id = $5,
+             tipo_exsudato_id = $6,
+             odor_id = $7,
+             comprimento = $8,
+             largura = $9,
+             profundidade = $10
+         WHERE id = $11`,
+        [
+          cpfUsuario,
+          dados.presencaTunel,
+          dados.dor,
+          dados.nivelDor,
+          dados.exsudato,
+          dados.tipoExsudato,
+          dados.odor,
+          dados.tamanho.comprimento,
+          dados.tamanho.largura,
+          dados.tamanho.profundidade,
+          lesaoId,
+        ]
+      );
+
+      console.log("MODIFIQUEI LESÃO 1: ", lesaoId);
+
+      // 2. Atualizando associações muitos-para-muitos
+      // ETIOLOGIAS
+      await this.atualizarRelacionamentoCheckbox({
+        client,
+        tabela: "lesoes_etiologias",
+        campoId: "etiologia_id",
+        dadosSelecionados: dados.etiologias,
+        lesaoId,
+      });
+
+      console.log("MODIFIQUEI LESÃO 2 ");
+
+      // CLASSIFICAÇÕES LESÃO POR PRESSÃO
+      await this.atualizarRelacionamentoCheckbox({
+        client,
+        tabela: "lesoes_classificacoes_lesao_por_pressao",
+        campoId: "classificacao_id",
+        dadosSelecionados: dados.classificacoesLesaoPressao,
+        lesaoId,
+      });
+
+      console.log("MODIFIQUEI LESÃO 3");
+
+      // REGIÕES PERILESIONAIS
+      // Encontrar o id da opção cujo nome é 'Outro'
+      const idOutroRegiaoPerilesional = await DadosFormLesao.getIdOpcaoOutro(
+        "regioes_perilesionais"
+      );
+
+      console.log("MODIFIQUEI LESÃO 4", idOutroRegiaoPerilesional);
+
+      await this.atualizarRelacionamentoCheckbox({
+        client,
+        tabela: "lesoes_regioes_perilesionais",
+        campoId: "regiao_id",
+        dadosSelecionados: dados.regioesPerilesionais,
+        lesaoId,
+        idOutro: idOutroRegiaoPerilesional,
+        descricaoOutro: dados.regiaoPerilesionalOutro,
+      });
+
+      console.log("MODIFIQUEI LESÃO 5");
+
+      // BORDAS
+      await this.atualizarRelacionamentoCheckbox({
+        client,
+        tabela: "lesoes_bordas",
+        campoId: "borda_id",
+        dadosSelecionados: dados.bordas,
+        lesaoId,
+      });
+
+      console.log("MODIFIQUEI LESÃO 6");
+
+      // QUANTIFICAÇÕES DE DOR
+      await this.atualizarRelacionamentoCheckbox({
+        client,
+        tabela: "lesoes_quantificacoes_dor",
+        campoId: "quantificacao_id",
+        dadosSelecionados: dados.quantificacoesDor,
+        lesaoId,
+      });
+
+      console.log("MODIFIQUEI LESÃO 7");
+
+      // ESTRUTURAS NOBRES
+      // Encontrar o id da opção cujo nome é 'Outro'
+      const idOutroEstruturaNobre = await DadosFormLesao.getIdOpcaoOutro(
+        "estruturas_nobres"
+      );
+
+      await this.atualizarRelacionamentoCheckbox({
+        client,
+        tabela: "lesoes_estruturas_nobres",
+        campoId: "estrutura_id",
+        dadosSelecionados: dados.estruturasNobres,
+        lesaoId,
+        idOutro: idOutroEstruturaNobre,
+        descricaoOutro: dados.estruturaNobreOutro,
+      });
+
+      // LIMPEZAS
+      // Encontrar o id da opção cujo nome é 'Outro'
+      const idOutroLimpeza = await DadosFormLesao.getIdOpcaoOutro("limpezas");
+
+      await this.atualizarRelacionamentoCheckbox({
+        client,
+        tabela: "lesoes_limpezas",
+        campoId: "limpeza_id",
+        dadosSelecionados: dados.limpezas,
+        lesaoId,
+        idOutro: idOutroLimpeza,
+        descricaoOutro: dados.limpezaOutro,
+      });
+
+      // DESBRIDAMENTOS
+      // Encontrar o id da opção cujo nome é 'Outro'
+      const idOutroDesbridamento = await DadosFormLesao.getIdOpcaoOutro(
+        "desbridamentos"
+      );
+
+      await this.atualizarRelacionamentoCheckbox({
+        client,
+        tabela: "lesoes_desbridamentos",
+        campoId: "desbridamento_id",
+        dadosSelecionados: dados.desbridamentos,
+        lesaoId,
+        idOutro: idOutroDesbridamento,
+        descricaoOutro: dados.desbridamentoOutro,
+      });
+
+      // PROTEÇÕES
+      // Encontrar o id da opção cujo nome é 'Outro'
+      const idOutroProtecao = await DadosFormLesao.getIdOpcaoOutro("protecoes");
+
+      await this.atualizarRelacionamentoCheckbox({
+        client,
+        tabela: "lesoes_protecoes",
+        campoId: "protecao_id",
+        dadosSelecionados: dados.protecoes,
+        lesaoId,
+        idOutro: idOutroProtecao,
+        descricaoOutro: dados.protecaoOutro,
+      });
+
+      // 3. Atualizando Tecidos, Cobertutas e Tipos de Fechamento de Curativo
+      // TECIDOS
+      for (const tecido of dados.tecidos) {
+        await client.query(
+          `UPDATE lesoes_tecidos
+           SET percentual = $1
+           WHERE lesao_id = $2 AND tecido_id = $3`,
+          [tecido.valor, lesaoId, tecido.id]
+        );
+      }
+
+      // COBERTURAS
+      for (const cobertura of dados.coberturas) {
+        await client.query(
+          `UPDATE lesoes_coberturas
+           SET quantidade = $1
+           WHERE lesao_id = $2 AND cobertura_id = $3`,
+          [cobertura.valor, lesaoId, cobertura.id]
+        );
+      }
+
+      // TIPOS FECHAMENTO CURATIVO
+      for (const tipoFechamentoCurativo of dados.tiposFechamentoCurativo) {
+        await client.query(
+          `UPDATE lesoes_fechamento_curativo
+           SET quantidade = $1
+           WHERE lesao_id = $2 AND fechamento_curativo_id = $3`,
+          [tipoFechamentoCurativo.valor, lesaoId, tipoFechamentoCurativo.id]
+        );
+      }
 
       await client.query("COMMIT");
     } catch (error) {
@@ -466,6 +687,66 @@ const LesaoModel = {
       throw error;
     } finally {
       client.release();
+    }
+  },
+
+  async atualizarRelacionamentoCheckbox({
+    client,
+    tabela,
+    campoId,
+    dadosSelecionados,
+    lesaoId,
+    idOutro = null,
+    descricaoOutro = null,
+  }) {
+    const res = await client.query(
+      `SELECT ${campoId} FROM ${tabela} WHERE lesao_id = $1`,
+      [lesaoId]
+    );
+
+    const idsExistentes = res.rows.map((r) => r[campoId]);
+
+    // Adicionar novos
+    for (const id of dadosSelecionados) {
+      const jaExiste = idsExistentes.includes(id);
+
+      if (!jaExiste) {
+        if (idOutro !== null && id === idOutro && descricaoOutro) {
+          // Inserção com descrição_outro
+          await client.query(
+            `INSERT INTO ${tabela} (lesao_id, ${campoId}, descricao_outro) VALUES ($1, $2, $3)`,
+            [lesaoId, id, descricaoOutro]
+          );
+        } else {
+          // Inserção comum
+          await client.query(
+            `INSERT INTO ${tabela} (lesao_id, ${campoId}) VALUES ($1, $2)`,
+            [lesaoId, id]
+          );
+        }
+      }
+    }
+
+    // Remover os que não estão mais selecionados
+    for (const id of idsExistentes) {
+      if (!dadosSelecionados.includes(id)) {
+        await client.query(
+          `DELETE FROM ${tabela} WHERE lesao_id = $1 AND ${campoId} = $2`,
+          [lesaoId, id]
+        );
+      }
+    }
+
+    // Atualizar descrição_outro se necessário
+    if (
+      idOutro !== null &&
+      dadosSelecionados.includes(idOutro) &&
+      descricaoOutro
+    ) {
+      await client.query(
+        `UPDATE ${tabela} SET descricao_outro = $1 WHERE lesao_id = $2 AND ${campoId} = $3`,
+        [descricaoOutro, lesaoId, idOutro]
+      );
     }
   },
 };

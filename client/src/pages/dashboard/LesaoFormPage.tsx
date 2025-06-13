@@ -146,12 +146,14 @@ const LesaoFormPage = () => {
           ...response,
         });
 
-        // Resetando o formulário com os dados carregados
-        reset({
-          tecidos: tecidosComValor,
-          coberturas: coberturasComValor,
-          tiposFechamentoCurativo: tiposFechamentoCurativoComValor,
-        });
+        if (!isEditMode) {
+          // Resetando o formulário com os dados carregados
+          reset({
+            tecidos: tecidosComValor,
+            coberturas: coberturasComValor,
+            tiposFechamentoCurativo: tiposFechamentoCurativoComValor,
+          });
+        }
       } catch (error) {
         console.error("Erro ao carregar dados do formulário", error);
       }

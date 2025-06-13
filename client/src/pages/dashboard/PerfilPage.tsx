@@ -20,6 +20,7 @@ import ConfirmDialog from "./components/ConfirmDialog";
 import UsuarioService from "@/services/UsuarioService";
 import { Opcao } from "@/types/opcao";
 import { BreadcrumbNav } from "@/pages/dashboard/components/BreadcrumbNav";
+import { MessageCircleWarningIcon } from "lucide-react";
 
 const PerfilPage = () => {
   const { usuarioAtual, logout } = useAuth();
@@ -230,6 +231,8 @@ const PerfilPage = () => {
         description="Essa ação não poderá ser desfeita."
         confirmLabel="Confirmar Exclusão"
         onConfirm={() => excluirUsuario(usuarioAtual?.cpf!)}
+        confirmColor="danger"
+        icon={<MessageCircleWarningIcon className="w-5 h-5 text-red-600" />}
       />
     </form>
   );
