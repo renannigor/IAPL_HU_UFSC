@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Paciente } from "@/types/paciente";
-import { Lesao } from "@/types/lesao";
+import { Paciente } from "@/types/Paciente";
+import { Lesao } from "@/types/Lesao";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import Editor from "@/components/shared/Editor";
 import { Button } from "@/components/ui/button";
@@ -45,8 +45,8 @@ const DetalhesPacientePage = () => {
         LesaoService.obterTodasLesoes(id!, false),
       ]);
 
-      console.log(precisaAprovacao)
-      console.log(naoPrecisaAprovacao)
+      console.log(precisaAprovacao);
+      console.log(naoPrecisaAprovacao);
 
       setLesoesPrecisaAprovacao(
         Array.isArray(precisaAprovacao) ? precisaAprovacao : []
@@ -57,7 +57,7 @@ const DetalhesPacientePage = () => {
     };
 
     fetchLesoes();
-  }, []);
+  }, [lesoesPrecisaAprovacao, lesoesNaoPrecisaAprovacao]);
 
   if (!paciente) return <p>Carregando...</p>;
 
@@ -79,9 +79,9 @@ const DetalhesPacientePage = () => {
             <UserIcon className="w-8 h-8" />
           </div>
           <div>
-            <p className="text-lg font-semibold">{paciente.nome_completo}</p>
+            <p className="text-lg font-semibold">{paciente.nome}</p>
             <p className="text-sm text-muted-foreground">
-              {paciente.idade} anos
+              {paciente.pac_codigo}
             </p>
           </div>
         </div>
@@ -126,17 +126,8 @@ const DetalhesPacientePage = () => {
               label="Data de Nascimento"
               placeholder="Data de nascimento do paciente"
               ehCampoSenha={false}
-              value={paciente.data_nascimento}
-              disabled
-              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
-            />
-            <Editor
-              id="alergias"
-              label="Alergias"
-              placeholder="Alergias do paciente"
-              ehCampoSenha={false}
-              value={paciente.alergias}
-              disabled
+              value={paciente.nascimento}
+              disabled={paciente.nascimento ? true : false}
               inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
             />
             <Editor
@@ -144,44 +135,89 @@ const DetalhesPacientePage = () => {
               label="Cor da Pele"
               placeholder="Cor da pele do paciente"
               ehCampoSenha={false}
-              value={paciente.cor_pele}
-              disabled
+              value={paciente.cor}
+              disabled={paciente.cor ? true : false}
               inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
             />
             <Editor
-              id="altura"
-              label="Altura"
-              placeholder="Altura do paciente"
+              id="alturaConsultada"
+              label="Altura Consultada"
+              placeholder="Altura consultada do paciente"
               ehCampoSenha={false}
-              value={paciente.altura?.toString()}
-              disabled
+              value={paciente.altura_consultada?.toString()}
+              disabled={paciente.altura_consultada ? true : false}
               inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
             />
             <Editor
-              id="peso"
-              label="Peso"
-              placeholder="Peso do paciente"
+              id="pesoConsultado"
+              label="Peso Consultado"
+              placeholder="Peso consultado do paciente"
               ehCampoSenha={false}
-              value={paciente.peso?.toString()}
-              disabled
+              value={paciente.peso_consultada?.toString()}
+              disabled={paciente.peso_consultada ? true : false}
               inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
             />
             <Editor
-              id="imc"
-              label="IMC"
-              placeholder="IMC do paciente"
+              id="alturaControle"
+              label="Altura Controle"
+              placeholder="Altura controle do paciente"
               ehCampoSenha={false}
-              value={paciente.imc?.toString()}
-              disabled
+              value={paciente.altura_controle?.toString()}
+              disabled={paciente.altura_controle ? true : false}
               inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
             />
             <Editor
-              id="comorbidades"
-              label="Comorbidades"
-              placeholder="Comorbidades do paciente"
+              id="pesoControle"
+              label="Peso Controle"
+              placeholder="Peso controle do paciente"
               ehCampoSenha={false}
-              value={paciente.comorbidades}
-              disabled
+              value={paciente.peso_controle?.toString()}
+              disabled={paciente.peso_controle ? true : false}
+              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
+            />
+            <Editor
+              id="sexo"
+              label="Sexo"
+              placeholder="Sexo do paciente"
+              ehCampoSenha={false}
+              value={paciente.sexo}
+              disabled={paciente.sexo ? true : false}
+              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
+            />
+            <Editor
+              id="quarto"
+              label="Número do Quarto"
+              placeholder="Número do Quarto"
+              ehCampoSenha={false}
+              value={paciente.qrt_numero?.toString()}
+              disabled={paciente.qrt_numero ? true : false}
+              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
+            />
+            <Editor
+              id="leito"
+              label="Leito"
+              placeholder="Leito do paciente"
+              ehCampoSenha={false}
+              value={paciente.lto_lto_id?.toString()}
+              disabled={paciente.lto_lto_id ? true : false}
+              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
+            />
+            <Editor
+              id="criticidadeAlergica"
+              label="Criticidade Alérgica"
+              placeholder="Criticidade Alérgica do paciente"
+              ehCampoSenha={false}
+              value={paciente.criticidade_alergica!}
+              disabled={paciente.criticidade_alergica ? true : false}
+              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
+            />
+            <Editor
+              id="grauCerteza"
+              label="Grau de Certeza"
+              placeholder="Grau de Certeza"
+              ehCampoSenha={false}
+              value={paciente.grau_certeza!}
+              disabled={paciente.grau_certeza ? true : false}
               inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
             />
             <Editor
@@ -189,17 +225,26 @@ const DetalhesPacientePage = () => {
               label="Medicamentos em Uso"
               placeholder="Medicamentos em uso pelo paciente"
               ehCampoSenha={false}
-              value={paciente.medicamentos_uso}
-              disabled
+              value={paciente.medicamento!}
+              disabled={paciente.medicamento ? true : false}
               inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
             />
             <Editor
-              id="motivoInternacao"
-              label="Motivo de Internação"
-              placeholder="Motivo de internação do paciente"
+              id="agenteCausador"
+              label="Agente Causador"
+              placeholder="Agente Causador"
               ehCampoSenha={false}
-              value={paciente.motivo_internacao}
-              disabled
+              value={paciente.agente_causador!}
+              disabled={paciente.agente_causador ? true : false}
+              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
+            />
+            <Editor
+              id="classificacaoAlergica"
+              label="Classificação Alérgica"
+              placeholder="Classificação Alérgica"
+              ehCampoSenha={false}
+              value={paciente.classificacao_alergica!}
+              disabled={paciente.classificacao_alergica ? true : false}
               inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
             />
           </div>

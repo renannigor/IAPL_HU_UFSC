@@ -7,7 +7,7 @@ import {
   ReactNode,
 } from "react";
 import api from "@/api/api.ts";
-import { Usuario } from "@/types/usuario.ts";
+import { Usuario } from "@/types/Usuario";
 import AuthService from "@/services/AuthService.ts";
 
 // Tipagem para o contexto de autenticação

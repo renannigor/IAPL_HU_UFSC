@@ -11,7 +11,7 @@ import { isAxiosError } from "axios";
 import { Button } from "@/components/ui/button";
 import AuthNavCard from "./components/AuthNavCard";
 import Editor from "../../components/shared/Editor";
-import { Opcao } from "@/types/opcao";
+import { Opcao } from "@/types/Opcao";
 import {
   Select,
   SelectContent,

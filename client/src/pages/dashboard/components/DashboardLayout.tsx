@@ -2,11 +2,9 @@ import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { AppSidebar } from "@/pages/dashboard/components/navigation/AppSidebar";
 import { BottomNavigation } from "@/pages/dashboard/components/navigation/BottomNavigation";
-import { useAuth } from "@/components/auth/AuthProvider";
-import { Home, Info, User, Users2, UserCircle } from "lucide-react";
+import { Home, Info, Users2, UserCircle } from "lucide-react";
 
 export default function DashboardLayout() {
-  const { usuarioAtual } = useAuth();
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -18,19 +16,12 @@ export default function DashboardLayout() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const baseItems = [
+  const menuItems = [
     { title: "Home", url: "/dashboard", icon: Home },
-    { title: "Pacientes", url: "/dashboard/pacientes", icon: User },
+    { title: "Pacientes", url: "/dashboard/pacientes", icon: Users2 },
     { title: "Perfil", url: "/dashboard/perfil", icon: UserCircle },
     { title: "Sobre", url: "/dashboard/sobre", icon: Info },
   ];
-
-  const menuItems = usuarioAtual?.admin
-    ? [
-        ...baseItems,
-        { title: "Usuários", url: "/dashboard/usuarios", icon: Users2 },
-      ]
-    : baseItems;
 
   return (
     <div className="flex flex-col bg-gray-50">

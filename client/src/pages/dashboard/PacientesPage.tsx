@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Paciente } from "@/types/paciente";
+import { Paciente } from "@/types/Paciente";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { MoreVertical } from "lucide-react";
@@ -43,7 +43,7 @@ const PacientesPage = () => {
   };
 
   const gerarDocumento = (paciente: Paciente): void => {
-    console.log("Gerar documento para paciente:", paciente.nome_completo);
+    console.log("Gerar documento para paciente:", paciente.nome);
   };
 
   const exportarCSV = (): void => {
@@ -67,22 +67,23 @@ const PacientesPage = () => {
     ];
 
     const rows = pacientes.map((p) => [
-      p.nome_completo,
-      p.data_nascimento,
-      p.idade.toString(),
+      p.internacao,
+      p.pac_codigo,
+      p.nome,
+      p.nascimento,
+      p.cor,
       p.sexo,
-      p.quarto,
-      p.unidade_internacao,
-      p.data_internacao,
-      p.data_avaliacao_gicpel,
-      p.alergias,
-      p.cor_pele,
-      p.altura.toString(),
-      p.peso.toString(),
-      p.imc.toFixed(2),
-      p.motivo_internacao,
-      p.comorbidades.join("; "),
-      p.medicamentos_uso.join("; "),
+      p.altura_consultada,
+      p.peso_consultada,
+      p.altura_controle,
+      p.peso_controle,
+      p.qrt_numero,
+      p.lto_lto_id,
+      p.criticidade_alergica,
+      p.grau_certeza,
+      p.medicamento,
+      p.agente_causador,
+      p.classificacao_alergica,
     ]);
 
     const csvContent = [header, ...rows]
@@ -136,28 +137,20 @@ const PacientesPage = () => {
             <TableHeader>
               <TableRow>
                 {Utilitarios.atributosTabelaPacientes.map((coluna) => (
-                  <TableHead key={coluna}>
-                    {coluna
-                      .split("_")
-                      .map(
-                        (word) => word.charAt(0).toUpperCase() + word.slice(1)
-                      )
-                      .join(" ")}
-                  </TableHead>
+                  <TableHead key={coluna}>{coluna}</TableHead>
                 ))}
                 <TableHead>Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {pacientes.map((paciente) => (
-                <TableRow key={paciente.id}>
-                  <TableCell>{paciente.nome_completo}</TableCell>
-                  <TableCell>{paciente.idade}</TableCell>
-                  <TableCell>{paciente.data_internacao}</TableCell>
-                  <TableCell>{paciente.quarto}</TableCell>
-                  <TableCell>{paciente.unidade_internacao}</TableCell>
+                <TableRow key={paciente.pac_codigo}>
+                  <TableCell>{paciente.nome}</TableCell>
+                  <TableCell>{paciente.internacao}</TableCell>
+                  <TableCell>{paciente.nascimento}</TableCell>
+                  <TableCell>{paciente.cor}</TableCell>
+                  <TableCell>{paciente.qrt_numero}</TableCell>
                   <TableCell>{paciente.sexo}</TableCell>
-                  <TableCell>{paciente.data_avaliacao_gicpel}</TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -168,11 +161,10 @@ const PacientesPage = () => {
                       <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
                         <DropdownMenuItem
                           onClick={() => {
-                            navigate(`/dashboard/pacientes/${paciente.id}`);
-                            console.log(
-                              "Ver detalhes:",
-                              paciente.nome_completo
+                            navigate(
+                              `/dashboard/pacientes/${paciente.pac_codigo}`
                             );
+                            console.log("Ver detalhes:", paciente.nome);
                           }}
                         >
                           Ver detalhes

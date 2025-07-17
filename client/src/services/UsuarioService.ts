@@ -1,5 +1,5 @@
 import api from "@/api/api";
-import { Opcao } from "@/types/opcao";
+import { Opcao } from "@/types/Opcao";
 
 class UsuarioService {
   static async obterTiposUsuario() {

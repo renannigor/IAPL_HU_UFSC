@@ -1,12 +1,17 @@
+-- TIPOS USUÁRIO
+CREATE TABLE IF NOT EXISTS tipos_usuario (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(50) NOT NULL UNIQUE
+);
+
 -- USUÁRIOS
 CREATE TABLE IF NOT EXISTS usuarios (
     cpf VARCHAR(14) PRIMARY KEY,
     nome VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
-    tipo VARCHAR(50) CHECK (
-        tipo IN ('Acadêmico', 'Residente', 'Profissional')
-    ) NOT NULL,
+    tipo_id INTEGER REFERENCES tipos_usuario(id) NOT NULL,
     admin BOOLEAN DEFAULT FALSE,
+    -- RETIRAR O ATRIBUTO admin
     possui_acesso BOOLEAN DEFAULT FALSE,
     online BOOLEAN DEFAULT TRUE,
     senha TEXT NOT NULL,
@@ -17,14 +22,13 @@ CREATE TABLE IF NOT EXISTS usuarios (
 -- ENDEREÇOS
 CREATE TABLE IF NOT EXISTS enderecos (
     id SERIAL PRIMARY KEY,
-    cpf_usuario VARCHAR(14) NOT NULL,
+    cpf_usuario VARCHAR(14) NOT NULL REFERENCES usuarios(cpf) ON DELETE CASCADE,
     cep VARCHAR(10) NOT NULL,
     logradouro VARCHAR(255) NOT NULL,
     bairro VARCHAR(255) NOT NULL,
     cidade VARCHAR(255) NOT NULL,
     estado VARCHAR(2) NOT NULL,
-    numero VARCHAR(10) NOT NULL,
-    FOREIGN KEY (cpf_usuario) REFERENCES usuarios(cpf) ON DELETE CASCADE
+    numero VARCHAR(10)
 );
 
 -- TOKENS DE REDEFINIÇÃO DE SENHA
@@ -35,54 +39,116 @@ CREATE TABLE IF NOT EXISTS tokens_redefinicao_senha (
     expires_at TIMESTAMP NOT NULL
 );
 
+-- PACIENTES
+CREATE TABLE pacientes_aux (
+    pac_codigo TEXT PRIMARY KEY,
+    internacao INTEGER,
+    nome TEXT,
+    nascimento TEXT,
+    cor TEXT,
+    sexo TEXT,
+    altura_consulta NUMERIC,
+    peso_consulta NUMERIC,
+    altura_controle NUMERIC,
+    peso_controle NUMERIC,
+    qrt_numero TEXT,
+    lto_lto_id TEXT,
+    criticidade_alergica TEXT,
+    grau_certeza TEXT,
+    medicamento TEXT,
+    agente_causador TEXT,
+    classificacao_alergica TEXT,
+    data_sincronizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ODORES
+CREATE TABLE IF NOT EXISTS odores (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL UNIQUE
+);
+
+-- EXSUDATOS
+CREATE TABLE IF NOT EXISTS exsudatos (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL UNIQUE
+);
+
+-- TIPOS DE EXSUDATO
+CREATE TABLE IF NOT EXISTS tipos_exsudato (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL UNIQUE
+);
+
+-- ETIOLOGIAS
+CREATE TABLE IF NOT EXISTS etiologias (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL UNIQUE
+);
+
+-- CLASSIFICAÇÕES DE LESÃO POR PRESSÃO
+CREATE TABLE IF NOT EXISTS classificacoes_lesao_por_pressao (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL UNIQUE
+);
+
+-- REGIÕES PERILESIONAIS
+CREATE TABLE IF NOT EXISTS regioes_perilesionais (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL UNIQUE
+);
+
+-- BORDAS DAS LESÕES
+CREATE TABLE IF NOT EXISTS bordas (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL UNIQUE
+);
+
+-- QUANTIFICAÇÕES DA DOR
+CREATE TABLE IF NOT EXISTS quantificacoes_dor (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL UNIQUE
+);
+
 -- TECIDOS
 CREATE TABLE IF NOT EXISTS tecidos (
     id SERIAL PRIMARY KEY,
-    epitelizado INTEGER NOT NULL,
-    granulacao INTEGER NOT NULL,
-    hipergranulacao INTEGER NOT NULL,
-    necrose_umida INTEGER NOT NULL,
-    necrose_seca INTEGER NOT NULL,
-    esfacelo INTEGER NOT NULL
+    nome VARCHAR(255) NOT NULL UNIQUE
 );
 
--- COBERTURA UTILIZADA
-CREATE TABLE IF NOT EXISTS cobertura_utilizada (
+-- ESTRUTURAS NOBRES
+CREATE TABLE IF NOT EXISTS estruturas_nobres (
     id SERIAL PRIMARY KEY,
-    age INTEGER NOT NULL,
-    alginato_calcio_prata_placa INTEGER NOT NULL,
-    alginato_calcio_prata_fita INTEGER NOT NULL,
-    alginato_calcio_fita INTEGER NOT NULL,
-    bota_unna INTEGER NOT NULL,
-    carvao_ativado_prata INTEGER NOT NULL,
-    cinto_estomia INTEGER NOT NULL,
-    espuma_prata_grande INTEGER NOT NULL,
-    espuma_prata_pequena INTEGER NOT NULL,
-    espuma_silicone_prata_grande INTEGER NOT NULL,
-    espuma_silicone_pequena INTEGER NOT NULL,
-    hidrofibra_prata INTEGER NOT NULL,
-    hidrogel INTEGER NOT NULL,
-    melolin INTEGER NOT NULL,
-    membracel INTEGER NOT NULL,
-    pasta_hidrocoloide INTEGER NOT NULL,
-    phmb_gel INTEGER NOT NULL,
-    placa_hidrocoloide_fina INTEGER NOT NULL,
-    placa_hidrocoloide_grossa INTEGER NOT NULL,
-    prata_nanocristalina INTEGER NOT NULL,
-    rayon_petrolatum INTEGER NOT NULL,
-    filtro_carvao_ativado INTEGER NOT NULL,
-    hidrocoloide_bastao INTEGER NOT NULL,
-    pasta_periestomal INTEGER NOT NULL
+    nome VARCHAR(255) NOT NULL UNIQUE
 );
 
--- FECHAMENTO DO CURATIVO
-CREATE TABLE IF NOT EXISTS fechamento_curativo (
+-- COBERTURAS UTILIZADAS
+CREATE TABLE IF NOT EXISTS coberturas (
     id SERIAL PRIMARY KEY,
-    pelicula_transparente_rolo_curativos INTEGER NOT NULL,
-    bota_unna INTEGER NOT NULL,
-    rede_tubular_3 INTEGER NOT NULL,
-    rede_tubular_6 INTEGER NOT NULL,
-    chumaco_atadura INTEGER NOT NULL
+    nome VARCHAR(255) NOT NULL UNIQUE
+);
+
+-- TIPOS FECHAMENTO DO CURATIVO
+CREATE TABLE IF NOT EXISTS tipos_fechamento_curativo (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL UNIQUE
+);
+
+-- LIMPEZA DA LESÃO
+CREATE TABLE IF NOT EXISTS limpezas (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL UNIQUE
+);
+
+-- DESBRIDAMENTO
+CREATE TABLE IF NOT EXISTS desbridamentos (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL UNIQUE
+);
+
+-- PROTEÇÕES
+CREATE TABLE IF NOT EXISTS protecoes (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL UNIQUE
 );
 
 -- LESÕES
@@ -98,94 +164,19 @@ CREATE TABLE IF NOT EXISTS lesoes (
         aprovado_por VARCHAR(14) REFERENCES usuarios(cpf) ON DELETE
     SET
         NULL,
-        cadastrado_por_academico BOOLEAN NOT NULL,
+        precisa_aprovacao BOOLEAN NOT NULL,
         presenca_tunel TEXT NOT NULL,
         possui_dor TEXT NOT NULL,
         escala_dor INTEGER CHECK (
-            escala_dor >= 1
+            escala_dor >= 0
             AND escala_dor <= 10
         ),
-        exsudato INTEGER REFERENCES exsudatos(id),
-        tipo_exsudato INTEGER REFERENCES tipos_exsudato(id),
-        odor INTEGER REFERENCES odores(id),
+        exsudato_id INTEGER REFERENCES exsudatos(id),
+        tipo_exsudato_id INTEGER REFERENCES tipos_exsudato(id),
+        odor_id INTEGER REFERENCES odores(id),
         comprimento INTEGER NOT NULL,
         largura INTEGER NOT NULL,
-        profundidade INTEGER NOT NULL,
-        tecido_id INTEGER REFERENCES tecidos(id),
-        cobertura_utilizada_id INTEGER REFERENCES cobertura_utilizada(id),
-        fechamento_curativo_id INTEGER REFERENCES fechamento_curativo(id)
-);
-
--- ODORES
-CREATE TABLE IF NOT EXISTS odores (
-    id SERIAL PRIMARY KEY,
-    nome VARCHAR(255) UNIQUE NOT NULL
-);
-
--- EXSUDATOS
-CREATE TABLE IF NOT EXISTS exsudatos (
-    id SERIAL PRIMARY KEY,
-    nome VARCHAR(255) UNIQUE NOT NULL
-);
-
--- TIPOS DE EXSUDATO
-CREATE TABLE IF NOT EXISTS tipos_exsudato (
-    id SERIAL PRIMARY KEY,
-    nome VARCHAR(255) UNIQUE NOT NULL
-);
-
--- ETIOLOGIAS
-CREATE TABLE IF NOT EXISTS etiologias (
-    id SERIAL PRIMARY KEY,
-    nome VARCHAR(255) UNIQUE NOT NULL
-);
-
--- CLASSIFICAÇÕES DE LESÃO POR PRESSÃO
-CREATE TABLE IF NOT EXISTS classificacoes_lesao_por_pressao (
-    id SERIAL PRIMARY KEY,
-    nome VARCHAR(255) UNIQUE NOT NULL
-);
-
--- REGIÕES PERILESIONAIS
-CREATE TABLE IF NOT EXISTS regioes_perilesionais (
-    id SERIAL PRIMARY KEY,
-    nome VARCHAR(255) UNIQUE NOT NULL
-);
-
--- BORDAS DAS LESÕES
-CREATE TABLE IF NOT EXISTS bordas (
-    id SERIAL PRIMARY KEY,
-    nome VARCHAR(255) UNIQUE NOT NULL
-);
-
--- QUANTIFICAÇÕES DA DOR
-CREATE TABLE IF NOT EXISTS quantificacoes_dor (
-    id SERIAL PRIMARY KEY,
-    nome VARCHAR(255) UNIQUE NOT NULL
-);
-
--- ESTRUTURAS NOBRES
-CREATE TABLE IF NOT EXISTS estruturas_nobres (
-    id SERIAL PRIMARY KEY,
-    nome VARCHAR(255) UNIQUE NOT NULL
-);
-
--- LIMPEZA DA LESÃO
-CREATE TABLE IF NOT EXISTS limpeza (
-    id SERIAL PRIMARY KEY,
-    nome VARCHAR(255) UNIQUE NOT NULL
-);
-
--- DESBRIDAMENTO
-CREATE TABLE IF NOT EXISTS desbridamento (
-    id SERIAL PRIMARY KEY,
-    nome VARCHAR(255) UNIQUE NOT NULL
-);
-
--- PROTEÇÃO
-CREATE TABLE IF NOT EXISTS protecao (
-    id SERIAL PRIMARY KEY,
-    nome VARCHAR(255) UNIQUE NOT NULL
+        profundidade INTEGER NOT NULL
 );
 
 -- 📌 DEFINIÇÃO DE RELACIONAMENTOS 
@@ -193,72 +184,107 @@ CREATE TABLE IF NOT EXISTS protecao (
 -- RELAÇÃO: LESÃO x ETIOLOGIA
 CREATE TABLE IF NOT EXISTS lesoes_etiologias (
     id SERIAL PRIMARY KEY,
-    lesao_id INTEGER REFERENCES lesoes(id) ON DELETE CASCADE,
-    etiologia_id INTEGER REFERENCES etiologias(id)
+    lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
+    etiologia_id INTEGER NOT NULL REFERENCES etiologias(id) ON DELETE CASCADE
 );
 
 -- RELAÇÃO: LESÃO x CLASSIFICAÇÃO
 CREATE TABLE IF NOT EXISTS lesoes_classificacoes_lesao_por_pressao (
     id SERIAL PRIMARY KEY,
-    lesao_id INTEGER REFERENCES lesoes(id) ON DELETE CASCADE,
-    classificacao_id INTEGER REFERENCES classificacoes_lesao_por_pressao(id)
+    lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
+    classificacao_id INTEGER NOT NULL REFERENCES classificacoes_lesao_por_pressao(id) ON DELETE CASCADE
 );
 
 -- RELAÇÃO: LESÃO x REGIÃO PERILESIONAL
 CREATE TABLE IF NOT EXISTS lesoes_regioes_perilesionais (
     id SERIAL PRIMARY KEY,
-    lesao_id INTEGER REFERENCES lesoes(id) ON DELETE CASCADE,
-    regiao_id INTEGER REFERENCES regioes_perilesionais(id),
+    lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
+    regiao_id INTEGER NOT NULL REFERENCES regioes_perilesionais(id) ON DELETE CASCADE,
     descricao_outro TEXT
 );
 
 -- RELAÇÃO: LESÃO x BORDA
 CREATE TABLE IF NOT EXISTS lesoes_bordas (
     id SERIAL PRIMARY KEY,
-    lesao_id INTEGER REFERENCES lesoes(id) ON DELETE CASCADE,
-    borda_id INTEGER REFERENCES bordas(id)
+    lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
+    borda_id INTEGER NOT NULL REFERENCES bordas(id) ON DELETE CASCADE
 );
 
 -- RELAÇÃO: LESÃO x QUANTIFICAÇÃO DE DOR
 CREATE TABLE IF NOT EXISTS lesoes_quantificacoes_dor (
     id SERIAL PRIMARY KEY,
-    lesao_id INTEGER REFERENCES lesoes(id) ON DELETE CASCADE,
-    quantificacao_id INTEGER REFERENCES quantificacoes_dor(id)
+    lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
+    quantificacao_id INTEGER NOT NULL REFERENCES quantificacoes_dor(id) ON DELETE CASCADE
+);
+
+-- RELAÇÃO: TECIDO x 
+CREATE TABLE IF NOT EXISTS lesoes_tecidos (
+    id SERIAL PRIMARY KEY,
+    lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
+    tecido_id INTEGER NOT NULL REFERENCES tecidos(id) ON DELETE CASCADE,
+    percentual INTEGER NOT NULL CHECK (
+        percentual BETWEEN 0
+        AND 100
+    )
 );
 
 -- RELAÇÃO: TECIDO x ESTRUTURA NOBRE
-CREATE TABLE IF NOT EXISTS tecidos_estruturas_nobres (
+CREATE TABLE IF NOT EXISTS lesoes_estruturas_nobres (
     id SERIAL PRIMARY KEY,
-    tecido_id INTEGER REFERENCES tecidos(id) ON DELETE CASCADE,
-    estrutura_id INTEGER REFERENCES estruturas_nobres(id),
+    lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
+    estrutura_id INTEGER NOT NULL REFERENCES estruturas_nobres(id) ON DELETE CASCADE,
     descricao_outro TEXT
 );
 
--- RELAÇÃO: LESÃO x LIMPEZA
-CREATE TABLE IF NOT EXISTS lesoes_limpeza (
+-- RELAÇÃO: LESÃO x COBERTURAS
+CREATE TABLE IF NOT EXISTS lesoes_coberturas (
     id SERIAL PRIMARY KEY,
-    lesao_id INTEGER REFERENCES lesoes(id) ON DELETE CASCADE,
-    limpeza_id INTEGER REFERENCES limpeza(id),
+    lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
+    cobertura_id INTEGER NOT NULL REFERENCES coberturas(id) ON DELETE CASCADE,
+    quantidade INTEGER NOT NULL CHECK (quantidade >= 0)
+);
+
+-- RELAÇÃO: LESÃO x TIPOS FECHAMENTO
+CREATE TABLE IF NOT EXISTS lesoes_fechamento_curativo (
+    id SERIAL PRIMARY KEY,
+    lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
+    fechamento_curativo_id INTEGER NOT NULL REFERENCES tipos_fechamento_curativo(id) ON DELETE CASCADE,
+    quantidade INTEGER NOT NULL CHECK (quantidade >= 0)
+);
+
+-- RELAÇÃO: LESÃO x LIMPEZA
+CREATE TABLE IF NOT EXISTS lesoes_limpezas (
+    id SERIAL PRIMARY KEY,
+    lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
+    limpeza_id INTEGER NOT NULL REFERENCES limpezas(id) ON DELETE CASCADE,
     descricao_outro TEXT
 );
 
 -- RELAÇÃO: LESÃO x DESBRIDAMENTO
-CREATE TABLE IF NOT EXISTS lesoes_desbridamento (
+CREATE TABLE IF NOT EXISTS lesoes_desbridamentos (
     id SERIAL PRIMARY KEY,
-    lesao_id INTEGER REFERENCES lesoes(id) ON DELETE CASCADE,
-    desbridamento_id INTEGER REFERENCES desbridamento(id),
+    lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
+    desbridamento_id INTEGER NOT NULL REFERENCES desbridamentos(id) ON DELETE CASCADE,
     descricao_outro TEXT
 );
 
 -- RELAÇÃO: LESÃO x PROTEÇÃO
-CREATE TABLE IF NOT EXISTS lesoes_protecao (
+CREATE TABLE IF NOT EXISTS lesoes_protecoes (
     id SERIAL PRIMARY KEY,
-    lesao_id INTEGER REFERENCES lesoes(id) ON DELETE CASCADE,
-    protecao_id INTEGER REFERENCES protecao(id),
+    lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
+    protecao_id INTEGER NOT NULL REFERENCES protecoes(id) ON DELETE CASCADE,
     descricao_outro TEXT
 );
 
 -- 📌 INSERÇÃO DE VALORES 
+-- INSERINDO OS VALORES DOS TIPOS DE USUÁRIO
+INSERT INTO
+    tipos_usuario(nome)
+VALUES
+    ('Acadêmico'),
+    ('Residente'),
+    ('Profissional');
+
 -- INSERINDO OS VALORES DAS ETIOLOGIAS
 INSERT INTO
     etiologias(nome)
@@ -361,9 +387,58 @@ VALUES
     ('Odor fétido'),
     ('Odor pútrido');
 
+-- INSERINDO AS COBERTURAS UTILIZADAS
+INSERT INTO
+    coberturas(nome)
+VALUES
+    ('Age'),
+    ('Alginato de Cálcio com prata placa'),
+    ('Alginato de Cálcio com prata fita'),
+    ('Alginato de Cálcio fita'),
+    ('Carvão ativado com prata'),
+    ('Cinto para estomia'),
+    ('Espuma com prata grande'),
+    ('Espuma com prata pequena'),
+    ('Espuma com silicone e prata grande'),
+    ('Espuma com silicone pequena'),
+    ('Hidrofibra com prata'),
+    ('Hidrogel'),
+    ('Melolin'),
+    ('Membracel'),
+    ('Pasta hidrocoloide'),
+    ('PHMB gel'),
+    ('Placa de hidrocoloide fina'),
+    ('Placa de hidrocoloide grossa'),
+    ('Prata nanocristalina'),
+    ('Rayon com petrolatum'),
+    ('Filtro de carvão ativado'),
+    ('Hidrocoloide bastão'),
+    ('Pasta periestomal');
+
+-- INSERINDO TIPOS DE FECHAMENTO DE CURATIVO
+INSERT INTO
+    tipos_fechamento_curativo(nome)
+VALUES
+    ('Película transparente em rolo para curativo'),
+    ('Bota de Unna'),
+    (' Rede tubular 3'),
+    ('Rede tubular 6'),
+    ('Chumaço e Atadura');
+
+-- INSERINDO OS VALORES DE TECIDO
+INSERT INTO
+    tecidos(nome)
+VALUES
+    ('Epitelizado'),
+    ('Granulação'),
+    ('Hipergranulação'),
+    ('Necrose úmida'),
+    ('Necrose seca'),
+    ('Esfacelo');
+
 -- INSERINDO OS VALORES DAS LIMPEZAS
 INSERT INTO
-    limpeza(nome)
+    limpezas(nome)
 VALUES
     ('Solução para limpeza'),
     ('SF 0,9%'),
@@ -372,7 +447,7 @@ VALUES
 
 -- INSERINDO OS VALORES DO DESBRIDAMENTO
 INSERT INTO
-    desbridamento(nome)
+    desbridamentos(nome)
 VALUES
     ('Slice'),
     ('Square'),
@@ -381,7 +456,7 @@ VALUES
 
 -- INSERINDO OS VALORES DAS PROTEÇÕES
 INSERT INTO
-    protecao(nome)
+    protecoes(nome)
 VALUES
     ('Hidratante'),
     ('Creme barreira'),

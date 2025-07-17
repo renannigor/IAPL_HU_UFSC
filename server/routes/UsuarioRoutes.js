@@ -3,11 +3,8 @@ import UsuarioController from "../controllers/UsuarioController.js";
 
 const router = Router();
 
-// Listar com ordenação e paginação
-router.get("/", UsuarioController.filtrarUsuarios);
-
 // Buscar todos os tipos de usuário
-router.get("/tipos", UsuarioController.buscarTiposUsuario);
+router.get("/tipos", UsuarioController.getTiposUsuario);
 
 // Atualizar permissão
 router.patch("/atualizar/:cpf/permissao", UsuarioController.atualizarPermissao);

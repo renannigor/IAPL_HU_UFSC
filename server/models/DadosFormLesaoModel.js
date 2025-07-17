@@ -79,14 +79,34 @@ const DadosFormLesaoModel = {
     return result.rows;
   },
 
+  async getExsudatoNome(id) {
+    const result = await db.query("SELECT * FROM exsudatos WHERE id = $1", [
+      id,
+    ]);
+    return result.rows[0].nome;
+  },
+
   async getTiposExsudato() {
     const result = await db.query("SELECT * FROM tipos_exsudato ORDER BY id");
     return result.rows;
   },
 
+  async getTipoExsudatoNome(id) {
+    const result = await db.query(
+      "SELECT * FROM tipos_exsudato WHERE id = $1",
+      [id]
+    );
+    return result.rows[0].nome;
+  },
+
   async getOdores() {
     const result = await db.query("SELECT * FROM odores ORDER BY id");
     return result.rows;
+  },
+
+  async getOdorNome(id) {
+    const result = await db.query("SELECT * FROM odores WHERE id = $1", [id]);
+    return result.rows[0].nome;
   },
 
   async getLimpezas() {

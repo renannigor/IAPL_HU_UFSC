@@ -61,11 +61,11 @@ class LesaoController {
     }
   }
 
-  static async obterLesao(req, res) {
+  static async getLesaoComIds(req, res) {
     try {
       const { id_lesao } = req.params;
 
-      const dadosLesao = await LesaoService.obterLesao(id_lesao);
+      const dadosLesao = await LesaoService.getLesaoComIds(id_lesao);
       res
         .status(200)
         .json({ mensagem: "Lesão recuperada com sucesso!", dados: dadosLesao });
@@ -77,11 +77,27 @@ class LesaoController {
     }
   }
 
-  static async obterTodasLesoesPacientes(req, res) {
+  static async getLesaoComNomes(req, res) {
+    try {
+      const { id_lesao } = req.params;
+
+      const dadosLesao = await LesaoService.getLesaoComNomes(id_lesao);
+      res
+        .status(200)
+        .json({ mensagem: "Lesão recuperada com sucesso!", dados: dadosLesao });
+    } catch (error) {
+      console.error("Erro ao recuperar uma lesão: ", error);
+      res.status(500).json({
+        mensagem: "Erro ao recuperar uma lesão.",
+      });
+    }
+  }
+
+  static async getLesoesPaciente(req, res) {
     try {
       const { pacienteId, precisaAprovacao } = req.query;
 
-      const dadosLesao = await LesaoService.obterTodasLesoesPacientes(
+      const dadosLesao = await LesaoService.getLesoesPaciente(
         pacienteId,
         precisaAprovacao
       );

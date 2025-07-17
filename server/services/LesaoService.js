@@ -39,15 +39,21 @@ class LesaoService {
     await LesaoModel.deletarLesao(idLesao);
   }
 
-  static async obterLesao(idLesao) {
+  static async getLesaoComIds(idLesao) {
     // Obter a lesão
-    const dadosLesao = await LesaoModel.obterLesao(idLesao);
+    const dadosLesao = await LesaoModel.getLesaoComIds(idLesao);
     return dadosLesao;
   }
 
-  static async obterTodasLesoesPacientes(pacienteId, precisaAprovacao) {
+  static async getLesaoComNomes(idLesao) {
+    // Obter a lesão
+    const dadosLesao = await LesaoModel.getLesaoComNomes(idLesao);
+    return dadosLesao;
+  }
+
+  static async getLesoesPaciente(pacienteId, precisaAprovacao) {
     // Obter todas as lesões do paciente
-    const dadosLesao = await LesaoModel.obterTodasLesoesPacientes(
+    const dadosLesao = await LesaoModel.getLesoesPaciente(
       pacienteId,
       precisaAprovacao
     );

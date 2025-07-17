@@ -1,4 +1,4 @@
-import { Opcao } from "@/types/opcao";
+import { Opcao } from "@/types/Opcao";
 
 export interface DadosEspeciaisFormulario {
   etiologiaLesaoPorPressao?: Opcao;

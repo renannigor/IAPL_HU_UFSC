@@ -11,7 +11,7 @@ const LesaoModel = {
     }
   },
 
-  async obterTodasLesoesPacientes(pacienteId, precisaAprovacao) {
+  async getLesoesPaciente(pacienteId, precisaAprovacao) {
     try {
       const result = await db.query(
         `
@@ -43,7 +43,176 @@ const LesaoModel = {
     }
   },
 
-  async obterLesao(id) {
+  async getLesaoComNomes(id) {
+    const client = await db.connect();
+    try {
+      await client.query("BEGIN");
+
+      // 1. Lesão principal
+      const lesaoRes = await client.query(
+        `SELECT * FROM lesoes WHERE id = $1`,
+        [id]
+      );
+      const lesaoData = lesaoRes.rows[0];
+
+      // 2. Relações com JOIN para obter nomes
+
+      const etiologiasRes = await client.query(
+        `SELECT e.nome FROM lesoes_etiologias le
+         JOIN etiologias e ON e.id = le.etiologia_id
+         WHERE le.lesao_id = $1`,
+        [id]
+      );
+
+      const classificacoesLesaoPressaoRes = await client.query(
+        `SELECT c.nome FROM lesoes_classificacoes_lesao_por_pressao lcl
+         JOIN classificacoes_lesao_por_pressao c ON c.id = lcl.classificacao_id
+         WHERE lcl.lesao_id = $1`,
+        [id]
+      );
+
+      const bordasRes = await client.query(
+        `SELECT b.nome FROM lesoes_bordas lb
+         JOIN bordas b ON b.id = lb.borda_id
+         WHERE lb.lesao_id = $1`,
+        [id]
+      );
+
+      const quantificacoesDorRes = await client.query(
+        `SELECT q.nome FROM lesoes_quantificacoes_dor lq
+         JOIN quantificacoes_dor q ON q.id = lq.quantificacao_id
+         WHERE lq.lesao_id = $1`,
+        [id]
+      );
+
+      const regioesPerilesionaisRes = await client.query(
+        `SELECT r.nome, lr.descricao_outro FROM lesoes_regioes_perilesionais lr
+         JOIN regioes_perilesionais r ON r.id = lr.regiao_id
+         WHERE lr.lesao_id = $1`,
+        [id]
+      );
+
+      const estruturasNobresRes = await client.query(
+        `SELECT e.nome, le.descricao_outro FROM lesoes_estruturas_nobres le
+         JOIN estruturas_nobres e ON e.id = le.estrutura_id
+         WHERE le.lesao_id = $1`,
+        [id]
+      );
+
+      const protecoesRes = await client.query(
+        `SELECT p.nome, lp.descricao_outro FROM lesoes_protecoes lp
+         JOIN protecoes p ON p.id = lp.protecao_id
+         WHERE lp.lesao_id = $1`,
+        [id]
+      );
+
+      const desbridamentosRes = await client.query(
+        `SELECT d.nome, ld.descricao_outro FROM lesoes_desbridamentos ld
+         JOIN desbridamentos d ON d.id = ld.desbridamento_id
+         WHERE ld.lesao_id = $1`,
+        [id]
+      );
+
+      const limpezasRes = await client.query(
+        `SELECT l.nome, ll.descricao_outro FROM lesoes_limpezas ll
+         JOIN limpezas l ON l.id = ll.limpeza_id
+         WHERE ll.lesao_id = $1`,
+        [id]
+      );
+
+      const tecidosRes = await client.query(
+        `SELECT lt.tecido_id, t.nome, lt.percentual FROM lesoes_tecidos lt
+         JOIN tecidos t ON t.id = lt.tecido_id
+         WHERE lt.lesao_id = $1`,
+        [id]
+      );
+
+      const coberturasRes = await client.query(
+        `SELECT lc.cobertura_id, c.nome, lc.quantidade FROM lesoes_coberturas lc
+         JOIN coberturas c ON c.id = lc.cobertura_id
+         WHERE lc.lesao_id = $1`,
+        [id]
+      );
+
+      const tiposFechamentoCurativoRes = await client.query(
+        `SELECT lfc.fechamento_curativo_id, tfc.nome, lfc.quantidade
+         FROM lesoes_fechamento_curativo lfc
+         JOIN tipos_fechamento_curativo tfc ON tfc.id = lfc.fechamento_curativo_id
+         WHERE lfc.lesao_id = $1`,
+        [id]
+      );
+
+      // Tratando campos "outro"
+      const getOutro = (res) =>
+        res.rows.find((r) => r.descricao_outro)?.descricao_outro || null;
+
+      // Mapeando listas
+      const mapNomes = (res) => res.rows.map((r) => r.nome);
+
+      const tecidos = tecidosRes.rows.map((t) => ({
+        id: t.tecido_id,
+        nome: t.nome,
+        valor: t.percentual,
+      }));
+
+      const coberturas = coberturasRes.rows.map((c) => ({
+        id: c.cobertura_id,
+        nome: c.nome,
+        valor: c.quantidade,
+      }));
+
+      const tiposFechamentoCurativo = tiposFechamentoCurativoRes.rows.map(
+        (f) => ({
+          id: f.fechamento_curativo_id,
+          nome: f.nome,
+          valor: f.quantidade,
+        })
+      );
+
+      await client.query("COMMIT");
+
+      return {
+        bordas: mapNomes(bordasRes),
+        etiologias: mapNomes(etiologiasRes),
+        classificacoesLesaoPressao: mapNomes(classificacoesLesaoPressaoRes),
+        quantificacoesDor: mapNomes(quantificacoesDorRes),
+        regioesPerilesionais: regioesPerilesionaisRes.rows.map((r) => r.nome),
+        estruturasNobres: estruturasNobresRes.rows.map((r) => r.nome),
+        protecoes: protecoesRes.rows.map((r) => r.nome),
+        desbridamentos: desbridamentosRes.rows.map((r) => r.nome),
+        limpezas: limpezasRes.rows.map((r) => r.nome),
+        regiaoPerilesionalOutro: getOutro(regioesPerilesionaisRes),
+        estruturaNobreOutro: getOutro(estruturasNobresRes),
+        protecaoOutro: getOutro(protecoesRes),
+        desbridamentoOutro: getOutro(desbridamentosRes),
+        limpezaOutro: getOutro(limpezasRes),
+        presencaTunel: lesaoData.presenca_tunel,
+        dor: lesaoData.possui_dor,
+        nivelDor: lesaoData.escala_dor,
+        exsudato: await DadosFormLesao.getExsudatoNome(lesaoData.exsudato_id),
+        tipoExsudato: await DadosFormLesao.getTipoExsudatoNome(
+          lesaoData.tipo_exsudato_id
+        ),
+        odor: await DadosFormLesao.getOdorNome(lesaoData.odor_id),
+        tamanho: {
+          comprimento: lesaoData.comprimento,
+          largura: lesaoData.largura,
+          profundidade: lesaoData.profundidade,
+        },
+        tecidos,
+        coberturas,
+        tiposFechamentoCurativo,
+      };
+    } catch (err) {
+      await client.query("ROLLBACK");
+      console.error("Erro ao obter lesão:", err);
+      throw err;
+    } finally {
+      client.release();
+    }
+  },
+
+  async getLesaoComIds(id) {
     const client = await db.connect();
     try {
       await client.query("BEGIN");
@@ -55,8 +224,6 @@ const LesaoModel = {
       );
 
       const lesaoData = lesaoRes.rows[0];
-      console.log(lesaoData);
-      console.log(lesaoData.id);
 
       // 2. Obtendo os dados dos relacionamentos
       // ETIOLOGIAS
@@ -168,12 +335,6 @@ const LesaoModel = {
         (item) => item.descricao_outro !== null
       )?.descricao_outro;
 
-      console.log(regiaoPerilesionalOutro);
-      console.log(estruturaNobreOutro);
-      console.log(protecaoOutro);
-      console.log(desbridamentoOutro);
-      console.log(limpezaOutro);
-
       // Obtendo os dados de tecidos, coberturas e tiposFechamentoCurativo
       const tecidos = await this.tecidosData(tecidosRes);
       const coberturas = await this.coberturasData(coberturasRes);
@@ -273,8 +434,8 @@ const LesaoModel = {
       await client.query("BEGIN");
 
       // 1. Inserir Lesão
-      const usuario = await Usuarios.buscarPorCPF(cpfUsuario);
-      const tipoUsuario = await Usuarios.buscarTipoUsuario(usuario.tipo_id);
+      const usuario = await Usuarios.getPorCPF(cpfUsuario);
+      const tipoUsuario = await Usuarios.getTipoUsuario(usuario.tipo_id);
       const precisaAprovacao = tipoUsuario[0].nome === "Acadêmico";
 
       const lesaoRes = await client.query(
@@ -489,10 +650,6 @@ const LesaoModel = {
     try {
       await client.query("BEGIN");
 
-      console.log("ID LESAO: ", lesaoId);
-      console.log("ID LESAO: ", cpfUsuario);
-      console.log("ID LESAO: ", dados);
-
       // 1. Atualizando a lesão
       await client.query(
         `UPDATE lesoes
@@ -522,8 +679,6 @@ const LesaoModel = {
         ]
       );
 
-      console.log("MODIFIQUEI LESÃO 1: ", lesaoId);
-
       // 2. Atualizando associações muitos-para-muitos
       // ETIOLOGIAS
       await this.atualizarRelacionamentoCheckbox({
@@ -534,8 +689,6 @@ const LesaoModel = {
         lesaoId,
       });
 
-      console.log("MODIFIQUEI LESÃO 2 ");
-
       // CLASSIFICAÇÕES LESÃO POR PRESSÃO
       await this.atualizarRelacionamentoCheckbox({
         client,
@@ -545,15 +698,11 @@ const LesaoModel = {
         lesaoId,
       });
 
-      console.log("MODIFIQUEI LESÃO 3");
-
       // REGIÕES PERILESIONAIS
       // Encontrar o id da opção cujo nome é 'Outro'
       const idOutroRegiaoPerilesional = await DadosFormLesao.getIdOpcaoOutro(
         "regioes_perilesionais"
       );
-
-      console.log("MODIFIQUEI LESÃO 4", idOutroRegiaoPerilesional);
 
       await this.atualizarRelacionamentoCheckbox({
         client,
@@ -565,8 +714,6 @@ const LesaoModel = {
         descricaoOutro: dados.regiaoPerilesionalOutro,
       });
 
-      console.log("MODIFIQUEI LESÃO 5");
-
       // BORDAS
       await this.atualizarRelacionamentoCheckbox({
         client,
@@ -576,8 +723,6 @@ const LesaoModel = {
         lesaoId,
       });
 
-      console.log("MODIFIQUEI LESÃO 6");
-
       // QUANTIFICAÇÕES DE DOR
       await this.atualizarRelacionamentoCheckbox({
         client,
@@ -586,8 +731,6 @@ const LesaoModel = {
         dadosSelecionados: dados.quantificacoesDor,
         lesaoId,
       });
-
-      console.log("MODIFIQUEI LESÃO 7");
 
       // ESTRUTURAS NOBRES
       // Encontrar o id da opção cujo nome é 'Outro'

@@ -51,7 +51,7 @@ class AuthService {
       const decoded = this.verificarRefreshToken(refreshToken);
 
       // Busca usuário no banco de dados
-      const usuario = await Usuarios.buscarPorCPF(decoded.cpf);
+      const usuario = await Usuarios.getPorCPF(decoded.cpf);
       if (!usuario) throw new Error("Usuário não encontrado");
 
       // Gera um novo accessToken
@@ -74,7 +74,7 @@ class AuthService {
       }
 
       // Busca o usuário no banco de dados
-      const usuario = await Usuarios.buscarPorCPF(decoded.cpf);
+      const usuario = await Usuarios.getPorCPF(decoded.cpf);
       if (!usuario) {
         throw new Error("Usuário não encontrado");
       }
@@ -101,11 +101,11 @@ class AuthService {
     } = dados;
 
     // Verifica se o email já existe
-    const emailExistente = await Usuarios.buscarPorEmail(email);
+    const emailExistente = await Usuarios.getPorEmail(email);
     if (emailExistente) throw new Error("Email já cadastrado.");
 
     // Verifica se o cpf já existe
-    const cpfExistente = await Usuarios.buscarPorCPF(cpf);
+    const cpfExistente = await Usuarios.getPorCPF(cpf);
     if (cpfExistente) throw new Error("CPF já cadastrado.");
 
     // Hash da senha
@@ -140,7 +140,7 @@ class AuthService {
 
   static async login({ email, senha }) {
     // Busca usuário pelo email
-    const usuario = await Usuarios.buscarPorEmail(email);
+    const usuario = await Usuarios.getPorEmail(email);
     if (!usuario) throw new Error("Usuário não encontrado.");
 
     // Compara a senha informada com a armazenada
@@ -161,7 +161,7 @@ class AuthService {
 
   static async esqueceuSenha(email) {
     // Busca usuário pelo email
-    const usuario = await Usuarios.buscarPorEmail(email);
+    const usuario = await Usuarios.getPorEmail(email);
     if (!usuario) throw new Error("Email não encontrado.");
 
     // Gerar um token aleatório
@@ -190,7 +190,7 @@ class AuthService {
     if (!tokenData) throw new Error("Token inválido ou expirado.");
 
     // Buscar usuário pelo email do token
-    const usuario = await Usuarios.buscarPorEmail(tokenData.email);
+    const usuario = await Usuarios.getPorEmail(tokenData.email);
     if (!usuario) throw new Error("Usuário não encontrado.");
 
     // Hash da nova senha

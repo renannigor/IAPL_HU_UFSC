@@ -1,29 +1,48 @@
 import db from "../config/db.js";
 
 const Usuarios = {
-  async buscarTiposUsuario() {
+  async getTiposUsuario() {
     const result = await db.query("SELECT * FROM tipos_usuario");
     return result.rows;
   },
 
-  async buscarTipoUsuario(id) {
+  async getTipoUsuario(id) {
     const result = await db.query("SELECT * FROM tipos_usuario WHERE id = $1", [
       id,
     ]);
     return result.rows;
   },
 
-  async buscarPorEmail(email) {
-    const result = await db.query("SELECT * FROM Usuarios WHERE email = $1", [
-      email,
-    ]);
+  async verificaPermissaoAprovacao(id) {
+    const result = await db.query(
+      "SELECT nome FROM tipos_usuario WHERE id = $1",
+      [id]
+    );
+    return result.rows[0].nome == "Acadêmico";
+  },
+
+  async getPorEmail(email) {
+    const result = await db.query(
+      `SELECT 
+        cpf, nome, email, tipo_id, admin, possui_acesso, online, senha, criado_em,
+        TO_CHAR(ultimo_acesso, 'DD/MM/YYYY HH24:MI:SS') AS ultimo_acesso
+       FROM Usuarios 
+       WHERE email = $1`,
+      [email]
+    );
     return result.rows[0];
   },
 
-  async buscarPorCPF(cpf) {
-    const result = await db.query("SELECT * FROM usuarios WHERE cpf = $1", [
-      cpf,
-    ]);
+  async getPorCPF(cpf) {
+    const result = await db.query(
+      `
+      SELECT 
+       cpf, nome, email, tipo_id, admin, possui_acesso, online, senha, criado_em,
+       TO_CHAR(ultimo_acesso, 'DD/MM/YYYY HH24:MI:SS') AS ultimo_acesso
+      FROM usuarios 
+      WHERE cpf = $1`,
+      [cpf]
+    );
     return result.rows[0];
   },
 
@@ -57,33 +76,6 @@ const Usuarios = {
     ]);
   },
 
-  async ordenarComFiltro(
-    coluna = "nome",
-    ordem = "asc",
-    offset = 0,
-    cpfLogado
-  ) {
-    const colunasValidas = ["nome", "email", "online", "possui_acesso", "tipo"];
-    if (!colunasValidas.includes(coluna)) coluna = "nome";
-    const ordemSQL = ordem.toLowerCase() === "desc" ? "DESC" : "ASC";
-
-    const query = `
-      SELECT cpf, nome, email, online, possui_acesso, tipo
-      FROM usuarios
-      WHERE cpf != $1
-      ORDER BY ${coluna} ${ordemSQL}
-      LIMIT 8 OFFSET $2
-    `;
-
-    const result = await db.query(query, [cpfLogado, offset]);
-    return result.rows;
-  },
-
-  async contarTotalUsuarios() {
-    const result = await db.query("SELECT COUNT(*) FROM usuarios");
-    return parseInt(result.rows[0].count, 10);
-  },
-
   async excluirUsuario(cpf) {
     await db.query("DELETE FROM usuarios WHERE cpf = $1", [cpf]);
   },
@@ -96,11 +88,10 @@ const Usuarios = {
   },
 
   async atualizarInfoPessoal(nome, tipo, cpf) {
-    await db.query("UPDATE usuarios SET nome = $1, tipo_id = $2 WHERE cpf = $3", [
-      nome,
-      tipo,
-      cpf,
-    ]);
+    await db.query(
+      "UPDATE usuarios SET nome = $1, tipo_id = $2 WHERE cpf = $3",
+      [nome, tipo, cpf]
+    );
   },
 };
 

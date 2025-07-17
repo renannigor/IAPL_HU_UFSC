@@ -1,4 +1,4 @@
-import { User, Users2, Info, UserCircle } from "lucide-react";
+import { Users2, Info, UserCircle } from "lucide-react";
 import { useAuth } from "../../components/auth/AuthProvider";
 import { useNavigate } from "react-router-dom";
 
@@ -10,15 +10,8 @@ const HomePage = () => {
     {
       title: "Pacientes",
       description: "Lista de pacientes cadastrados no sistema AGHU.",
-      icon: <User size={40} />,
-      onClick: () => navigate("/dashboard/pacientes"),
-    },
-    {
-      title: "Usuários",
-      description: "Gerencie usuários do sistema.",
       icon: <Users2 size={40} />,
-      onClick: () => navigate("/dashboard/usuarios"), 
-      onlyAdmin: true,
+      onClick: () => navigate("/dashboard/pacientes"),
     },
     {
       title: "Perfil",
@@ -49,7 +42,6 @@ const HomePage = () => {
         {/* Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
           {cards.map((card, index) => {
-            if (card.onlyAdmin && !usuarioAtual?.admin) return null;
             return (
               <div
                 key={index}

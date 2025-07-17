@@ -1,31 +1,6 @@
 import Usuarios from "../models/UsuarioModel.js";
 
 class UsuarioController {
-  static async filtrarUsuarios(req, res) {
-    try {
-      const {
-        orderBy = "nome",
-        ordem = "asc",
-        pagina = 1,
-        cpfLogado,
-      } = req.query;
-      const offset = (pagina - 1) * 8;
-
-      const usuarios = await Usuarios.ordenarComFiltro(
-        orderBy,
-        ordem,
-        offset,
-        cpfLogado
-      );
-      const total = await Usuarios.contarTotalUsuarios();
-
-      res.json({ usuarios, total });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Erro ao buscar usuários" });
-    }
-  }
-
   static async deletarUsuario(req, res) {
     try {
       const { cpf } = req.params;
@@ -63,10 +38,23 @@ class UsuarioController {
     }
   }
 
-  static async buscarTiposUsuario(req, res) {
+  static async getTiposUsuario(req, res) {
     try {
-      const usuarios = await Usuarios.buscarTiposUsuario();
-      console.log(usuarios)
+      const usuarios = await Usuarios.getTiposUsuario();
+      console.log(usuarios);
+      res.status(200).json(usuarios);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ erro: "Erro ao buscar os tipos de usuário" });
+    }
+  }
+
+  static async verificaPermissaoAprovacao(req, res) {
+    try {
+      const { tipo } = req.params;
+
+      const usuarios = await Usuarios.verificaPermissaoAprovacao(tipo);
+      console.log(usuarios);
       res.status(200).json(usuarios);
     } catch (error) {
       console.error(error);

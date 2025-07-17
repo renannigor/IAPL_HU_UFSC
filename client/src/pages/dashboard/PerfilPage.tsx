@@ -18,7 +18,7 @@ import {
 import { isAxiosError } from "axios";
 import ConfirmDialog from "./components/ConfirmDialog";
 import UsuarioService from "@/services/UsuarioService";
-import { Opcao } from "@/types/opcao";
+import { Opcao } from "@/types/Opcao";
 import { BreadcrumbNav } from "@/pages/dashboard/components/BreadcrumbNav";
 import { MessageCircleWarningIcon } from "lucide-react";
 

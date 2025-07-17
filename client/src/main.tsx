@@ -13,7 +13,6 @@ import { AuthProvider } from "./components/auth/AuthProvider.tsx";
 import DashboardLayout from "./pages/dashboard/components/DashboardLayout.tsx";
 import HomePage from "./pages/dashboard/HomePage";
 import PerfilPage from "./pages/dashboard/PerfilPage";
-import UsuariosPage from "./pages/dashboard/UsuariosPage";
 import PacientesPage from "./pages/dashboard/PacientesPage";
 import SobrePage from "./pages/dashboard/SobrePage";
 import "./index.css";
@@ -89,7 +88,6 @@ createRoot(document.getElementById("root")!).render(
               path="pacientes/:id_paciente/lesoes/:id_lesao/detalhes"
               element={<DetalhesLesaoPage />}
             />
-            <Route path="usuarios" element={<UsuariosPage />} />
             <Route path="perfil" element={<PerfilPage />} />
             <Route path="sobre" element={<SobrePage />} />
           </Route>

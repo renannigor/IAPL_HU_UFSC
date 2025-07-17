@@ -2,7 +2,7 @@ import { Control, Controller } from "react-hook-form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import React from "react";
-import { Opcao } from "@/types/opcao";
+import { Opcao } from "@/types/Opcao";
 
 interface Props {
   control: Control<any>;

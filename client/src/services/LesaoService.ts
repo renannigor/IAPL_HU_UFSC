@@ -17,9 +17,19 @@ class LesaoService {
     }
   }
 
-  static async obterLesao(id: string) {
+  static async getLesaoComIds(id: string) {
     try {
-      const response = await api.get(`/api/lesoes/obter/${id}`);
+      const response = await api.get(`/api/lesoes/obter/${id}/ids`);
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao obter lesão", error);
+      throw error;
+    }
+  }
+
+  static async getLesaoComNomes(id: string) {
+    try {
+      const response = await api.get(`/api/lesoes/obter/${id}/nomes`);
       return response.data;
     } catch (error) {
       console.error("Erro ao obter lesão", error);

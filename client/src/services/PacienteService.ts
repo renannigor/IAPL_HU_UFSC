@@ -3,7 +3,7 @@ import api from "@/api/api";
 class PacienteService {
   static async carregarPacientes(paginaAtual: number) {
     try {
-      const response = await api.get("/api/pacientes/todos", {
+      const response = await api.get("/api/pacientes/todos/teste", {
         params: {
           pagina: paginaAtual,
         },
@@ -17,7 +17,7 @@ class PacienteService {
 
   static async obterPaciente(id: string) {
     try {
-      const response = await api.get(`/api/pacientes/${id}`);
+      const response = await api.get(`/api/pacientes/${id}/teste`);
       return response.data;
     } catch (error) {
       console.error("Erro ao obter paciente", error);

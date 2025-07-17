@@ -80,7 +80,7 @@ const LesaoFormPage = () => {
   useEffect(() => {
     if (!isEditMode) return;
     const fetchLesao = async () => {
-      const data = await LesaoService.obterLesao(id_lesao!);
+      const data = await LesaoService.getLesaoComIds(id_lesao!);
       console.log("OBTENDO LESÃO: ", data.dados);
       reset(data.dados);
     };

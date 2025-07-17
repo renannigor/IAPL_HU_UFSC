@@ -20,31 +20,31 @@ export interface ItemComValor {
 }
 
 export interface DadosLesaoFormatado {
-  etiologias: number[];
-  classificacoesLesaoPressao?: number[];
-  regioesPerilesionais: number[];
+  etiologias: string[];
+  classificacoesLesaoPressao?: string[];
+  regioesPerilesionais: string[];
   regiaoPerilesionalOutro?: string | null;
-  bordas: number[];
-  tecido: ItemComValor[];
-  estruturasNobres: number[];
+  bordas: string[];
+  tecidos: ItemComValor[];
+  estruturasNobres: string[];
   estruturaNobreOutro?: string | null;
   presencaTunel: string;
   dor: string;
   nivelDor?: number;
-  quantificacoesDor?: number[];
-  exsudato: number;
-  tipoExsudato: number;
-  odor: number;
+  quantificacoesDor?: string[];
+  exsudato: string;
+  tipoExsudato: string;
+  odor: string;
   tamanho: {
     comprimento: number;
     largura: number;
     profundidade: number;
   };
-  limpezas: number[];
+  limpezas: string[];
   limpezaOutro?: string | null;
-  desbridamentos: number[];
+  desbridamentos: string[];
   desbridamentoOutro?: string | null;
-  protecoes: number[];
+  protecoes: string[];
   protecaoOutro?: string | null;
   coberturas: ItemComValor[];
   tiposFechamentoCurativo: ItemComValor[];

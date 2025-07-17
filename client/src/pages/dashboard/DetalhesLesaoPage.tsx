@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import LesaoService from "@/services/LesaoService";
-import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ClipboardCopyIcon } from "lucide-react";
+import { useParams } from "react-router-dom";
+import { ClipboardCopyIcon } from "lucide-react";
 import { toast } from "sonner";
-import { DadosLesaoFormatado } from "@/types/lesao";
+import { DadosLesaoFormatado } from "@/types/Lesao";
 import { Button } from "@/components/ui/button";
+import { BreadcrumbNav } from "./components/BreadcrumbNav";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 function LabelValue({ label, value }: { label: string; value: string }) {
   const copyToClipboard = () => {
@@ -33,11 +35,12 @@ const DetalhesLesaoPage = () => {
   const { id_lesao, id_paciente } = useParams();
   const [dadosLesao, setDadosLesao] = useState<DadosLesaoFormatado>();
 
-  const navigate = useNavigate();
+  const { usuarioAtual } = useAuth();
 
   useEffect(() => {
     const fetchLesao = async () => {
-      const data = await LesaoService.obterLesao(id_lesao!);
+      const data = await LesaoService.getLesaoComNomes(id_lesao!);
+      console.log(data.dados);
       setDadosLesao(data.dados);
     };
     fetchLesao();
@@ -49,161 +52,187 @@ const DetalhesLesaoPage = () => {
     );
   }
 
+  const {
+    etiologias,
+    classificacoesLesaoPressao,
+    regioesPerilesionais,
+    regiaoPerilesionalOutro,
+    bordas,
+    tecidos,
+    estruturasNobres,
+    estruturaNobreOutro,
+    presencaTunel,
+    dor,
+    nivelDor,
+    quantificacoesDor,
+    exsudato,
+    tipoExsudato,
+    odor,
+    tamanho,
+    limpezas,
+    limpezaOutro,
+    desbridamentos,
+    desbridamentoOutro,
+    protecoes,
+    protecaoOutro,
+    coberturas,
+    tiposFechamentoCurativo,
+  } = dadosLesao;
+
   return (
-    <div className="space-y-6 p-6">
-      {/* Botão para voltar */}
-      <div className="space-y-6">
+    <div className="space-y-8 px-6 pb-12">
+      <div className="flex items-center justify-between">
+        <BreadcrumbNav
+          itens={[
+            { titulo: "Home", href: "/" },
+            { titulo: "Pacientes", href: "/dashboard/pacientes" },
+            {
+              titulo: id_paciente!,
+              href: `/dashboard/pacientes/${id_paciente}`,
+            },
+            {
+              titulo: "Informações Adicionais",
+              href: `/dashboard/pacientes/${id_paciente}/lesoes/${id_lesao}/detalhes`,
+            },
+          ]}
+        />
+
         <Button
-          variant="outline"
-          onClick={() => navigate(`/dashboard/pacientes/${id_paciente}`)}
-          className="flex items-center gap-2"
+          onClick={async () => {
+            try {
+              //await LesaoService.aprovarLesao(id_lesao!);
+              toast.success("Lesão aprovada com sucesso!");
+            } catch (error) {
+              console.error("Erro ao aprovar lesão:", error);
+              toast.error("Erro ao aprovar lesão.");
+            }
+          }}
+          className="bg-green-100 text-green-800 hover:bg-green-200"
         >
-          <ArrowLeft className="h-4 w-4" />
-          Voltar
+          Aprovar Lesão
         </Button>
       </div>
 
-      {/* Informações Gerais */}
+      {/* RESUMO GERAL */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-muted-foreground">
-            Informações Gerais
-          </CardTitle>
+          <CardTitle>Resumo Geral</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
+          <LabelValue label="Presença de Túnel" value={presencaTunel} />
+          <LabelValue label="Dor" value={dor} />
+          {dor != "nao" && (
+            <LabelValue label="Nível da dor" value={String(nivelDor)} />
+          )}
+          <LabelValue label="Exsudato" value={exsudato} />
+          <LabelValue label="Tipo de Exsudato" value={tipoExsudato} />
+          <LabelValue label="Odor" value={odor} />
           <LabelValue
-            label="Etiologias"
-            value={dadosLesao.etiologias.join(", ")}
+            label="Tamanho"
+            value={`Comprimento: ${tamanho.comprimento} cm\nLargura: ${tamanho.largura} cm\nProfundidade: ${tamanho.profundidade} cm`}
           />
+        </CardContent>
+      </Card>
+
+      {/* ETIOLOGIAS E CLASSIFICAÇÕES */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Etiologias e Classificações</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <LabelValue label="Etiologias" value={etiologias.join(", ")} />
+          {classificacoesLesaoPressao && (
+            <LabelValue
+              label="Classificações Lesão por Pressão"
+              value={classificacoesLesaoPressao.join(", ")}
+            />
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ASPECTOS VISUAIS */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Aspectos Visuais</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <LabelValue label="Bordas" value={bordas.join(", ")} />
           <LabelValue
-            label="Classificações"
-            value={dadosLesao.classificacoesLesaoPressao.join(", ")}
+            label="Tecidos"
+            value={tecidos.map((t) => `${t.nome} (${t.valor}%)`).join(", ")}
           />
+        </CardContent>
+      </Card>
+
+      {/* REGIÕES E ESTRUTURAS */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Regiões e Estruturas</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
           <LabelValue
             label="Regiões Perilesionais"
-            value={dadosLesao.regioesPerilesionais.join(", ")}
+            value={regioesPerilesionais.join(", ")}
           />
-          {dadosLesao.regiaoPerilesionalOutro && (
+          {regiaoPerilesionalOutro && (
             <LabelValue
               label="Outra Região Perilesional"
-              value={dadosLesao.regiaoPerilesionalOutro}
+              value={regiaoPerilesionalOutro}
             />
           )}
-          <LabelValue label="Bordas" value={dadosLesao.bordas.join(", ")} />
-        </CardContent>
-      </Card>
-
-      {/* Tecido */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-muted-foreground">Tecido</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
           <LabelValue
             label="Estruturas Nobres"
-            value={dadosLesao.tecido.estruturasNobres.join(", ")}
+            value={estruturasNobres.join(", ")}
           />
-          {dadosLesao.tecido.estruturaNobreOutro && (
+          {estruturaNobreOutro && (
             <LabelValue
               label="Outra Estrutura Nobre"
-              value={dadosLesao.tecido.estruturaNobreOutro}
+              value={estruturaNobreOutro}
             />
           )}
-          {Object.entries(dadosLesao.tecido).map(([key, value]) => {
-            if (typeof value === "number") {
-              return <LabelValue key={key} label={key} value={value + "%"} />;
-            }
-            return null;
-          })}
         </CardContent>
       </Card>
 
-      {/* Dor */}
+      {/* TRATAMENTO */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-muted-foreground">Dor</CardTitle>
+          <CardTitle>Tratamento Aplicado</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
-          <LabelValue label="Presença de Dor" value={dadosLesao.dor} />
-          {dadosLesao.nivelDor && (
+          {dor != "nao" && (
             <LabelValue
-              label="Nível de Dor"
-              value={String(dadosLesao.nivelDor)}
+              label="Quantificações da Dor"
+              value={quantificacoesDor?.join(", ") || "-"}
             />
           )}
-          {dadosLesao.quantificacoesDor!.length > 0 && (
+          <LabelValue label="Limpezas" value={limpezas.join(", ")} />
+          {limpezaOutro && (
+            <LabelValue label="Outra Limpeza" value={limpezaOutro} />
+          )}
+          <LabelValue
+            label="Desbridamentos"
+            value={desbridamentos.join(", ")}
+          />
+          {desbridamentoOutro && (
             <LabelValue
-              label="Quantificações"
-              value={dadosLesao.quantificacoesDor!.join(", ")}
+              label="Outro Desbridamento"
+              value={desbridamentoOutro}
             />
           )}
-        </CardContent>
-      </Card>
-
-      {/* Exsudato */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-muted-foreground">Exsudato</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <LabelValue label="Quantidade" value={dadosLesao.exsudato} />
-          <LabelValue label="Tipo" value={dadosLesao.tipoExsudato} />
-          <LabelValue label="Odor" value={dadosLesao.odor} />
-        </CardContent>
-      </Card>
-
-      {/* Tamanho */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-muted-foreground">
-            Tamanho da Lesão
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
+          <LabelValue label="Proteções" value={protecoes.join(", ")} />
+          {protecaoOutro && (
+            <LabelValue label="Outra Proteção" value={protecaoOutro} />
+          )}
           <LabelValue
-            label="Comprimento"
-            value={`${dadosLesao.tamanho.comprimento} cm`}
+            label="Coberturas"
+            value={coberturas.map((c) => `${c.nome} (${c.valor})`).join(", ")}
           />
           <LabelValue
-            label="Largura"
-            value={`${dadosLesao.tamanho.largura} cm`}
+            label="Tipos de Fechamento Curativo"
+            value={tiposFechamentoCurativo
+              .map((f) => `${f.nome} (${f.valor})`)
+              .join(", ")}
           />
-          <LabelValue
-            label="Profundidade"
-            value={`${dadosLesao.tamanho.profundidade} cm`}
-          />
-        </CardContent>
-      </Card>
-
-      {/* Cobertura Utilizada */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-muted-foreground">
-            Cobertura Utilizada
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {Object.entries(dadosLesao.coberturaUtilizada)
-            .filter(([, value]) => value > 0)
-            .map(([key, value]) => (
-              <LabelValue key={key} label={key} value={String(value)} />
-            ))}
-        </CardContent>
-      </Card>
-
-      {/* Fechamento do Curativo */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-muted-foreground">
-            Fechamento do Curativo
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {Object.entries(dadosLesao.fechamentoCurativo)
-            .filter(([, value]) => value > 0)
-            .map(([key, value]) => (
-              <LabelValue key={key} label={key} value={String(value)} />
-            ))}
         </CardContent>
       </Card>
     </div>

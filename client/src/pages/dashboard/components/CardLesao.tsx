@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import ConfirmDialog from "@/pages/dashboard/components/ConfirmDialog";
-import { Lesao } from "@/types/lesao";
+import { Lesao } from "@/types/Lesao";
 import LesaoService from "@/services/LesaoService";
 import {
   Pencil,
