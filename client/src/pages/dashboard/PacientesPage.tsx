@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Paciente } from "@/types/Paciente";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { MoreVertical } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -12,12 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Filter, FileDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Utilitarios } from "../../utils/utilitarios";
 import PacienteService from "@/services/PacienteService";
@@ -35,35 +29,32 @@ const PacientesPage = () => {
 
   const carregarPacientes = async (): Promise<void> => {
     const data = await PacienteService.carregarPacientes(paginaAtual);
-
     const pacientesData = Array.isArray(data) ? data : [];
-
     setPacientes(pacientesData);
     setTotalPacientes(pacientesData.length);
   };
 
-  const gerarDocumento = (paciente: Paciente): void => {
-    console.log("Gerar documento para paciente:", paciente.nome);
-  };
-
   const exportarCSV = (): void => {
     const header = [
+      "Internação",
+      "Código",
       "Nome Completo",
       "Data de Nascimento",
-      "Idade",
+      "Cor",
       "Sexo",
-      "Quarto",
-      "Unidade de Internação",
-      "Data de Internação",
-      "Data de Avaliação GICPel",
-      "Alergias",
-      "Cor da Pele",
-      "Altura (cm)",
-      "Peso (kg)",
+      "Altura Consultada",
+      "Peso Consultada",
+      "Altura Controle",
+      "Peso Controle",
+      "Idade",
       "IMC",
-      "Motivo da Internação",
-      "Comorbidades",
-      "Medicamentos em Uso",
+      "Quarto",
+      "Leito",
+      "Criticidade Alérgica",
+      "Grau Certeza",
+      "Medicamento",
+      "Agente Causador",
+      "Classificação Alérgica",
     ];
 
     const rows = pacientes.map((p) => [
@@ -77,6 +68,8 @@ const PacientesPage = () => {
       p.peso_consultada,
       p.altura_controle,
       p.peso_controle,
+      p.idade,
+      p.imc,
       p.qrt_numero,
       p.lto_lto_id,
       p.criticidade_alergica,
@@ -91,7 +84,6 @@ const PacientesPage = () => {
       .join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -124,13 +116,19 @@ const PacientesPage = () => {
           </p>
         </div>
 
-        {/* Botão de Exportar */}
-        <Button variant="outline" onClick={exportarCSV}>
-          📁 Exportar CSV
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline">
+            <Filter className="w-4 h-4 mr-2" />
+            Filtrar
+          </Button>
+          <Button variant="outline" onClick={exportarCSV}>
+            <FileDown className="w-4 h-4 mr-2" />
+            Exportar CSV
+          </Button>
+        </div>
       </div>
 
-      <Card className="p-4">
+      <Card className="p-4 shadow-sm border rounded-xl">
         <CardContent className="overflow-auto">
           <Table>
             <TableCaption>Pacientes internados avaliados.</TableCaption>
@@ -139,43 +137,37 @@ const PacientesPage = () => {
                 {Utilitarios.atributosTabelaPacientes.map((coluna) => (
                   <TableHead key={coluna}>{coluna}</TableHead>
                 ))}
-                <TableHead>Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {pacientes.map((paciente) => (
                 <TableRow key={paciente.pac_codigo}>
-                  <TableCell>{paciente.nome}</TableCell>
+                  <TableCell className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-green-100 text-green-800 flex items-center justify-center font-semibold text-sm">
+                      {paciente.nome.charAt(0)}
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="font-semibold">{paciente.nome}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {paciente.idade} anos
+                      </span>
+                    </div>
+                  </TableCell>
                   <TableCell>{paciente.internacao}</TableCell>
                   <TableCell>{paciente.nascimento}</TableCell>
                   <TableCell>{paciente.cor}</TableCell>
                   <TableCell>{paciente.qrt_numero}</TableCell>
                   <TableCell>{paciente.sexo}</TableCell>
                   <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <button className="p-1 rounded hover:bg-gray-100">
-                          <MoreVertical className="w-5 h-5" />
-                        </button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent onClick={(e) => e.stopPropagation()}>
-                        <DropdownMenuItem
-                          onClick={() => {
-                            navigate(
-                              `/dashboard/pacientes/${paciente.pac_codigo}`
-                            );
-                            console.log("Ver detalhes:", paciente.nome);
-                          }}
-                        >
-                          Ver detalhes
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => gerarDocumento(paciente)}
-                        >
-                          Gerar ficha
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <Button
+                      variant="ghost"
+                      className="text-green-700 hover:text-green-800 hover:underline"
+                      onClick={() => {
+                        navigate(`/dashboard/pacientes/${paciente.pac_codigo}`);
+                      }}
+                    >
+                      Visualizar
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}

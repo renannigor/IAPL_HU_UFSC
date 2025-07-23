@@ -10,10 +10,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     nome VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     tipo_id INTEGER REFERENCES tipos_usuario(id) NOT NULL,
-    admin BOOLEAN DEFAULT FALSE,
-    -- RETIRAR O ATRIBUTO admin
     possui_acesso BOOLEAN DEFAULT FALSE,
-    online BOOLEAN DEFAULT TRUE,
     senha TEXT NOT NULL,
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     ultimo_acesso TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -44,6 +41,8 @@ CREATE TABLE pacientes_aux (
     pac_codigo TEXT PRIMARY KEY,
     internacao INTEGER,
     nome TEXT,
+    idade INTEGER,
+    imc INTEGER,
     nascimento TEXT,
     cor TEXT,
     sexo TEXT,
@@ -103,8 +102,8 @@ CREATE TABLE IF NOT EXISTS bordas (
     nome VARCHAR(255) NOT NULL UNIQUE
 );
 
--- QUANTIFICAÇÕES DA DOR
-CREATE TABLE IF NOT EXISTS quantificacoes_dor (
+-- CLASSIFICAÇÃO DA DOR
+CREATE TABLE IF NOT EXISTS classificacoes_dor (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(255) NOT NULL UNIQUE
 );
@@ -167,20 +166,30 @@ CREATE TABLE IF NOT EXISTS lesoes (
         precisa_aprovacao BOOLEAN NOT NULL,
         presenca_tunel TEXT NOT NULL,
         possui_dor TEXT NOT NULL,
-        escala_dor INTEGER CHECK (
-            escala_dor >= 0
-            AND escala_dor <= 10
+        escala_numerica_dor INTEGER CHECK (
+            escala_numerica_dor >= 0
+            AND escala_numerica_dor <= 10
         ),
         exsudato_id INTEGER REFERENCES exsudatos(id),
         tipo_exsudato_id INTEGER REFERENCES tipos_exsudato(id),
         odor_id INTEGER REFERENCES odores(id),
         comprimento INTEGER NOT NULL,
         largura INTEGER NOT NULL,
-        profundidade INTEGER NOT NULL
+        profundidade INTEGER NOT NULL,
+        data_proxima_avaliacao TIMESTAMP NOT NULL,
+        data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 📌 DEFINIÇÃO DE RELACIONAMENTOS 
 -- DEFININDO OS RELACIONAMENTOS ENTRE AS TABELAS
+-- RELAÇÃO: LESÃO x LESÃO
+CREATE TABLE IF NOT EXISTS historico_lesoes (
+    id SERIAL PRIMARY KEY,
+    lesao_original_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
+    lesao_versao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- RELAÇÃO: LESÃO x ETIOLOGIA
 CREATE TABLE IF NOT EXISTS lesoes_etiologias (
     id SERIAL PRIMARY KEY,
@@ -210,11 +219,11 @@ CREATE TABLE IF NOT EXISTS lesoes_bordas (
     borda_id INTEGER NOT NULL REFERENCES bordas(id) ON DELETE CASCADE
 );
 
--- RELAÇÃO: LESÃO x QUANTIFICAÇÃO DE DOR
-CREATE TABLE IF NOT EXISTS lesoes_quantificacoes_dor (
+-- RELAÇÃO: LESÃO x CLASSIFICAÇÃO DA DOR
+CREATE TABLE IF NOT EXISTS lesoes_classificacoes_dor (
     id SERIAL PRIMARY KEY,
     lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
-    quantificacao_id INTEGER NOT NULL REFERENCES quantificacoes_dor(id) ON DELETE CASCADE
+    classificacao_id INTEGER NOT NULL REFERENCES classificacoes_dor(id) ON DELETE CASCADE
 );
 
 -- RELAÇÃO: TECIDO x 
@@ -352,7 +361,7 @@ VALUES
 
 -- INSERINDO AS QUANTIFICAÇÕES DE DOR
 INSERT INTO
-    quantificacoes_dor(nome)
+    classificacoes_dor(nome)
 VALUES
     ('Aguda'),
     ('Crônica'),
@@ -391,7 +400,7 @@ VALUES
 INSERT INTO
     coberturas(nome)
 VALUES
-    ('Age'),
+    ('AGE'),
     ('Alginato de Cálcio com prata placa'),
     ('Alginato de Cálcio com prata fita'),
     ('Alginato de Cálcio fita'),

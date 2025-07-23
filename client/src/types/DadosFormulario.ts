@@ -7,7 +7,7 @@ export interface DadosFormulario {
   bordas: Opcao[];
   estruturasNobres: Opcao[];
   tecidos: Opcao[];
-  quantificacoesDor: Opcao[];
+  classificacoesDor: Opcao[];
   exsudatos: Opcao[];
   tiposExsudato: Opcao[];
   odores: Opcao[];

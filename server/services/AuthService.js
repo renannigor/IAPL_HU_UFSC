@@ -15,7 +15,7 @@ const SECRET_REFRESH = process.env.REFRESH_TOKEN_SECRET;
 class AuthService {
   static gerarAccessToken(usuario) {
     return sign(
-      { cpf: usuario.cpf, admin: usuario.admin },
+      { cpf: usuario.cpf },
       SECRET_ACCESS,
       { expiresIn: "15m" } // Token de acesso válido por 15 minutos
     );
@@ -153,8 +153,6 @@ class AuthService {
 
     // Atualiza o último acesso do usuário
     await Usuarios.atualizarUltimoAcesso(usuario.cpf);
-    // Atualiza o status de online do usuário
-    await Usuarios.atualizarStatusOnline(usuario.cpf, true);
 
     return { accessToken, refreshToken, usuario };
   }
@@ -201,10 +199,6 @@ class AuthService {
     await Tokens.excluirToken(token);
 
     return { mensagem: "Senha redefinida com sucesso!" };
-  }
-
-  static async atualizarStatusOnline(cpf, status) {
-    await Usuarios.atualizarStatusOnline(cpf, status);
   }
 }
 

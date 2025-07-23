@@ -24,10 +24,12 @@ const LesaoModel = {
           l.precisa_aprovacao,
           l.presenca_tunel,
           l.possui_dor,
-          l.escala_dor,
+          l.escala_numerica_dor,
           l.comprimento,
           l.largura,
-          l.profundidade
+          l.profundidade,
+          l.data_proxima_avaliacao,
+          l.data_criacao
         FROM lesoes l
         LEFT JOIN usuarios criador ON l.criado_por = criador.cpf
         LEFT JOIN usuarios modificador ON l.modificado_por = modificador.cpf
@@ -78,10 +80,10 @@ const LesaoModel = {
         [id]
       );
 
-      const quantificacoesDorRes = await client.query(
-        `SELECT q.nome FROM lesoes_quantificacoes_dor lq
-         JOIN quantificacoes_dor q ON q.id = lq.quantificacao_id
-         WHERE lq.lesao_id = $1`,
+      const classificacoesDorRes = await client.query(
+        `SELECT c.nome FROM lesoes_classificacoes_dor lc
+         JOIN classificacoes_dor c ON c.id = lc.classificacao_id
+         WHERE lc.lesao_id = $1`,
         [id]
       );
 
@@ -175,7 +177,7 @@ const LesaoModel = {
         bordas: mapNomes(bordasRes),
         etiologias: mapNomes(etiologiasRes),
         classificacoesLesaoPressao: mapNomes(classificacoesLesaoPressaoRes),
-        quantificacoesDor: mapNomes(quantificacoesDorRes),
+        classificacoesDor: mapNomes(classificacoesDorRes),
         regioesPerilesionais: regioesPerilesionaisRes.rows.map((r) => r.nome),
         estruturasNobres: estruturasNobresRes.rows.map((r) => r.nome),
         protecoes: protecoesRes.rows.map((r) => r.nome),
@@ -188,7 +190,7 @@ const LesaoModel = {
         limpezaOutro: getOutro(limpezasRes),
         presencaTunel: lesaoData.presenca_tunel,
         dor: lesaoData.possui_dor,
-        nivelDor: lesaoData.escala_dor,
+        escalaNumericaDor: lesaoData.escala_numerica_dor,
         exsudato: await DadosFormLesao.getExsudatoNome(lesaoData.exsudato_id),
         tipoExsudato: await DadosFormLesao.getTipoExsudatoNome(
           lesaoData.tipo_exsudato_id
@@ -199,6 +201,7 @@ const LesaoModel = {
           largura: lesaoData.largura,
           profundidade: lesaoData.profundidade,
         },
+        dataProximaAvaliacao: lesaoData.data_proxima_avaliacao,
         tecidos,
         coberturas,
         tiposFechamentoCurativo,
@@ -245,8 +248,8 @@ const LesaoModel = {
       );
 
       // QUANTIFICAÇÕES DA DOR
-      const quantificacoesDorRes = await client.query(
-        `SELECT quantificacao_id FROM lesoes_quantificacoes_dor WHERE lesao_id = $1`,
+      const classificacoesDorRes = await client.query(
+        `SELECT classificacao_id FROM lesoes_classificacoes_dor WHERE lesao_id = $1`,
         [lesaoData.id]
       );
 
@@ -303,8 +306,8 @@ const LesaoModel = {
       const classificacaoLesaoPressaoIds =
         classificacoesLesaoPressaoRes.rows.map((e) => e.classificacao_id);
       const bordaIds = bordasRes.rows.map((e) => e.borda_id);
-      const quantificacaoDorIds = quantificacoesDorRes.rows.map(
-        (e) => e.quantificacao_id
+      const classificacaoDorIds = classificacoesDorRes.rows.map(
+        (e) => e.classificacao_id
       );
       const regiaoPerilesionalIds = regioesPerilesionaisRes.rows.map(
         (e) => e.regiao_id
@@ -348,7 +351,7 @@ const LesaoModel = {
         etiologias: etiologiaIds,
         etiologias: etiologiaIds,
         classificacoesLesaoPressao: classificacaoLesaoPressaoIds,
-        quantificacoesDor: quantificacaoDorIds,
+        classificacoesDor: classificacaoDorIds,
         regioesPerilesionais: regiaoPerilesionalIds,
         estruturasNobres: estruturaNobreIds,
         limpezas: limpezaIds,
@@ -361,7 +364,7 @@ const LesaoModel = {
         limpezaOutro: limpezaOutro,
         presencaTunel: lesaoData.presenca_tunel,
         dor: lesaoData.possui_dor,
-        nivelDor: lesaoData.escala_dor,
+        escalaNumericaDor: lesaoData.escala_numerica_dor,
         exsudato: lesaoData.exsudato_id,
         odor: lesaoData.odor_id,
         tipoExsudato: lesaoData.tipo_exsudato_id,
@@ -373,6 +376,7 @@ const LesaoModel = {
         tecidos: tecidos,
         coberturas: coberturas,
         tiposFechamentoCurativo: tiposFechamentoCurativo,
+        dataProximaAvaliacao: lesaoData.data_proxima_avaliacao,
       };
     } catch (err) {
       await client.query("ROLLBACK");
@@ -441,11 +445,11 @@ const LesaoModel = {
       const lesaoRes = await client.query(
         `INSERT INTO lesoes (
           paciente_id, criado_por, modificado_por, aprovado_por,
-          precisa_aprovacao, presenca_tunel, possui_dor, escala_dor,
+          precisa_aprovacao, presenca_tunel, possui_dor, escala_numerica_dor,
           exsudato_id, tipo_exsudato_id, odor_id,
-          comprimento, largura, profundidade
+          comprimento, largura, profundidade, data_proxima_avaliacao
         ) VALUES (
-          $1, $2, NULL, NULL, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
+          $1, $2, NULL, NULL, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
         ) RETURNING id`,
         [
           idPaciente,
@@ -453,13 +457,14 @@ const LesaoModel = {
           precisaAprovacao,
           dados.presencaTunel,
           dados.dor,
-          dados.nivelDor,
+          dados.escalaNumericaDor,
           dados.exsudato,
           dados.tipoExsudato,
           dados.odor,
           dados.tamanho.comprimento,
           dados.tamanho.largura,
           dados.tamanho.profundidade,
+          dados.dataProximaAvaliacao,
         ]
       );
 
@@ -496,12 +501,12 @@ const LesaoModel = {
       }
 
       // QUANTIFICAÇÕES DA DOR
-      if (Array.isArray(dados.quantificacoesDor)) {
-        for (const quantificacaoId of dados.quantificacoesDor) {
+      if (Array.isArray(dados.classificacoesDor)) {
+        for (const classificacaoId of dados.classificacoesDor) {
           await client.query(
-            `INSERT INTO lesoes_quantificacoes_dor (lesao_id, quantificacao_id)
+            `INSERT INTO lesoes_classificacoes_dor (lesao_id, classificacao_id)
                VALUES ($1, $2)`,
-            [lesaoId, quantificacaoId]
+            [lesaoId, classificacaoId]
           );
         }
       }
@@ -656,25 +661,27 @@ const LesaoModel = {
          SET modificado_por = $1,
              presenca_tunel = $2,
              possui_dor = $3,
-             escala_dor = $4,
+             escala_numerica_dor = $4,
              exsudato_id = $5,
              tipo_exsudato_id = $6,
              odor_id = $7,
              comprimento = $8,
              largura = $9,
-             profundidade = $10
-         WHERE id = $11`,
+             profundidade = $10,
+             data_proxima_avaliacao = $11
+         WHERE id = $12`,
         [
           cpfUsuario,
           dados.presencaTunel,
           dados.dor,
-          dados.nivelDor,
+          dados.escalaNumericaDor,
           dados.exsudato,
           dados.tipoExsudato,
           dados.odor,
           dados.tamanho.comprimento,
           dados.tamanho.largura,
           dados.tamanho.profundidade,
+          dados.dataProximaAvaliacao,
           lesaoId,
         ]
       );
@@ -726,9 +733,9 @@ const LesaoModel = {
       // QUANTIFICAÇÕES DE DOR
       await this.atualizarRelacionamentoCheckbox({
         client,
-        tabela: "lesoes_quantificacoes_dor",
-        campoId: "quantificacao_id",
-        dadosSelecionados: dados.quantificacoesDor,
+        tabela: "lesoes_classificacoes_dor",
+        campoId: "classificacao_id",
+        dadosSelecionados: dados.classificacoesDor,
         lesaoId,
       });
 

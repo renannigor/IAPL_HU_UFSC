@@ -16,4 +16,6 @@ export interface Paciente {
   medicamento: string | null;
   agente_causador: string | null;
   classificacao_alergica: string;
+  idade: number;
+  imc: number;
 }

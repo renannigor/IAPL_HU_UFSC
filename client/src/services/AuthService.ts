@@ -101,11 +101,10 @@ class AuthService {
     }
   }
 
-  static async logout(usuarioCpf: string) {
+  static async logout() {
     try {
       await api.post(
         "/api/auth/logout",
-        { cpf: usuarioCpf },
         { withCredentials: true }
       );
     } catch (error) {

@@ -77,12 +77,6 @@ class AuthController {
 
   static async logout(req, res) {
     try {
-      const { cpf } = req.body;
-
-      if (cpf) {
-        await AuthService.atualizarStatusOnline(cpf, false); // Atualiza para offline
-      }
-
       res.clearCookie("refreshToken");
       res.json({ message: "Logout realizado com sucesso" });
     } catch (error) {

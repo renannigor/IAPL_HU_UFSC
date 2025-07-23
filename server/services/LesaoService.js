@@ -11,7 +11,7 @@ class LesaoService {
       bordas: await DadosFormLesaoModel.getBordas(),
       estruturasNobres: await DadosFormLesaoModel.getEstruturasNobres(),
       tecidos: await DadosFormLesaoModel.getTecidos(),
-      quantificacoesDor: await DadosFormLesaoModel.getQuantificacoesDor(),
+      classificacoesDor: await DadosFormLesaoModel.getClassificacoesDor(),
       exsudatos: await DadosFormLesaoModel.getExsudatos(),
       tiposExsudato: await DadosFormLesaoModel.getTiposExsudato(),
       odores: await DadosFormLesaoModel.getOdores(),

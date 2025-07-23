@@ -71,7 +71,7 @@ export const LesaoFormSchema = (dadosEspeciais: DadosEspeciaisFormulario) =>
       }),
 
       // Nível Dor
-      nivelDor: z
+      escalaNumericaDor: z
         .number({
           invalid_type_error: "Informe um número",
           required_error: "Campo obrigatório!",
@@ -80,10 +80,10 @@ export const LesaoFormSchema = (dadosEspeciais: DadosEspeciaisFormulario) =>
         .max(10)
         .optional(),
 
-      // Quantificação da Dor
-      quantificacoesDor: z
+      // Classificações da Dor
+      classificacoesDor: z
         .array(z.number(), {
-          required_error: "Selecione pelo menos uma quantificação da dor.",
+          required_error: "Selecione pelo menos uma classificação da dor.",
         })
         .optional(),
 
@@ -177,6 +177,11 @@ export const LesaoFormSchema = (dadosEspeciais: DadosEspeciaisFormulario) =>
             .min(0, "O valor deve ser maior ou igual a 0"),
         })
       ),
+
+      // Data da Próxima Avaliação
+      dataProximaAvaliacao: z.date({
+        required_error: "A data é obrigatória",
+      }),
     })
     .superRefine((data, ctx) => {
       // 1. Valida classificacoesLesaoPressao se "Lesão por Pressão" estiver nas etiologias
@@ -230,31 +235,31 @@ export const LesaoFormSchema = (dadosEspeciais: DadosEspeciaisFormulario) =>
         });
       }
 
-      // 4. Valida nivelDor e quantificacoesDor se dor for "sim"
+      // 4. Valida escalaNumericaDor e classificacoesDor se dor for "sim"
       if (data.dor === "sim") {
         if (
-          data.nivelDor === undefined ||
-          data.nivelDor < 1 ||
-          data.nivelDor > 10
+          data.escalaNumericaDor === undefined ||
+          data.escalaNumericaDor < 1 ||
+          data.escalaNumericaDor > 10
         ) {
           ctx.addIssue({
-            path: ["nivelDor"],
+            path: ["escalaNumericaDor"],
             code: z.ZodIssueCode.custom,
             message: "Informe o nível da dor entre 1 e 10",
           });
         }
 
-        if (!data.quantificacoesDor || data.quantificacoesDor.length === 0) {
+        if (!data.classificacoesDor || data.classificacoesDor.length === 0) {
           ctx.addIssue({
-            path: ["quantificacoesDor"],
+            path: ["classificacoesDor"],
             code: z.ZodIssueCode.custom,
             message: "Informe pelo menos uma quantificação da dor",
           });
         }
       } else {
-        // Limpando os campos nivelDor e quantificacoesDor
-        data.nivelDor = 0;
-        data.quantificacoesDor = [];
+        // Limpando os campos escalaNumericaDor e classificacoesDor
+        data.escalaNumericaDor = 0;
+        data.classificacoesDor = [];
       }
 
       // 5. Valida soma dos tecidos = 100

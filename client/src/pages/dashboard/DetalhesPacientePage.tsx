@@ -5,13 +5,7 @@ import { Lesao } from "@/types/Lesao";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import Editor from "@/components/shared/Editor";
 import { Button } from "@/components/ui/button";
-import { UserIcon, MoreVertical } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from "@/components/ui/dropdown-menu";
+import { UserIcon, Plus } from "lucide-react";
 
 import PacienteService from "@/services/PacienteService";
 import LesaoService from "@/services/LesaoService";
@@ -22,6 +16,7 @@ const DetalhesPacientePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [paciente, setPaciente] = useState<Paciente | null>(null);
+  const [refetchLesoes, setRefetchLesoes] = useState(false);
   const [lesoesPrecisaAprovacao, setLesoesPrecisaAprovacao] = useState<Lesao[]>(
     []
   );
@@ -45,9 +40,6 @@ const DetalhesPacientePage = () => {
         LesaoService.obterTodasLesoes(id!, false),
       ]);
 
-      console.log(precisaAprovacao);
-      console.log(naoPrecisaAprovacao);
-
       setLesoesPrecisaAprovacao(
         Array.isArray(precisaAprovacao) ? precisaAprovacao : []
       );
@@ -56,8 +48,8 @@ const DetalhesPacientePage = () => {
       );
     };
 
-    fetchLesoes();
-  }, [lesoesPrecisaAprovacao, lesoesNaoPrecisaAprovacao]);
+    if (id) fetchLesoes();
+  }, [id, refetchLesoes]);
 
   if (!paciente) return <p>Carregando...</p>;
 
@@ -81,34 +73,20 @@ const DetalhesPacientePage = () => {
           <div>
             <p className="text-lg font-semibold">{paciente.nome}</p>
             <p className="text-sm text-muted-foreground">
-              {paciente.pac_codigo}
+              {paciente.idade} anos
             </p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Button
-            className="bg-green-800 text-white hover:bg-green-900 h-fit"
+            className="bg-green-800 text-white hover:bg-green-900 h-fit flex items-center gap-2"
             onClick={() =>
               navigate(`/dashboard/pacientes/${id}/lesoes/cadastrar`)
             }
           >
+            <Plus size={16} />
             Cadastrar Lesão
           </Button>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="border-gray-300">
-                <MoreVertical className="w-5 h-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem
-                onClick={() => alert("Gerar ficha em construção")}
-              >
-                Gerar ficha
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
       </div>
 
@@ -116,11 +94,11 @@ const DetalhesPacientePage = () => {
         <TabsList className="mb-6">
           <TabsTrigger value="info">Informações do Paciente</TabsTrigger>
           <TabsTrigger value="lesoes">Lesões</TabsTrigger>
-          <TabsTrigger value="pendencias">Pendências</TabsTrigger>
+          <TabsTrigger value="pendencias">Pendentes de Aprovação</TabsTrigger>
         </TabsList>
 
         <TabsContent value="info">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <Editor
               id="dataNascimento"
               label="Data de Nascimento"
@@ -173,6 +151,15 @@ const DetalhesPacientePage = () => {
               ehCampoSenha={false}
               value={paciente.peso_controle?.toString()}
               disabled={paciente.peso_controle ? true : false}
+              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
+            />
+            <Editor
+              id="imc"
+              label="IMC"
+              placeholder="IMC do paciente"
+              ehCampoSenha={false}
+              value={paciente.imc?.toString()}
+              disabled={paciente.imc ? true : false}
               inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
             />
             <Editor
@@ -253,7 +240,10 @@ const DetalhesPacientePage = () => {
         <TabsContent value="lesoes">
           <div className="space-y-6">
             <p className="text-muted-foreground">Lesões do paciente</p>
-            <CardLesao lesoes={lesoesNaoPrecisaAprovacao} />
+            <CardLesao
+              lesoes={lesoesNaoPrecisaAprovacao}
+              onRefresh={() => setRefetchLesoes((prev) => !prev)}
+            />
           </div>
         </TabsContent>
 
@@ -262,10 +252,10 @@ const DetalhesPacientePage = () => {
             <p className="text-muted-foreground">
               Lesões do paciente, cadastradas pelos acadêmicos, para revisão.
             </p>
-
-            <div>
-              <CardLesao lesoes={lesoesPrecisaAprovacao} />
-            </div>
+            <CardLesao
+              lesoes={lesoesPrecisaAprovacao}
+              onRefresh={() => setRefetchLesoes((prev) => !prev)}
+            />
           </div>
         </TabsContent>
       </Tabs>

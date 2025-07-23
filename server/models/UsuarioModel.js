@@ -24,7 +24,7 @@ const Usuarios = {
   async getPorEmail(email) {
     const result = await db.query(
       `SELECT 
-        cpf, nome, email, tipo_id, admin, possui_acesso, online, senha, criado_em,
+        cpf, nome, email, tipo_id, possui_acesso, senha, criado_em,
         TO_CHAR(ultimo_acesso, 'DD/MM/YYYY HH24:MI:SS') AS ultimo_acesso
        FROM Usuarios 
        WHERE email = $1`,
@@ -37,7 +37,7 @@ const Usuarios = {
     const result = await db.query(
       `
       SELECT 
-       cpf, nome, email, tipo_id, admin, possui_acesso, online, senha, criado_em,
+       cpf, nome, email, tipo_id, possui_acesso, senha, criado_em,
        TO_CHAR(ultimo_acesso, 'DD/MM/YYYY HH24:MI:SS') AS ultimo_acesso
       FROM usuarios 
       WHERE cpf = $1`,
@@ -49,8 +49,8 @@ const Usuarios = {
   async criar(dados) {
     const { cpf, nome, email, tipo, senha } = dados;
     const result = await db.query(
-      `INSERT INTO usuarios (cpf, nome, email, tipo_id, senha, admin, possui_acesso, online, criado_em, ultimo_acesso) 
-             VALUES ($1, $2, $3, $4, $5, false, false, true, NOW(), NOW()) RETURNING *`,
+      `INSERT INTO usuarios (cpf, nome, email, tipo_id, senha, possui_acesso, criado_em, ultimo_acesso) 
+             VALUES ($1, $2, $3, $4, $5, false, NOW(), NOW()) RETURNING *`,
       [cpf, nome, email, tipo, senha]
     );
     return result.rows[0];
@@ -58,13 +58,6 @@ const Usuarios = {
 
   async atualizarUltimoAcesso(cpf) {
     await db.query("UPDATE usuarios SET ultimo_acesso = NOW() WHERE cpf = $1", [
-      cpf,
-    ]);
-  },
-
-  async atualizarStatusOnline(cpf, status) {
-    await db.query("UPDATE usuarios SET online = $1 WHERE cpf = $2", [
-      status,
       cpf,
     ]);
   },

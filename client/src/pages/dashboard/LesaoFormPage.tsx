@@ -20,6 +20,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 import Editor from "@/components/shared/Editor";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -28,7 +35,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { DadosFormulario } from "@/types/DadosFormulario";
 import { DadosEspeciaisFormulario } from "@/types/DadosEspeciaisFormulario";
 import { BreadcrumbNav } from "@/pages/dashboard/components/BreadcrumbNav";
-import { Pencil, Plus } from "lucide-react";
+import { ChevronDownIcon, Pencil, Plus } from "lucide-react";
 import { ZodSchema } from "zod";
 
 const LesaoFormPage = () => {
@@ -47,7 +54,7 @@ const LesaoFormPage = () => {
     bordas: [],
     estruturasNobres: [],
     tecidos: [],
-    quantificacoesDor: [],
+    classificacoesDor: [],
     exsudatos: [],
     tiposExsudato: [],
     odores: [],
@@ -69,10 +76,13 @@ const LesaoFormPage = () => {
     },
   });
 
+  const [open, setOpen] = useState(false);
+
   const {
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = form;
 
@@ -190,6 +200,7 @@ const LesaoFormPage = () => {
   const coberturas = useWatch({ control, name: "coberturas" }) || [];
   const tiposFechamentoCurativo =
     useWatch({ control, name: "tiposFechamentoCurativo" }) || [];
+  const selectedDate = useWatch({ control, name: "dataProximaAvaliacao" });
 
   return (
     <div className="space-y-8">
@@ -473,14 +484,14 @@ const LesaoFormPage = () => {
             {/* Campos adicionais se dor == sim */}
             {dor === "sim" && (
               <div className="flex flex-col gap-6 lg:flex-row">
-                {/* Quantificação */}
+                {/* Classificação */}
                 <div className="flex-1">
-                  <Label className="block mb-2">Quantificação</Label>
+                  <Label className="block mb-2">Classificação</Label>
                   <CarregarCheckboxGroup
                     control={control}
-                    fieldName="quantificacoesDor"
-                    options={dadosForm.quantificacoesDor}
-                    error={errors.quantificacoesDor?.message}
+                    fieldName="classificacoesDor"
+                    options={dadosForm.classificacoesDor}
+                    error={errors.classificacoesDor?.message}
                     errorClassName="mt-2 text-red-500 text-sm"
                   />
                 </div>
@@ -489,15 +500,18 @@ const LesaoFormPage = () => {
                 <div className="flex-1">
                   <Controller
                     control={control}
-                    name="nivelDor"
+                    name="escalaNumericaDor"
                     defaultValue={0}
                     render={({ field }) => (
                       <div>
-                        <Label htmlFor="nivelDor" className="block mb-2">
-                          Nível de Dor
+                        <Label
+                          htmlFor="escalaNumericaDor"
+                          className="block mb-2"
+                        >
+                          Escala Numérica da Dor
                         </Label>
                         <Slider
-                          id="nivelDor"
+                          id="escalaNumericaDor"
                           min={0}
                           max={10}
                           step={1}
@@ -510,9 +524,9 @@ const LesaoFormPage = () => {
                       </div>
                     )}
                   />
-                  {errors.nivelDor && (
+                  {errors.escalaNumericaDor && (
                     <p className="text-red-500 text-sm mt-1">
-                      {errors.nivelDor.message}
+                      {errors.escalaNumericaDor.message}
                     </p>
                   )}
                 </div>
@@ -628,13 +642,14 @@ const LesaoFormPage = () => {
               {/* Tamanho */}
               <div>
                 <Label className="text-xl font-bold mb-4 text-[#1F4D2C]">
-                  Tamanho
+                  Tamanho (em centímetros)
                 </Label>
                 <div className="flex flex-col lg:flex-row gap-4">
                   {/* Comprimento */}
                   <Editor
                     id="comprimento"
                     ehCampoSenha={false}
+                    helperText="Comprimento"
                     register={control.register("tamanho.comprimento", {
                       valueAsNumber: true,
                     })}
@@ -649,6 +664,7 @@ const LesaoFormPage = () => {
                   <Editor
                     id="largura"
                     ehCampoSenha={false}
+                    helperText="Largura"
                     register={control.register("tamanho.largura", {
                       valueAsNumber: true,
                     })}
@@ -663,6 +679,7 @@ const LesaoFormPage = () => {
                   <Editor
                     id="profundidade"
                     ehCampoSenha={false}
+                    helperText="Profundidade"
                     register={control.register("tamanho.profundidade", {
                       valueAsNumber: true,
                     })}
@@ -843,6 +860,60 @@ const LesaoFormPage = () => {
                 );
               })}
             </div>
+          </div>
+        </div>
+
+        <div className="border rounded p-4 mb-6 space-y-8">
+          <h2 className="text-xl font-bold mb-4 text-[#1F4D2C]">
+            Próxima Avaliação
+          </h2>
+
+          <div className="flex flex-col gap-3">
+            <Label className="block font-medium text-gray-500 mb-1">
+              Data da Próxima Avaliação
+            </Label>
+
+            <Popover open={open} onOpenChange={setOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-48 justify-between font-normal",
+                    !selectedDate && "text-muted-foreground"
+                  )}
+                >
+                  {selectedDate
+                    ? selectedDate.toLocaleDateString()
+                    : "Selecionar data"}
+                  <ChevronDownIcon className="ml-2 h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+
+              <PopoverContent
+                className="w-auto overflow-hidden p-0"
+                align="start"
+              >
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  captionLayout="dropdown"
+                  onSelect={(date) => {
+                    if (date) {
+                      setValue("dataProximaAvaliacao", date, {
+                        shouldValidate: true,
+                      });
+                      setOpen(false);
+                    }
+                  }}
+                />
+              </PopoverContent>
+            </Popover>
+
+            {errors.dataProximaAvaliacao && (
+              <span className="text-sm text-red-500">
+                {errors.dataProximaAvaliacao.message}
+              </span>
+            )}
           </div>
         </div>
 

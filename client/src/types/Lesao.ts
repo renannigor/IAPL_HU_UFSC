@@ -7,10 +7,12 @@ export interface Lesao {
   precisa_aprovacao: boolean;
   presenca_tunel: string;
   possui_dor: string;
-  escala_dor: number;
+  escala_numerica_dor: number;
   comprimento: number;
   largura: number;
   profundidade: number;
+  data_proxima_avaliacao: Date;
+  data_criacao: Date;
 }
 
 export interface ItemComValor {
@@ -30,8 +32,8 @@ export interface DadosLesaoFormatado {
   estruturaNobreOutro?: string | null;
   presencaTunel: string;
   dor: string;
-  nivelDor?: number;
-  quantificacoesDor?: string[];
+  escalaNumericaDor?: number;
+  classificacoesDor?: string[];
   exsudato: string;
   tipoExsudato: string;
   odor: string;
@@ -48,4 +50,5 @@ export interface DadosLesaoFormatado {
   protecaoOutro?: string | null;
   coberturas: ItemComValor[];
   tiposFechamentoCurativo: ItemComValor[];
+  dataProximaAvaliacao: Date;
 }

@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { DadosLesaoFormatado } from "@/types/Lesao";
 import { Button } from "@/components/ui/button";
 import { BreadcrumbNav } from "./components/BreadcrumbNav";
-import { useAuth } from "@/components/auth/AuthProvider";
 
 function LabelValue({ label, value }: { label: string; value: string }) {
   const copyToClipboard = () => {
@@ -35,8 +34,6 @@ const DetalhesLesaoPage = () => {
   const { id_lesao, id_paciente } = useParams();
   const [dadosLesao, setDadosLesao] = useState<DadosLesaoFormatado>();
 
-  const { usuarioAtual } = useAuth();
-
   useEffect(() => {
     const fetchLesao = async () => {
       const data = await LesaoService.getLesaoComNomes(id_lesao!);
@@ -63,8 +60,8 @@ const DetalhesLesaoPage = () => {
     estruturaNobreOutro,
     presencaTunel,
     dor,
-    nivelDor,
-    quantificacoesDor,
+    escalaNumericaDor,
+    classificacoesDor,
     exsudato,
     tipoExsudato,
     odor,
@@ -122,7 +119,7 @@ const DetalhesLesaoPage = () => {
           <LabelValue label="Presença de Túnel" value={presencaTunel} />
           <LabelValue label="Dor" value={dor} />
           {dor != "nao" && (
-            <LabelValue label="Nível da dor" value={String(nivelDor)} />
+            <LabelValue label="Nível da dor" value={String(escalaNumericaDor)} />
           )}
           <LabelValue label="Exsudato" value={exsudato} />
           <LabelValue label="Tipo de Exsudato" value={tipoExsudato} />
@@ -202,7 +199,7 @@ const DetalhesLesaoPage = () => {
           {dor != "nao" && (
             <LabelValue
               label="Quantificações da Dor"
-              value={quantificacoesDor?.join(", ") || "-"}
+              value={classificacoesDor?.join(", ") || "-"}
             />
           )}
           <LabelValue label="Limpezas" value={limpezas.join(", ")} />

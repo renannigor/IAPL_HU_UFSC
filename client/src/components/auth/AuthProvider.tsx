@@ -178,9 +178,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   // Função de logout
   const logout = async () => {
-    if (usuarioAtual?.cpf) {
-      await AuthService.logout(usuarioAtual.cpf);
-    }
+    await AuthService.logout();
     setAccessToken(null);
     setUsuarioAtual(null);
     setLoading(false);

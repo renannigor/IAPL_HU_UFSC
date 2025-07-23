@@ -15,9 +15,10 @@ import { useNavigate } from "react-router-dom";
 
 interface CardLesaoProps {
   lesoes: Lesao[];
+  onRefresh?: () => void; 
 }
 
-const CardLesao = ({ lesoes }: CardLesaoProps) => {
+const CardLesao = ({ lesoes, onRefresh }: CardLesaoProps) => {
   const navigate = useNavigate();
   const [openDialog, setOpenDialog] = useState(false);
   const [lesaoIdParaExcluir, setLesaoIdParaExcluir] = useState<number | null>(
@@ -28,12 +29,12 @@ const CardLesao = ({ lesoes }: CardLesaoProps) => {
     if (!lesaoIdParaExcluir) return;
 
     try {
-      // aqui você pode fazer a requisição de exclusão
       console.log("Deletando lesão com ID:", lesaoIdParaExcluir);
       await LesaoService.deletarLesao(lesaoIdParaExcluir);
+      if (onRefresh) onRefresh();
     } finally {
       setOpenDialog(false);
-      setLesaoIdParaExcluir(null); // limpa o estado
+      setLesaoIdParaExcluir(null);
     }
   };
 
@@ -74,7 +75,7 @@ const CardLesao = ({ lesoes }: CardLesaoProps) => {
               {possuiDor && (
                 <div className="flex items-center gap-1">
                   <span className="font-semibold">Escala da dor:</span>{" "}
-                  {lesao.escala_dor} / 10
+                  {lesao.escala_numerica_dor} / 10
                   <Activity className="w-4 h-4 text-gray-500" />
                 </div>
               )}
@@ -139,15 +140,14 @@ const CardLesao = ({ lesoes }: CardLesaoProps) => {
                 size="sm"
                 className="text-red-500 hover:bg-red-100"
                 onClick={() => {
-                  setLesaoIdParaExcluir(lesao.id); // guarda o id
-                  setOpenDialog(true); // abre o diálogo
+                  setLesaoIdParaExcluir(lesao.id);
+                  setOpenDialog(true);
                 }}
               >
                 <Trash className="w-4 h-4 mr-1" /> Excluir
               </Button>
             </div>
 
-            {/* Diálogo de confirmação */}
             <ConfirmDialog
               open={openDialog}
               onOpenChange={setOpenDialog}

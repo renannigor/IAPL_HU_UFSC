@@ -7,6 +7,7 @@ import { UseFormRegisterReturn } from "react-hook-form";
 interface EditorProps extends React.InputHTMLAttributes<HTMLInputElement> {
   id: string;
   label?: string;
+  helperText?: string;
   placeholder: string;
   ehCampoSenha: boolean;
   register?: UseFormRegisterReturn;
@@ -19,6 +20,7 @@ interface EditorProps extends React.InputHTMLAttributes<HTMLInputElement> {
 const Editor = ({
   id,
   label,
+  helperText,
   placeholder,
   ehCampoSenha,
   inputClassName = "",
@@ -56,6 +58,7 @@ const Editor = ({
           </button>
         )}
       </div>
+      {helperText && <p className="text-sm text-gray-500 mt-1">{helperText}</p>}
       {error && <p className={errorClassName}>{error}</p>}
     </div>
   );

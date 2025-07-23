@@ -67,9 +67,9 @@ const DadosFormLesaoModel = {
     return result.rows[0].nome;
   },
 
-  async getQuantificacoesDor() {
+  async getClassificacoesDor() {
     const result = await db.query(
-      "SELECT * FROM quantificacoes_dor ORDER BY id"
+      "SELECT * FROM classificacoes_dor ORDER BY id"
     );
     return result.rows;
   },

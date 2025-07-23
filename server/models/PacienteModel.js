@@ -1,6 +1,36 @@
 import db from "../config/db.js";
 
 class PacienteModel {
+  // Calcular Idade do Paciente
+  calcularIdade(nascimento) {
+    const [ano, mes, dia] = nascimento.split("/").map(Number);
+    const hoje = new Date();
+    const nascimentoDate = new Date(ano, mes - 1, dia);
+
+    let idade = hoje.getFullYear() - nascimentoDate.getFullYear();
+    const mesAtual = hoje.getMonth();
+    const diaAtual = hoje.getDate();
+
+    if (
+      mesAtual < nascimentoDate.getMonth() ||
+      (mesAtual === nascimentoDate.getMonth() &&
+        diaAtual < nascimentoDate.getDate())
+    ) {
+      idade--;
+    }
+
+    return idade;
+  }
+
+  // Calcular IMC do Paciente
+  calcularIMC(peso, altura) {
+    if (peso && altura) {
+      const alturaEmMetros = altura / 100;
+      return Number((peso / (alturaEmMetros * alturaEmMetros)).toFixed(2));
+    }
+    return null;
+  }
+
   async getPacientes() {
     // Obter dados dos pacientes cadastrados no AGHU
     const result = await db.query(`
@@ -82,11 +112,19 @@ class PacienteModel {
       );
 
       if (pacienteExistente.rowCount === 0) {
+        // Calculando a Idade
+        const idade = this.calcularIdade(row.nascimento);
+        // Calculando o IMC
+        const imc = this.calcularIMC(
+          row["Peso Consulta"],
+          row["Altura Consulta"]
+        );
+
         // INSERT
         await db.query(
           `
           INSERT INTO pacientes_aux (
-            internacao, pac_codigo, nome, nascimento, cor, sexo,
+            internacao, pac_codigo, nome, idade, imc, nascimento, cor, sexo,
             altura_consulta, peso_consulta, altura_controle, peso_controle,
             qrt_numero, lto_lto_id, criticidade_alergica, grau_certeza,
             medicamento, agente_causador, classificacao_alergica
@@ -94,13 +132,15 @@ class PacienteModel {
             $1, $2, $3, $4, $5, $6,
             $7, $8, $9, $10,
             $11, $12, $13, $14,
-            $15, $16, $17
+            $15, $16, $17, $18, $19
           )
         `,
           [
             row["internação"],
             row.pac_codigo,
             row.nome,
+            idade,
+            imc,
             row.nascimento,
             row.cor,
             row.sexo,
