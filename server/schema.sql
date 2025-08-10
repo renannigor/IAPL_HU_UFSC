@@ -66,8 +66,8 @@ CREATE TABLE IF NOT EXISTS odores (
     nome VARCHAR(255) NOT NULL UNIQUE
 );
 
--- EXSUDATOS
-CREATE TABLE IF NOT EXISTS exsudatos (
+-- QUANTIDADES DE EXSUDATO
+CREATE TABLE IF NOT EXISTS quantidades_exsudato (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(255) NOT NULL UNIQUE
 );
@@ -170,14 +170,16 @@ CREATE TABLE IF NOT EXISTS lesoes (
             escala_numerica_dor >= 0
             AND escala_numerica_dor <= 10
         ),
-        exsudato_id INTEGER REFERENCES exsudatos(id),
+        quantidade_exsudato_id INTEGER REFERENCES quantidades_exsudato(id),
         tipo_exsudato_id INTEGER REFERENCES tipos_exsudato(id),
         odor_id INTEGER REFERENCES odores(id),
-        comprimento INTEGER NOT NULL,
-        largura INTEGER NOT NULL,
-        profundidade INTEGER NOT NULL,
+        comprimento NUMERIC NOT NULL,
+        largura NUMERIC NOT NULL,
+        profundidade NUMERIC NOT NULL,
+        localizacao TEXT NOT NULL,
         data_proxima_avaliacao TIMESTAMP NOT NULL,
-        data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        eh_copia BOOLEAN NOT NULL DEFAULT false
 );
 
 -- 📌 DEFINIÇÃO DE RELACIONAMENTOS 
@@ -186,7 +188,11 @@ CREATE TABLE IF NOT EXISTS lesoes (
 CREATE TABLE IF NOT EXISTS historico_lesoes (
     id SERIAL PRIMARY KEY,
     lesao_original_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
-    lesao_versao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
+    -- 	a primeira lesão criada
+    lesao_base_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
+    -- a lesão usada como base para a nova versão
+    lesao_versao_id INTEGER NOT NULL UNIQUE REFERENCES lesoes(id) ON DELETE CASCADE,
+    -- a nova versão criada
     data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -226,12 +232,12 @@ CREATE TABLE IF NOT EXISTS lesoes_classificacoes_dor (
     classificacao_id INTEGER NOT NULL REFERENCES classificacoes_dor(id) ON DELETE CASCADE
 );
 
--- RELAÇÃO: TECIDO x 
+-- RELAÇÃO: LESÃO x TECIDO
 CREATE TABLE IF NOT EXISTS lesoes_tecidos (
     id SERIAL PRIMARY KEY,
     lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
     tecido_id INTEGER NOT NULL REFERENCES tecidos(id) ON DELETE CASCADE,
-    percentual INTEGER NOT NULL CHECK (
+    percentual NUMERIC NOT NULL CHECK (
         percentual BETWEEN 0
         AND 100
     )
@@ -250,7 +256,7 @@ CREATE TABLE IF NOT EXISTS lesoes_coberturas (
     id SERIAL PRIMARY KEY,
     lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
     cobertura_id INTEGER NOT NULL REFERENCES coberturas(id) ON DELETE CASCADE,
-    quantidade INTEGER NOT NULL CHECK (quantidade >= 0)
+    quantidade NUMERIC NOT NULL CHECK (quantidade >= 0)
 );
 
 -- RELAÇÃO: LESÃO x TIPOS FECHAMENTO
@@ -258,7 +264,7 @@ CREATE TABLE IF NOT EXISTS lesoes_fechamento_curativo (
     id SERIAL PRIMARY KEY,
     lesao_id INTEGER NOT NULL REFERENCES lesoes(id) ON DELETE CASCADE,
     fechamento_curativo_id INTEGER NOT NULL REFERENCES tipos_fechamento_curativo(id) ON DELETE CASCADE,
-    quantidade INTEGER NOT NULL CHECK (quantidade >= 0)
+    quantidade NUMERIC NOT NULL CHECK (quantidade >= 0)
 );
 
 -- RELAÇÃO: LESÃO x LIMPEZA
@@ -368,9 +374,9 @@ VALUES
     ('Recorrente'),
     ('Necessidade de analgesia prévia a procedimento');
 
--- INSERINDO OS EXSUDATOS
+-- INSERINDO AS QUANTIDADES DE EXSUDATO
 INSERT INTO
-    exsudatos(nome)
+    quantidades_exsudato(nome)
 VALUES
     ('Não exsudativa'),
     ('Pequena <25%'),

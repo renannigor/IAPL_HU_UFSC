@@ -1,0 +1,18 @@
+export enum CamposFormulario {
+  Etiologias = "etiologias",
+  RegioesPerilesionais = "regioesPerilesionais",
+  EstruturasNobres = "estruturasNobres",
+  Dor = "dor",
+  Limpezas = "limpezas",
+  Desbridamentos = "desbridamentos",
+  Protecoes = "protecoes",
+  Tecidos = "tecidos",
+  Coberturas = "coberturas",
+  TiposFechamentoCurativo = "tiposFechamentoCurativo",
+  DataProximaAvaliacao = "dataProximaAvaliacao",
+  Tamanho = "tamanho",
+  OpcaoOutro = "outro",
+  OpcaoLesaoPorPressao = "lesão por pressão",
+  OpcaoSim = "sim",
+  OpcaoNao = "nao",
+}

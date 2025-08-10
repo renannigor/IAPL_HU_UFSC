@@ -74,15 +74,18 @@ const DadosFormLesaoModel = {
     return result.rows;
   },
 
-  async getExsudatos() {
-    const result = await db.query("SELECT * FROM exsudatos ORDER BY id");
+  async getQuantidadesExsudato() {
+    const result = await db.query(
+      "SELECT * FROM quantidades_exsudato ORDER BY id"
+    );
     return result.rows;
   },
 
-  async getExsudatoNome(id) {
-    const result = await db.query("SELECT * FROM exsudatos WHERE id = $1", [
-      id,
-    ]);
+  async getQuantidadeExsudatoNome(id) {
+    const result = await db.query(
+      "SELECT * FROM quantidades_exsudato WHERE id = $1",
+      [id]
+    );
     return result.rows[0].nome;
   },
 

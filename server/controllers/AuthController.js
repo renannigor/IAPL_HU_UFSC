@@ -97,8 +97,6 @@ class AuthController {
       // Chama o método no AuthService
       const usuario = await AuthService.me(token);
 
-      console.log("ESTOU SENDO EXECUTADO");
-
       res.json({ accessToken: token, user: usuario });
     } catch (error) {
       res.status(401).json({ error: error.message });

@@ -12,7 +12,7 @@ class LesaoService {
       estruturasNobres: await DadosFormLesaoModel.getEstruturasNobres(),
       tecidos: await DadosFormLesaoModel.getTecidos(),
       classificacoesDor: await DadosFormLesaoModel.getClassificacoesDor(),
-      exsudatos: await DadosFormLesaoModel.getExsudatos(),
+      quantidadesExsudato: await DadosFormLesaoModel.getQuantidadesExsudato(),
       tiposExsudato: await DadosFormLesaoModel.getTiposExsudato(),
       odores: await DadosFormLesaoModel.getOdores(),
       limpezas: await DadosFormLesaoModel.getLimpezas(),
@@ -24,9 +24,9 @@ class LesaoService {
     };
   }
 
-  static async cadastrarLesao(cpfUsuario, idPaciente, dados) {
+  static async cadastrarLesao(cpfUsuario, pacienteId, dados) {
     // Salva a lesão
-    await LesaoModel.cadastrarLesao(cpfUsuario, idPaciente, dados);
+    await LesaoModel.cadastrarLesao(cpfUsuario, pacienteId, dados);
   }
 
   static async atualizarLesao(cpfUsuario, idLesao, dados) {
@@ -37,6 +37,27 @@ class LesaoService {
   static async deletarLesao(idLesao) {
     // Deletar a lesão
     await LesaoModel.deletarLesao(idLesao);
+  }
+
+  static async getHistoricoLesao(id) {
+    // Obter histórico de lesões
+    const dadosHistorico = await LesaoModel.getHistoricoLesao(id);
+    return dadosHistorico;
+  }
+
+  static async duplicarLesao(
+    cpfUsuario,
+    pacienteId,
+    lesaoOriginalId,
+    lesaoBaseId
+  ) {
+    // Duplicar lesão
+    await LesaoModel.duplicarLesao(
+      cpfUsuario,
+      pacienteId,
+      lesaoOriginalId,
+      lesaoBaseId
+    );
   }
 
   static async getLesaoComIds(idLesao) {

@@ -25,12 +25,12 @@ class UsuarioController {
     }
   }
 
-  static async atualizarInfoPessoal(req, res) {
+  static async atualizarPerfil(req, res) {
     try {
       const { cpf } = req.params;
-      const { nome, tipo } = req.body;
+      const { nome } = req.body;
 
-      await Usuarios.atualizarInfoPessoal(nome, tipo, cpf);
+      await Usuarios.atualizarPerfil(nome, cpf);
       res.status(200).json({ mensagem: "Informações atualizadas!" });
     } catch (error) {
       console.error(error);

@@ -37,10 +37,12 @@ const Usuarios = {
     const result = await db.query(
       `
       SELECT 
-       cpf, nome, email, tipo_id, possui_acesso, senha, criado_em,
-       TO_CHAR(ultimo_acesso, 'DD/MM/YYYY HH24:MI:SS') AS ultimo_acesso
-      FROM usuarios 
-      WHERE cpf = $1`,
+        u.cpf, u.nome, u.email, tu.nome AS tipo, u.possui_acesso, u.senha, u.criado_em,
+        TO_CHAR(u.ultimo_acesso, 'DD/MM/YYYY HH24:MI:SS') AS ultimo_acesso
+      FROM usuarios u
+      JOIN tipos_usuario tu ON u.tipo_id = tu.id
+      WHERE u.cpf = $1
+      `,
       [cpf]
     );
     return result.rows[0];
@@ -80,11 +82,8 @@ const Usuarios = {
     ]);
   },
 
-  async atualizarInfoPessoal(nome, tipo, cpf) {
-    await db.query(
-      "UPDATE usuarios SET nome = $1, tipo_id = $2 WHERE cpf = $3",
-      [nome, tipo, cpf]
-    );
+  async atualizarPerfil(nome, cpf) {
+    await db.query("UPDATE usuarios SET nome = $1 WHERE cpf = $2", [nome, cpf]);
   },
 };
 

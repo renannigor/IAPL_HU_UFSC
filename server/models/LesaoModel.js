@@ -36,12 +36,92 @@ const LesaoModel = {
         LEFT JOIN usuarios aprovador ON l.aprovado_por = aprovador.cpf
         WHERE l.precisa_aprovacao = $1
           AND l.paciente_id = $2
+          AND l.eh_copia = false
         `,
         [precisaAprovacao, pacienteId]
       );
       return result.rows;
     } catch (error) {
       console.error("Erro ao obter todas as lesões:", error);
+    }
+  },
+
+  async getHistoricoLesao(id) {
+    try {
+      const result = await db.query(
+        `
+        SELECT 
+          id,
+          lesao_original_id,
+          lesao_base_id,
+          lesao_versao_id,
+          TO_CHAR(data_criacao, 'DD/MM/YYYY HH24:MI') AS data_criacao
+        FROM historico_lesoes
+        WHERE lesao_original_id = $1
+        ORDER BY data_criacao DESC
+        `,
+        [id]
+      );
+
+      return result.rows;
+    } catch (error) {
+      console.error("Erro ao obter o histórico de lesões:", error);
+      throw error;
+    }
+  },
+
+  async marcarComoCopia(lesaoId) {
+    try {
+      await db.query(
+        `
+        UPDATE lesoes
+        SET eh_copia = true
+        WHERE id = $1
+        `,
+        [lesaoId]
+      );
+    } catch (error) {
+      console.error("Erro ao marcar lesão como cópia:", error);
+      throw error;
+    }
+  },
+
+  async duplicarLesao(cpfUsuario, pacienteId, lesaoOriginalId, lesaoBaseId) {
+    try {
+      // Recuperando os dados da lesão a ser duplicada
+      const lesaoData = await this.getLesaoComIds(lesaoBaseId);
+
+      if (!lesaoData) {
+        throw new Error("Lesão base não encontrada.");
+      }
+
+      // Cadastrando nova lesão com os dados da base
+      const lesaoId = await this.cadastrarLesao(
+        cpfUsuario,
+        pacienteId,
+        lesaoData
+      );
+
+      // Atualizando atributo da nova lesão como sendo uma cópia
+      await this.marcarComoCopia(lesaoId);
+
+      // Registrando no histórico de versões
+      await db.query(
+        `
+        INSERT INTO historico_lesoes (
+          lesao_original_id,
+          lesao_base_id,
+          lesao_versao_id,
+          data_criacao
+        ) VALUES ($1, $2, $3, NOW())
+        `,
+        [lesaoOriginalId, lesaoBaseId, lesaoId]
+      );
+
+      return lesaoId;
+    } catch (error) {
+      console.error("Erro ao duplicar a lesão:", error);
+      throw error;
     }
   },
 
@@ -174,6 +254,7 @@ const LesaoModel = {
       await client.query("COMMIT");
 
       return {
+        id: id,
         bordas: mapNomes(bordasRes),
         etiologias: mapNomes(etiologiasRes),
         classificacoesLesaoPressao: mapNomes(classificacoesLesaoPressaoRes),
@@ -191,7 +272,9 @@ const LesaoModel = {
         presencaTunel: lesaoData.presenca_tunel,
         dor: lesaoData.possui_dor,
         escalaNumericaDor: lesaoData.escala_numerica_dor,
-        exsudato: await DadosFormLesao.getExsudatoNome(lesaoData.exsudato_id),
+        quantidadeExsudato: await DadosFormLesao.getQuantidadeExsudatoNome(
+          lesaoData.quantidade_exsudato_id
+        ),
         tipoExsudato: await DadosFormLesao.getTipoExsudatoNome(
           lesaoData.tipo_exsudato_id
         ),
@@ -347,6 +430,7 @@ const LesaoModel = {
 
       await client.query("COMMIT");
       return {
+        id: id,
         bordas: bordaIds,
         etiologias: etiologiaIds,
         etiologias: etiologiaIds,
@@ -365,7 +449,7 @@ const LesaoModel = {
         presencaTunel: lesaoData.presenca_tunel,
         dor: lesaoData.possui_dor,
         escalaNumericaDor: lesaoData.escala_numerica_dor,
-        exsudato: lesaoData.exsudato_id,
+        quantidadeExsudato: lesaoData.quantidade_exsudato_id,
         odor: lesaoData.odor_id,
         tipoExsudato: lesaoData.tipo_exsudato_id,
         tamanho: {
@@ -431,7 +515,7 @@ const LesaoModel = {
     return resultados;
   },
 
-  async cadastrarLesao(cpfUsuario, idPaciente, dados) {
+  async cadastrarLesao(cpfUsuario, pacienteId, dados) {
     const client = await db.connect();
 
     try {
@@ -442,23 +526,25 @@ const LesaoModel = {
       const tipoUsuario = await Usuarios.getTipoUsuario(usuario.tipo_id);
       const precisaAprovacao = tipoUsuario[0].nome === "Acadêmico";
 
+      console.log("ID DO PACIENTE: ", pacienteId);
+
       const lesaoRes = await client.query(
         `INSERT INTO lesoes (
           paciente_id, criado_por, modificado_por, aprovado_por,
           precisa_aprovacao, presenca_tunel, possui_dor, escala_numerica_dor,
-          exsudato_id, tipo_exsudato_id, odor_id,
+          quantidade_exsudato_id, tipo_exsudato_id, odor_id,
           comprimento, largura, profundidade, data_proxima_avaliacao
         ) VALUES (
           $1, $2, NULL, NULL, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
         ) RETURNING id`,
         [
-          idPaciente,
+          pacienteId,
           cpfUsuario,
           precisaAprovacao,
           dados.presencaTunel,
           dados.dor,
           dados.escalaNumericaDor,
-          dados.exsudato,
+          dados.quantidadeExsudato,
           dados.tipoExsudato,
           dados.odor,
           dados.tamanho.comprimento,
@@ -662,7 +748,7 @@ const LesaoModel = {
              presenca_tunel = $2,
              possui_dor = $3,
              escala_numerica_dor = $4,
-             exsudato_id = $5,
+             quantidade_exsudato_id = $5,
              tipo_exsudato_id = $6,
              odor_id = $7,
              comprimento = $8,
@@ -675,7 +761,7 @@ const LesaoModel = {
           dados.presencaTunel,
           dados.dor,
           dados.escalaNumericaDor,
-          dados.exsudato,
+          dados.quantidadeExsudato,
           dados.tipoExsudato,
           dados.odor,
           dados.tamanho.comprimento,

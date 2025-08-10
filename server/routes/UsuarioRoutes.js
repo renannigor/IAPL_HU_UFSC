@@ -10,10 +10,7 @@ router.get("/tipos", UsuarioController.getTiposUsuario);
 router.patch("/atualizar/:cpf/permissao", UsuarioController.atualizarPermissao);
 
 // Atualizar informações pessoais
-router.patch(
-  "/atualizar/:cpf/info-pessoal",
-  UsuarioController.atualizarInfoPessoal
-);
+router.patch("/atualizar/:cpf/", UsuarioController.atualizarPerfil);
 
 // Excluir usuário
 router.delete("/deletar/:cpf", UsuarioController.deletarUsuario);

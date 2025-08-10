@@ -1,0 +1,30 @@
+export const cabecalhoPanilhaPacientes = [
+  "Internação",
+  "Código",
+  "Nome Completo",
+  "Data de Nascimento",
+  "Cor",
+  "Sexo",
+  "Altura Consultada",
+  "Peso Consultada",
+  "Altura Controle",
+  "Peso Controle",
+  "Idade",
+  "IMC",
+  "Quarto",
+  "Leito",
+  "Criticidade Alérgica",
+  "Grau Certeza",
+  "Medicamento",
+  "Agente Causador",
+  "Classificação Alérgica",
+];
+
+export const atributosTabelaPacientes = [
+  "Nome",
+  "Internação",
+  "Data de Nascimento",
+  "Cor",
+  "Nº Quarto",
+  "Sexo",
+];

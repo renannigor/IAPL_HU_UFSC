@@ -16,11 +16,13 @@ class LesaoController {
   static async cadastrarLesao(req, res) {
     try {
       const dados = req.body;
-      const { cpf_usuario, id_paciente } = req.params;
+      const { cpf_usuario, paciente_id } = req.params;
 
       console.log(dados);
+      console.log(cpf_usuario, paciente_id);
 
-      await LesaoService.cadastrarLesao(cpf_usuario, id_paciente, dados);
+
+      await LesaoService.cadastrarLesao(cpf_usuario, paciente_id, dados);
       res.status(200).json({ mensagem: "Lesão cadastrada com sucesso!" });
     } catch (error) {
       console.error("Erro ao cadastrar uma lesão: ", error);
@@ -61,6 +63,45 @@ class LesaoController {
     }
   }
 
+  static async getHistoricoLesao(req, res) {
+    try {
+      const { id_lesao } = req.params;
+
+      const dadosHistorico = await LesaoService.getHistoricoLesao(id_lesao);
+      res.status(200).json({
+        mensagem: "Histórico recuperado com sucesso!",
+        dados: dadosHistorico,
+      });
+    } catch (error) {
+      console.error("Erro ao recuperar o histórico da lesão: ", error);
+      res.status(500).json({
+        mensagem: "Erro ao recuperar o histórico da lesão.",
+      });
+    }
+  }
+
+  static async duplicarLesao(req, res) {
+    try {
+      const { cpf_usuario, paciente_id, lesao_original_id, lesao_base_id } =
+        req.params;
+
+      console.log(cpf_usuario, paciente_id, lesao_base_id, lesao_base_id);
+
+      await LesaoService.duplicarLesao(
+        cpf_usuario,
+        paciente_id,
+        lesao_original_id,
+        lesao_base_id
+      );
+      res.status(200).json({ mensagem: "Lesão duplicada com sucesso!" });
+    } catch (error) {
+      console.error("Erro ao duplicar a lesão: ", error);
+      res.status(500).json({
+        mensagem: "Erro ao duplicar a lesão.",
+      });
+    }
+  }
+
   static async getLesaoComIds(req, res) {
     try {
       const { id_lesao } = req.params;
@@ -82,6 +123,7 @@ class LesaoController {
       const { id_lesao } = req.params;
 
       const dadosLesao = await LesaoService.getLesaoComNomes(id_lesao);
+      console.log("DADOSSS: ", dadosLesao)
       res
         .status(200)
         .json({ mensagem: "Lesão recuperada com sucesso!", dados: dadosLesao });
