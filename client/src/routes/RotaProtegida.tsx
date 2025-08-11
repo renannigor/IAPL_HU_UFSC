@@ -6,7 +6,6 @@ const RotaProtegida = ({ children }: { children: React.ReactNode }) => {
 
   if (loading) return <p>Carregando...</p>;
   if (!usuarioAtual) return <Navigate to="/entrar" replace />;
-  if (!usuarioAtual.possui_acesso) return <Navigate to="/sem-acesso" replace />;
 
   return <>{children}</>;
 };

@@ -1,24 +1,16 @@
 import PacienteModel from "../models/PacienteModel.js";
 
 class PacienteService {
-  static async getPacientes() {
-    // Obter dados de todos os paciente
-    const result = await PacienteModel.getPacientes();
-    return result;
+  // Método para obter dados dos pacientes
+  static async getPacientes(pagina, limite) {
+    // Chama o model passando pagina e limite
+    const resultado = await PacienteModel.getPacientes(pagina, limite);
+    return resultado;
   }
 
-  static async getPaciente(pac_codigo) {
-    // Obter dados de um paciente
-    const result = await PacienteModel.getPaciente(pac_codigo);
-    return result;
-  }
-
-  static async atualizarPaciente(pac_codigo, dadosAtualizados) {
-    // Atualizar dados de um paciente
-    const result = await PacienteModel.updatePaciente(
-      pac_codigo,
-      dadosAtualizados
-    );
+  // Método para obter dados de um paciente específico
+  static async getPaciente(pacienteCodigo) {
+    const result = await PacienteModel.getPaciente(pacienteCodigo);
     return result;
   }
 }

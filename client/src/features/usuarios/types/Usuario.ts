@@ -4,7 +4,6 @@ export type Usuario = {
   cpf?: string;
   nome?: string;
   tipo: string;
-  possui_acesso?: boolean;
   online?: boolean;
   senha?: string;
   criado_em?: string;

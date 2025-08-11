@@ -3,16 +3,13 @@ import UsuarioController from "../controllers/UsuarioController.js";
 
 const router = Router();
 
-// Buscar todos os tipos de usuário
+// Rota para buscar todos os tipos de usuário disponíveis no sistema.
 router.get("/tipos", UsuarioController.getTiposUsuario);
 
-// Atualizar permissão
-router.patch("/atualizar/:cpf/permissao", UsuarioController.atualizarPermissao);
-
-// Atualizar informações pessoais
+// Rota para atualizar informações pessoais de um usuário específico.
 router.patch("/atualizar/:cpf/", UsuarioController.atualizarPerfil);
 
-// Excluir usuário
+// Rota para excluir um usuário específico do sistema.
 router.delete("/deletar/:cpf", UsuarioController.deletarUsuario);
 
 export default router;

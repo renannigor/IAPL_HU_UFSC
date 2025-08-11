@@ -2,7 +2,8 @@ import DadosFormLesaoModel from "../models/DadosFormLesaoModel.js";
 import LesaoModel from "../models/LesaoModel.js";
 
 class LesaoService {
-  static async listarDadosFormLesao() {
+  // Obter dados para preencher formulário de lesão
+  static async getDadosFormulario() {
     return {
       etiologias: await DadosFormLesaoModel.getEtiologias(),
       classificacoesLesaoPressao:
@@ -24,34 +25,34 @@ class LesaoService {
     };
   }
 
-  static async cadastrarLesao(cpfUsuario, pacienteId, dados) {
-    // Salva a lesão
-    await LesaoModel.cadastrarLesao(cpfUsuario, pacienteId, dados);
+  // Cadastrar nova lesão para paciente pelo usuário
+  static async cadastrarLesao(cpfUsuario, pacienteId, dadosLesao) {
+    await LesaoModel.cadastrarLesao(cpfUsuario, pacienteId, dadosLesao);
   }
 
-  static async atualizarLesao(cpfUsuario, idLesao, dados) {
-    // Atualizar a lesão
-    await LesaoModel.atualizarLesao(cpfUsuario, idLesao, dados);
+  // Atualizar lesão específica
+  static async atualizarLesao(cpfUsuario, lesaoId, dadosAtualizados) {
+    await LesaoModel.atualizarLesao(cpfUsuario, lesaoId, dadosAtualizados);
   }
 
-  static async deletarLesao(idLesao) {
-    // Deletar a lesão
-    await LesaoModel.deletarLesao(idLesao);
+  // Deletar lesão pelo ID
+  static async deletarLesao(lesaoId) {
+    await LesaoModel.deletarLesao(lesaoId);
   }
 
-  static async getHistoricoLesao(id) {
-    // Obter histórico de lesões
-    const dadosHistorico = await LesaoModel.getHistoricoLesao(id);
-    return dadosHistorico;
+  // Obter histórico de uma lesão
+  static async getHistoricoLesao(lesaoId) {
+    const dadosHistoricoLesao = await LesaoModel.getHistoricoLesao(lesaoId);
+    return dadosHistoricoLesao;
   }
 
+  // Duplicar lesão baseada em outra
   static async duplicarLesao(
     cpfUsuario,
     pacienteId,
     lesaoOriginalId,
     lesaoBaseId
   ) {
-    // Duplicar lesão
     await LesaoModel.duplicarLesao(
       cpfUsuario,
       pacienteId,
@@ -60,25 +61,37 @@ class LesaoService {
     );
   }
 
-  static async getLesaoComIds(idLesao) {
-    // Obter a lesão
-    const dadosLesao = await LesaoModel.getLesaoComIds(idLesao);
+  // Obter lesão pelo ID com IDs relacionados
+  static async getLesaoPorId(lesaoId) {
+    const dadosLesao = await LesaoModel.getLesaoPorId(lesaoId);
     return dadosLesao;
   }
 
-  static async getLesaoComNomes(idLesao) {
-    // Obter a lesão
-    const dadosLesao = await LesaoModel.getLesaoComNomes(idLesao);
+  // Obter lesão pelo ID com nomes relacionados
+  static async getLesaoPorNome(lesaoId) {
+    const dadosLesao = await LesaoModel.getLesaoPorNome(lesaoId);
     return dadosLesao;
   }
 
-  static async getLesoesPaciente(pacienteId, precisaAprovacao) {
+  // Obter lista de lesões de um paciente, filtrando por necessidade de aprovação
+  static async getLesoesPorPaciente(pacienteId, precisaAprovacao) {
     // Obter todas as lesões do paciente
-    const dadosLesao = await LesaoModel.getLesoesPaciente(
+    const dadosLesao = await LesaoModel.getLesoesPorPaciente(
       pacienteId,
       precisaAprovacao
     );
     return dadosLesao;
+  }
+
+  // Obter lesão específica
+  static async getLesao(lesaoId) {
+    const dadosLesao = await LesaoModel.getLesao(lesaoId);
+    return dadosLesao;
+  }
+
+  // Atualizar status de aprovação da lesão
+  static async setAprovacao(precisaAprovacao, lesaoId, cpfUsuario) {
+    await LesaoModel.setAprovacao(precisaAprovacao, lesaoId, cpfUsuario);
   }
 }
 

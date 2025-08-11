@@ -1,10 +1,11 @@
 import LesaoService from "../services/LesaoService.js";
 
 class LesaoController {
-  static async obterDadosFormLesao(req, res) {
+  // Obtém dados necessários para preencher o formulário de cadastro/edição de lesão.
+  static async getDadosFormulario(req, res) {
     try {
-      const dados = await LesaoService.listarDadosFormLesao();
-      res.status(200).json(dados);
+      const dadosFormulario = await LesaoService.getDadosFormulario();
+      res.status(200).json(dadosFormulario);
     } catch (error) {
       console.error("Erro ao obter dados do formulário de lesão:", error);
       res
@@ -13,133 +14,121 @@ class LesaoController {
     }
   }
 
+  // Cria uma nova lesão associada a um usuário e paciente.
   static async cadastrarLesao(req, res) {
     try {
       const dados = req.body;
-      const { cpf_usuario, paciente_id } = req.params;
+      const { cpfUsuario, pacienteId } = req.params;
 
-      console.log(dados);
-      console.log(cpf_usuario, paciente_id);
-
-
-      await LesaoService.cadastrarLesao(cpf_usuario, paciente_id, dados);
+      await LesaoService.cadastrarLesao(cpfUsuario, pacienteId, dados);
       res.status(200).json({ mensagem: "Lesão cadastrada com sucesso!" });
     } catch (error) {
       console.error("Erro ao cadastrar uma lesão: ", error);
-      res.status(500).json({
-        mensagem: "Erro ao cadastrar uma lesão.",
-      });
+      res.status(500).json({ mensagem: "Erro ao cadastrar uma lesão." });
     }
   }
 
+  // Atualiza uma lesão existente pelo usuário.
   static async atualizarLesao(req, res) {
     try {
       const dados = req.body;
-      const { cpf_usuario, id_lesao } = req.params;
+      const { cpfUsuario, lesaoId } = req.params;
 
-      console.log(dados);
-
-      await LesaoService.atualizarLesao(cpf_usuario, id_lesao, dados);
+      await LesaoService.atualizarLesao(cpfUsuario, lesaoId, dados);
       res.status(200).json({ mensagem: "Lesão atualizada com sucesso!" });
     } catch (error) {
       console.error("Erro ao atualizar a lesão: ", error);
-      res.status(500).json({
-        mensagem: "Erro ao atualizar a lesão.",
-      });
+      res.status(500).json({ mensagem: "Erro ao atualizar a lesão." });
     }
   }
 
+  // Deleta uma lesão pelo seu ID.
   static async deletarLesao(req, res) {
     try {
-      const { id_lesao } = req.params;
+      const { lesaoId } = req.params;
 
-      await LesaoService.deletarLesao(id_lesao);
+      await LesaoService.deletarLesao(lesaoId);
       res.status(200).json({ mensagem: "Lesão deletada com sucesso!" });
     } catch (error) {
-      console.error("Erro ao atualizar a lesão: ", error);
-      res.status(500).json({
-        mensagem: "Erro ao atualizar a lesão.",
-      });
+      console.error("Erro ao deletar a lesão: ", error);
+      res.status(500).json({ mensagem: "Erro ao deletar a lesão." });
     }
   }
 
+  // Obtém o histórico de uma lesão específica.
   static async getHistoricoLesao(req, res) {
     try {
-      const { id_lesao } = req.params;
+      const { lesaoId } = req.params;
 
-      const dadosHistorico = await LesaoService.getHistoricoLesao(id_lesao);
+      const dadosHistorico = await LesaoService.getHistoricoLesao(lesaoId);
       res.status(200).json({
         mensagem: "Histórico recuperado com sucesso!",
         dados: dadosHistorico,
       });
     } catch (error) {
       console.error("Erro ao recuperar o histórico da lesão: ", error);
-      res.status(500).json({
-        mensagem: "Erro ao recuperar o histórico da lesão.",
-      });
+      res
+        .status(500)
+        .json({ mensagem: "Erro ao recuperar o histórico da lesão." });
     }
   }
 
+  // Duplica uma lesão existente para um paciente.
   static async duplicarLesao(req, res) {
     try {
-      const { cpf_usuario, paciente_id, lesao_original_id, lesao_base_id } =
+      const { cpfUsuario, pacienteId, lesaoOriginalId, lesaoBaseId } =
         req.params;
 
-      console.log(cpf_usuario, paciente_id, lesao_base_id, lesao_base_id);
-
       await LesaoService.duplicarLesao(
-        cpf_usuario,
-        paciente_id,
-        lesao_original_id,
-        lesao_base_id
+        cpfUsuario,
+        pacienteId,
+        lesaoOriginalId,
+        lesaoBaseId
       );
       res.status(200).json({ mensagem: "Lesão duplicada com sucesso!" });
     } catch (error) {
       console.error("Erro ao duplicar a lesão: ", error);
-      res.status(500).json({
-        mensagem: "Erro ao duplicar a lesão.",
-      });
+      res.status(500).json({ mensagem: "Erro ao duplicar a lesão." });
     }
   }
 
-  static async getLesaoComIds(req, res) {
+  // Obtém detalhes da lesão pelo ID, incluindo IDs relacionados.
+  static async getLesaoPorId(req, res) {
     try {
-      const { id_lesao } = req.params;
+      const { lesaoId } = req.params;
 
-      const dadosLesao = await LesaoService.getLesaoComIds(id_lesao);
+      const dadosLesao = await LesaoService.getLesaoPorId(lesaoId);
       res
         .status(200)
         .json({ mensagem: "Lesão recuperada com sucesso!", dados: dadosLesao });
     } catch (error) {
       console.error("Erro ao recuperar uma lesão: ", error);
-      res.status(500).json({
-        mensagem: "Erro ao recuperar uma lesão.",
-      });
+      res.status(500).json({ mensagem: "Erro ao recuperar uma lesão." });
     }
   }
 
-  static async getLesaoComNomes(req, res) {
+  // Obtém detalhes da lesão pelo ID, incluindo nomes relacionados.
+  static async getLesaoPorNome(req, res) {
     try {
-      const { id_lesao } = req.params;
+      const { lesaoId } = req.params;
 
-      const dadosLesao = await LesaoService.getLesaoComNomes(id_lesao);
-      console.log("DADOSSS: ", dadosLesao)
+      const dadosLesao = await LesaoService.getLesaoPorNome(lesaoId);
       res
         .status(200)
         .json({ mensagem: "Lesão recuperada com sucesso!", dados: dadosLesao });
     } catch (error) {
       console.error("Erro ao recuperar uma lesão: ", error);
-      res.status(500).json({
-        mensagem: "Erro ao recuperar uma lesão.",
-      });
+      res.status(500).json({ mensagem: "Erro ao recuperar uma lesão." });
     }
   }
 
-  static async getLesoesPaciente(req, res) {
+  // Lista todas as lesões de um paciente, com filtro de aprovação.
+  static async getLesoesPorPaciente(req, res) {
     try {
-      const { pacienteId, precisaAprovacao } = req.query;
+      const { pacienteId } = req.params;
+      const { precisaAprovacao } = req.query;
 
-      const dadosLesao = await LesaoService.getLesoesPaciente(
+      const dadosLesao = await LesaoService.getLesoesPorPaciente(
         pacienteId,
         precisaAprovacao
       );
@@ -149,8 +138,47 @@ class LesaoController {
       });
     } catch (error) {
       console.error("Erro ao recuperar as lesões: ", error);
+      res.status(500).json({ mensagem: "Erro ao recuperar as lesões." });
+    }
+  }
+
+  // Obtém uma lesão específica
+  static async getLesao(req, res) {
+    try {
+      const { lesaoId } = req.params;
+
+      const dadosLesao = await LesaoService.getLesao(lesaoId);
+      res.status(200).json({
+        mensagem: "Lesão recuperada com sucesso!",
+        dados: dadosLesao,
+      });
+    } catch (error) {
+      console.error("Erro ao recuperar a lesão: ", error);
+      res.status(500).json({ mensagem: "Erro ao recuperar a lesão." });
+    }
+  }
+
+  // Atualiza o status de aprovação de uma lesão
+  static async setAprovacao(req, res) {
+    try {
+      // Obtém os dados da requisição
+      const { precisaAprovacao } = req.body;
+      const { cpfUsuario, lesaoId } = req.params;
+
+      console.log(precisaAprovacao);
+      console.log(cpfUsuario, lesaoId);
+
+      // Chama o serviço para atualizar a aprovação
+      await LesaoService.setAprovacao(precisaAprovacao, lesaoId, cpfUsuario);
+
+      // Retorna resposta de sucesso
+      res.status(200).json({
+        mensagem: "Status de aprovação da lesão atualizado com sucesso!",
+      });
+    } catch (error) {
+      console.error("Erro ao atualizar status de aprovação da lesão:", error);
       res.status(500).json({
-        mensagem: "Erro ao recuperar as lesões.",
+        mensagem: "Não foi possível atualizar o status de aprovação da lesão.",
       });
     }
   }

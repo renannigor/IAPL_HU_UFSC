@@ -1,16 +1,16 @@
 import { ItemComValor } from "./ItemComValor";
 
-export interface LesaoComNomeFormData {
+export interface LesaoPorIdFormData {
   id: string;
-  bordas: string[];
-  etiologias: string[];
-  classificacoesLesaoPressao?: string[];
-  classificacoesDor?: string[];
-  regioesPerilesionais: string[];
-  estruturasNobres: string[];
-  limpezas: string[];
-  desbridamentos: string[];
-  protecoes: string[];
+  bordas: number[];
+  etiologias: number[];
+  classificacoesLesaoPressao?: number[];
+  classificacoesDor?: number[];
+  regioesPerilesionais: number[];
+  estruturasNobres: number[];
+  limpezas: number[];
+  desbridamentos: number[];
+  protecoes: number[];
   limpezaOutro?: string | undefined;
   desbridamentoOutro?: string | undefined;
   protecaoOutro?: string | undefined;
@@ -19,9 +19,9 @@ export interface LesaoComNomeFormData {
   presencaTunel: "sim" | "nao";
   dor: "sim" | "nao";
   escalaNumericaDor?: number;
-  quantidadeExsudato: string;
-  odor: string;
-  tipoExsudato: string;
+  quantidadeExsudato: number;
+  odor: number;
+  tipoExsudato: number;
   tamanho: {
     comprimento: number;
     largura: number;

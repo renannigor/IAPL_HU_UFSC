@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { ClipboardCopyIcon, CheckCheckIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/ui/button";
 import { BreadcrumbNav } from "@/shared/components/layout/BreadcrumbNav";
 import LesaoService from "../services/LesaoService";
 import { useAuth } from "@/providers/AuthProvider";
-import { LesaoComNomeFormData } from "../types/LesaoComNomeFormData";
+import { TiposUsuario } from "@/features/usuarios/constants/TiposUsuario.enum";
+import { LesaoPorNomeFormData } from "../types/LesaoPorNomeFormData";
 
 function LabelValue({ label, value }: { label: string; value: string }) {
   return (
@@ -23,14 +24,15 @@ function LabelValue({ label, value }: { label: string; value: string }) {
 const DetalhesLesaoPage = () => {
   const { id_lesao, id_paciente } = useParams();
   // Estado para armazenar os dados carregados da lesão
-  const [dadosLesao, setDadosLesao] = useState<LesaoComNomeFormData>();
+  const [dadosLesao, setDadosLesao] = useState<LesaoPorNomeFormData>();
 
   const { usuarioAtual } = useAuth();
+  const navigate = useNavigate();
 
   // Efeito para carregar os dados da lesão quando o componente for montado
   useEffect(() => {
     const fetchLesao = async () => {
-      const { dados } = await LesaoService.getLesaoComNomes(id_lesao!);
+      const { dados } = await LesaoService.getLesaoPorNome(id_lesao!);
       console.log(dados);
       setDadosLesao(dados);
     };
@@ -153,7 +155,8 @@ const DetalhesLesaoPage = () => {
   // Aprovação da lesão
   const aprovarLesao = async () => {
     try {
-      await LesaoService.aprovarLesao(usuarioAtual?.cpf!, id_lesao!);
+      await LesaoService.setAprovacao(usuarioAtual?.cpf!, id_lesao!);
+      navigate(`/dashboard/pacientes/${id_paciente}`);
     } catch (error) {
       toast.error("Erro ao aprovar lesão.");
     }
@@ -189,14 +192,16 @@ const DetalhesLesaoPage = () => {
           </Button>
 
           {/* Botão para aprovar lesão */}
-          <Button
-            variant="outline"
-            onClick={aprovarLesao}
-            className="flex items-center gap-1"
-          >
-            <CheckCheckIcon size={16} />
-            Aprovar Lesão
-          </Button>
+          {usuarioAtual?.tipo != TiposUsuario.Academico && (
+            <Button
+              variant="outline"
+              onClick={aprovarLesao}
+              className="flex items-center gap-1"
+            >
+              <CheckCheckIcon size={16} />
+              Aprovar Lesão
+            </Button>
+          )}
         </div>
       </div>
 

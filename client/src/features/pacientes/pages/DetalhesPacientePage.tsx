@@ -14,39 +14,30 @@ import { BreadcrumbNav } from "@/shared/components/layout/BreadcrumbNav";
 const DetalhesPacientePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  // Estado que armazena os dados do paciente
+
   const [paciente, setPaciente] = useState<Paciente | null>(null);
-  // Estado que serve para forçar recarregamento das lesões
   const [refetchLesoes, setRefetchLesoes] = useState(false);
-  // Estado que guarda lesões que precisam de aprovação
   const [lesoesPrecisaAprovacao, setLesoesPrecisaAprovacao] = useState<Lesao[]>(
     []
   );
-  // Estado que guarda lesões que não precisam de aprovação
   const [lesoesNaoPrecisaAprovacao, setLesoesNaoPrecisaAprovacao] = useState<
     Lesao[]
   >([]);
 
   useEffect(() => {
-    // Função para buscar dados do paciente
     const fetchPaciente = async () => {
       const data = await PacienteService.getPaciente(id!);
       setPaciente(data);
     };
-
     if (id) fetchPaciente();
   }, [id]);
 
   useEffect(() => {
-    // Função para buscar lesões do paciente
     const fetchLesoes = async () => {
-      // Busca em paralelo lesões que precisam e que não precisam de aprovação
       const [precisaAprovacao, naoPrecisaAprovacao] = await Promise.all([
         LesaoService.getLesoes(id!, true),
         LesaoService.getLesoes(id!, false),
       ]);
-
-      // Garante que o estado receba sempre arrays
       setLesoesPrecisaAprovacao(
         Array.isArray(precisaAprovacao) ? precisaAprovacao : []
       );
@@ -54,25 +45,22 @@ const DetalhesPacientePage = () => {
         Array.isArray(naoPrecisaAprovacao) ? naoPrecisaAprovacao : []
       );
     };
-
     if (id) fetchLesoes();
   }, [id, refetchLesoes]);
 
   if (!paciente) return <p>Carregando...</p>;
 
   return (
-    <div className="space-y-8">
-      <div>
-        <BreadcrumbNav
-          itens={[
-            { titulo: "Home", href: "/" },
-            { titulo: "Pacientes", href: "/dashboard/pacientes" },
-            { titulo: id!, href: `/dashboard/pacientes/${id}` },
-          ]}
-        />
-      </div>
+    <div className="bg-white rounded-lg shadow-md p-6 space-y-8">
+      <BreadcrumbNav
+        itens={[
+          { titulo: "Home", href: "/" },
+          { titulo: "Pacientes", href: "/dashboard/pacientes" },
+          { titulo: id!, href: `/dashboard/pacientes/${id}` },
+        ]}
+      />
 
-      {/* Cabeçalho com nome do paciente e botão para cadastrar lesão */}
+      {/* Cabeçalho */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-green-200 flex items-center justify-center text-xl font-semibold text-green-800">
@@ -98,7 +86,7 @@ const DetalhesPacientePage = () => {
         </div>
       </div>
 
-      {/* Abas para informações e lesões */}
+      {/* Abas */}
       <Tabs defaultValue="info" className="w-full">
         <TabsList className="mb-6">
           <TabsTrigger value="info">Informações do Paciente</TabsTrigger>
@@ -106,7 +94,6 @@ const DetalhesPacientePage = () => {
           <TabsTrigger value="pendencias">Pendentes de Aprovação</TabsTrigger>
         </TabsList>
 
-        {/* Aba de informações do paciente */}
         <TabsContent value="info">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <Editor
@@ -247,7 +234,6 @@ const DetalhesPacientePage = () => {
           </div>
         </TabsContent>
 
-        {/* Aba com lesões que não precisam de aprovação */}
         <TabsContent value="lesoes">
           <div className="space-y-6">
             <p className="text-muted-foreground">Lesões do paciente</p>
@@ -258,7 +244,6 @@ const DetalhesPacientePage = () => {
           </div>
         </TabsContent>
 
-        {/* Aba com lesões que precisam de aprovação */}
         <TabsContent value="pendencias">
           <div className="space-y-6">
             <p className="text-muted-foreground">

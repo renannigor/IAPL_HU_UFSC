@@ -95,7 +95,7 @@ const FormLesaoPage = () => {
   useEffect(() => {
     if (!isEditMode) return;
     const fetchLesao = async () => {
-      const { dados } = await LesaoService.getLesaoComIds(id_lesao!);
+      const { dados } = await LesaoService.getLesaoPorId(id_lesao!);
 
       reset(dados);
     };

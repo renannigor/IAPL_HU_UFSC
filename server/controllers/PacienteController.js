@@ -214,22 +214,30 @@ const pacientes = [
 ];
 
 class PacienteController {
+  // Método para obter dados dos pacientes
   static async getPacientes(req, res) {
     try {
-      const pacientes = await PacienteService.getPacientes();
-      res.status(200).json(pacientes);
+      // Recebe pagina e limite da query string, com valores padrão
+      const pagina = parseInt(req.query.pagina) || 1;
+      const limite = parseInt(req.query.limite) || 8;
+
+      // Busca pacientes paginados e total
+      const resultado = await PacienteService.getPacientes(pagina, limite);
+
+      res.status(200).json(resultado); // { total, pacientes }
     } catch (error) {
       console.error(error);
       res
         .status(500)
-        .json({ erro: "Erro ao obter informações dos pacientes!" });
+        .json({ erro: "Erro ao carregar informações dos pacientes!" });
     }
   }
 
+  // Método para obter dados de um paciente específico
   static async getPaciente(req, res) {
     try {
-      const { pac_codigo } = req.params;
-      const paciente = await PacienteService.getPaciente(pac_codigo);
+      const { pacienteCodigo } = req.params;
+      const paciente = await PacienteService.getPaciente(pacienteCodigo);
 
       if (!paciente) {
         return res.status(404).json({ erro: "Paciente não encontrado." });
@@ -242,30 +250,7 @@ class PacienteController {
     }
   }
 
-  static async atualizarPaciente(req, res) {
-    try {
-      const { pac_codigo } = req.params;
-      const dadosAtualizados = req.body;
-
-      const pacienteAtualizado = await PacienteService.atualizarPaciente(
-        pac_codigo,
-        dadosAtualizados
-      );
-
-      if (!pacienteAtualizado) {
-        return res.status(404).json({ erro: "Paciente não encontrado." });
-      }
-
-      res.status(200).json(pacienteAtualizado);
-    } catch (error) {
-      console.error(error);
-      res
-        .status(500)
-        .json({ erro: "Erro ao atualizar as informações do paciente!" });
-    }
-  }
-
-  static async obterPaciente(req, res) {
+  static async getPacienteTeste(req, res) {
     try {
       const { id } = req.params;
 
@@ -276,13 +261,28 @@ class PacienteController {
       res.status(200).json(paciente);
     } catch (error) {
       console.error(error);
-      res.status(500).json({ erro: "Erro ao atualizar informações pessoais!" });
+      res.status(500).json({ erro: "Erro ao obter informações do paciente!" });
     }
   }
 
-  static async carregarTodosPacientes(req, res) {
+  static async getPacientesTeste(req, res) {
     try {
-      res.status(200).json(pacientes);
+      // Recebe pagina e limite da query string, com valores padrão
+      const pagina = parseInt(req.query.pagina) || 1;
+      const limite = parseInt(req.query.limite) || 8;
+
+      const offset = (pagina - 1) * limite;
+
+      // Total de pacientes
+      const total = pacientes.length;
+
+      // Pacientes da página
+      const pacientesPaginados = pacientes.slice(offset, offset + limite);
+
+      res.status(200).json({
+        total,
+        pacientes: pacientesPaginados,
+      });
     } catch (error) {
       console.error(error);
       res

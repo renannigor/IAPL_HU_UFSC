@@ -2,14 +2,15 @@ import api from "@/api/api";
 
 class PacienteService {
   // Método para buscar uma lista paginada de pacientes
-  static async getPacientes(paginaAtual: number) {
+  static async getPacientes(paginaAtual: number, pacientesPorPagina: number) {
     try {
       const response = await api.get("/api/pacientes/todos/teste", {
         params: {
           pagina: paginaAtual,
+          limite: pacientesPorPagina,
         },
       });
-      return response.data;
+      return response.data; // espera { total: number, pacientes: Paciente[] }
     } catch (error) {
       console.error("Erro ao carregar pacientes", error);
       throw error;

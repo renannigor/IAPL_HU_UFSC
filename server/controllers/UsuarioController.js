@@ -1,36 +1,25 @@
-import Usuarios from "../models/UsuarioModel.js";
+import UsuarioService from "../services/UsuarioService.js";
 
 class UsuarioController {
+  // Deleta um usuário do sistema.
   static async deletarUsuario(req, res) {
     try {
       const { cpf } = req.params;
-      await Usuarios.excluirUsuario(cpf);
-      res.status(200).json({ mensagem: "Usuário excluído com sucesso!" });
+      await UsuarioService.deletarUsuario(cpf);
+      res.status(200).json({ mensagem: "Usuário deletado com sucesso!" });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ erro: "Erro ao excluir usuário" });
+      res.status(500).json({ erro: "Erro ao deletar usuário" });
     }
   }
 
-  static async atualizarPermissao(req, res) {
-    try {
-      const { cpf } = req.params;
-      const { possui_acesso } = req.body;
-
-      await Usuarios.atualizarPermissao(cpf, possui_acesso);
-      res.status(200).json({ mensagem: "Permissão atualizada!" });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ erro: "Erro ao atualizar permissão" });
-    }
-  }
-
+  // Atualiza as informações pessoais de um usuário (nesse caso, apenas o nome).
   static async atualizarPerfil(req, res) {
     try {
       const { cpf } = req.params;
       const { nome } = req.body;
 
-      await Usuarios.atualizarPerfil(nome, cpf);
+      await UsuarioService.atualizarPerfil(nome, cpf);
       res.status(200).json({ mensagem: "Informações atualizadas!" });
     } catch (error) {
       console.error(error);
@@ -38,23 +27,10 @@ class UsuarioController {
     }
   }
 
+  // Lista todos os tipos de usuário disponíveis no sistema.
   static async getTiposUsuario(req, res) {
     try {
-      const usuarios = await Usuarios.getTiposUsuario();
-      console.log(usuarios);
-      res.status(200).json(usuarios);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ erro: "Erro ao buscar os tipos de usuário" });
-    }
-  }
-
-  static async verificaPermissaoAprovacao(req, res) {
-    try {
-      const { tipo } = req.params;
-
-      const usuarios = await Usuarios.verificaPermissaoAprovacao(tipo);
-      console.log(usuarios);
+      const usuarios = await UsuarioService.getTiposUsuario();
       res.status(200).json(usuarios);
     } catch (error) {
       console.error(error);

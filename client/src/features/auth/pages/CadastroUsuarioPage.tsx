@@ -40,7 +40,7 @@ const CadastroUsuarioPage = () => {
   // Carregar tipos de usuários
   useEffect(() => {
     const fetchTiposUsuario = async () => {
-      const dados = await UsuarioService.obterTiposUsuario();
+      const dados = await UsuarioService.getTiposUsuario();
       console.log(dados);
       setTiposUsuario(dados);
     };

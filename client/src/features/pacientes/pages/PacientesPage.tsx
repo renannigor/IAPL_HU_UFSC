@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/ui/table";
-import { Filter, FileDown } from "lucide-react";
+import { FileDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PacienteService from "@/features/pacientes/services/PacienteService";
 import {
@@ -30,15 +30,17 @@ const PacientesPage = () => {
 
   const navigate = useNavigate();
 
+  // Carrega pacientes paginados com total para paginação correta
   const carregarPacientes = async (): Promise<void> => {
-    // Carregando todos os pacientes
-    const data = await PacienteService.getPacientes(paginaAtual);
-    const pacientesData = Array.isArray(data) ? data : [];
-    setPacientes(pacientesData);
-    setTotalPacientes(pacientesData.length);
+    const data = await PacienteService.getPacientes(
+      paginaAtual,
+      pacientesPorPagina
+    );
+    setPacientes(data.pacientes || []);
+    setTotalPacientes(data.total || 0);
   };
 
-  // Exportando os dados em um arquivo .csv
+  // Exporta os dados da página atual em CSV
   const exportarCSV = (): void => {
     const rows = pacientes.map((p) => [
       p.internacao,
@@ -81,15 +83,13 @@ const PacientesPage = () => {
   }, [paginaAtual]);
 
   return (
-    <div className="space-y-4">
-      <div>
-        <BreadcrumbNav
-          itens={[
-            { titulo: "Home", href: "/" },
-            { titulo: "Pacientes", href: "/dashboard/pacientes" },
-          ]}
-        />
-      </div>
+    <div className="w-full max-w-full px-6 py-8 bg-white rounded shadow space-y-6">
+      <BreadcrumbNav
+        itens={[
+          { titulo: "Home", href: "/" },
+          { titulo: "Pacientes", href: "/dashboard/pacientes" },
+        ]}
+      />
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -100,10 +100,6 @@ const PacientesPage = () => {
         </div>
 
         <div className="flex gap-2">
-          <Button variant="outline">
-            <Filter className="w-4 h-4 mr-2" />
-            Filtrar
-          </Button>
           <Button variant="outline" onClick={exportarCSV}>
             <FileDown className="w-4 h-4 mr-2" />
             Exportar CSV
@@ -111,8 +107,8 @@ const PacientesPage = () => {
         </div>
       </div>
 
-      <Card className="p-4 shadow-sm border rounded-xl">
-        <CardContent className="overflow-auto">
+      <Card className="shadow-sm border rounded-xl">
+        <CardContent className="overflow-auto p-0">
           <Table>
             <TableCaption>Pacientes internados avaliados.</TableCaption>
             <TableHeader>
@@ -145,9 +141,9 @@ const PacientesPage = () => {
                     <Button
                       variant="ghost"
                       className="text-green-700 hover:text-green-800 hover:underline"
-                      onClick={() => {
-                        navigate(`/dashboard/pacientes/${paciente.pac_codigo}`);
-                      }}
+                      onClick={() =>
+                        navigate(`/dashboard/pacientes/${paciente.pac_codigo}`)
+                      }
                     >
                       Visualizar
                     </Button>

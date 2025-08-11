@@ -1,11 +1,8 @@
 import "dotenv/config";
 import { hash, compare } from "bcrypt";
 import pkg from "jsonwebtoken";
-import Enderecos from "../models/EnderecoModel.js";
-import Usuarios from "../models/UsuarioModel.js";
-import Tokens from "../models/TokenModel.js";
-import EmailService from "./EmailService.js";
-import crypto from "crypto";
+import EnderecoModel from "../models/EnderecoModel.js";
+import UsuarioModel from "../models/UsuarioModel.js";
 
 const { sign, verify } = pkg;
 
@@ -51,7 +48,7 @@ class AuthService {
       const decoded = this.verificarRefreshToken(refreshToken);
 
       // Busca usuário no banco de dados
-      const usuario = await Usuarios.getPorCPF(decoded.cpf);
+      const usuario = await UsuarioModel.getPorCPF(decoded.cpf);
       if (!usuario) throw new Error("Usuário não encontrado");
 
       // Gera um novo accessToken
@@ -74,7 +71,7 @@ class AuthService {
       }
 
       // Busca o usuário no banco de dados
-      const usuario = await Usuarios.getPorCPF(decoded.cpf);
+      const usuario = await UsuarioModel.getPorCPF(decoded.cpf);
       if (!usuario) {
         throw new Error("Usuário não encontrado");
       }
@@ -101,18 +98,18 @@ class AuthService {
     } = dados;
 
     // Verifica se o email já existe
-    const emailExistente = await Usuarios.getPorEmail(email);
+    const emailExistente = await UsuarioModel.getPorEmail(email);
     if (emailExistente) throw new Error("Email já cadastrado.");
 
     // Verifica se o cpf já existe
-    const cpfExistente = await Usuarios.getPorCPF(cpf);
+    const cpfExistente = await UsuarioModel.getPorCPF(cpf);
     if (cpfExistente) throw new Error("CPF já cadastrado.");
 
     // Hash da senha
     const hashSenha = await hash(senha, 10);
 
     // Cria o usuário
-    const usuario = await Usuarios.criar({
+    const usuario = await UsuarioModel.cadastrarUsuario({
       cpf,
       nome,
       email,
@@ -121,7 +118,7 @@ class AuthService {
     });
 
     // Salva o endereço do usuário
-    await Enderecos.criar({
+    await EnderecoModel.cadastrarEndereco({
       cpf_usuario: cpf,
       cep,
       logradouro,
@@ -140,7 +137,7 @@ class AuthService {
 
   static async login({ email, senha }) {
     // Busca usuário pelo email
-    const usuario = await Usuarios.getPorEmail(email);
+    const usuario = await UsuarioModel.getPorEmail(email);
     if (!usuario) throw new Error("Usuário não encontrado.");
 
     // Compara a senha informada com a armazenada
@@ -152,53 +149,9 @@ class AuthService {
     const refreshToken = this.gerarRefreshToken(usuario);
 
     // Atualiza o último acesso do usuário
-    await Usuarios.atualizarUltimoAcesso(usuario.cpf);
+    await UsuarioModel.atualizarUltimoAcesso(usuario.cpf);
 
     return { accessToken, refreshToken, usuario };
-  }
-
-  static async esqueceuSenha(email) {
-    // Busca usuário pelo email
-    const usuario = await Usuarios.getPorEmail(email);
-    if (!usuario) throw new Error("Email não encontrado.");
-
-    // Gerar um token aleatório
-    const token = crypto.randomBytes(32).toString("hex");
-    const expires_at = new Date(Date.now() + 15 * 60 * 1000); // Expira em 15 minutos
-
-    // Salvar no banco
-    await Tokens.criarToken(email, token, expires_at);
-
-    // Criar link de redefinição
-    const resetLink = `http://localhost:5173/redefinir-senha?token=${token}`;
-    const mensagem = `
-        <h3>Redefinição de Senha</h3>
-        <p>Olá, ${usuario.nome}!</p>
-        <p>Clique no link abaixo para redefinir sua senha. O link expira em 15 minutos.</p>
-        <a href="${resetLink}">${resetLink}</a>
-    `;
-
-    console.log(`Email de recuperação enviado para: ${email}`);
-
-    await EmailService.enviarEmail(email, "Redefinição de Senha", mensagem);
-  }
-
-  static async redefinirSenha(token, novaSenha) {
-    const tokenData = await Tokens.buscarPorToken(token);
-    if (!tokenData) throw new Error("Token inválido ou expirado.");
-
-    // Buscar usuário pelo email do token
-    const usuario = await Usuarios.getPorEmail(tokenData.email);
-    if (!usuario) throw new Error("Usuário não encontrado.");
-
-    // Hash da nova senha
-    const hashSenha = await hash(novaSenha, 10);
-    await Usuarios.atualizarSenha(usuario.email, hashSenha);
-
-    // Remover o token do banco após o uso
-    await Tokens.excluirToken(token);
-
-    return { mensagem: "Senha redefinida com sucesso!" };
   }
 }
 

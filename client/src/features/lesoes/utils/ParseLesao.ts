@@ -1,6 +1,6 @@
 import { ItemComValor } from "../types/ItemComValor";
-import { LesaoComIdFormData } from "../types/LesaoComIdFormData";
-import { LesaoComNomeFormData } from "../types/LesaoComNomeFormData";
+import { LesaoPorIdFormData } from "../types/LesaoPorIdFormData";
+import { LesaoPorNomeFormData } from "../types/LesaoPorNomeFormData";
 
 function parseTamanho(data: any) {
   return {
@@ -51,7 +51,7 @@ function parseCamposComuns(data: any) {
   };
 }
 
-export function parseLesaoComIdsFromApi(data: any): LesaoComIdFormData {
+export function parseLesaoComIdsFromApi(data: any): LesaoPorIdFormData {
   return {
     ...parseCamposComuns(data),
     quantidadeExsudato: Number(data.quantidadeExsudato),
@@ -60,7 +60,7 @@ export function parseLesaoComIdsFromApi(data: any): LesaoComIdFormData {
   };
 }
 
-export function parseLesaoComNomesFromApi(data: any): LesaoComNomeFormData {
+export function parseLesaoComNomesFromApi(data: any): LesaoPorNomeFormData {
   return {
     ...parseCamposComuns(data),
     quantidadeExsudato: data.quantidadeExsudato,

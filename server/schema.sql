@@ -10,7 +10,6 @@ CREATE TABLE IF NOT EXISTS usuarios (
     nome VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     tipo_id INTEGER REFERENCES tipos_usuario(id) NOT NULL,
-    possui_acesso BOOLEAN DEFAULT FALSE,
     senha TEXT NOT NULL,
     criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     ultimo_acesso TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -26,14 +25,6 @@ CREATE TABLE IF NOT EXISTS enderecos (
     cidade VARCHAR(255) NOT NULL,
     estado VARCHAR(2) NOT NULL,
     numero VARCHAR(10)
-);
-
--- TOKENS DE REDEFINIÇÃO DE SENHA
-CREATE TABLE IF NOT EXISTS tokens_redefinicao_senha (
-    id SERIAL PRIMARY KEY,
-    email TEXT REFERENCES usuarios(email) ON DELETE CASCADE,
-    token TEXT UNIQUE NOT NULL,
-    expires_at TIMESTAMP NOT NULL
 );
 
 -- PACIENTES
@@ -175,7 +166,7 @@ CREATE TABLE IF NOT EXISTS lesoes (
         odor_id INTEGER REFERENCES odores(id),
         comprimento NUMERIC NOT NULL,
         largura NUMERIC NOT NULL,
-        profundidade NUMERIC NOT NULL,
+        profundidade NUMERIC,
         localizacao TEXT NOT NULL,
         data_proxima_avaliacao TIMESTAMP NOT NULL,
         data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

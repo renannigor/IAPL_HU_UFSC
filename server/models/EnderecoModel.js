@@ -1,7 +1,8 @@
 import db from "../config/db.js";
 
-const Enderecos = {
-  async criar(dados) {
+const EnderecoModel = {
+  // Cadastrar o endereço do usuário
+  async cadastrarEndereco(dados) {
     const { cpf_usuario, cep, logradouro, bairro, cidade, estado, numero } =
       dados;
     await db.query(
@@ -12,4 +13,4 @@ const Enderecos = {
   },
 };
 
-export default Enderecos;
+export default EnderecoModel;

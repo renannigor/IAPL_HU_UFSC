@@ -1,6 +1,6 @@
 import db from "../config/db.js";
 
-class PacienteModel {
+const PacienteModel = {
   // Calcular Idade do Paciente
   calcularIdade(nascimento) {
     const [ano, mes, dia] = nascimento.split("/").map(Number);
@@ -20,7 +20,7 @@ class PacienteModel {
     }
 
     return idade;
-  }
+  },
 
   // Calcular IMC do Paciente
   calcularIMC(peso, altura) {
@@ -29,9 +29,9 @@ class PacienteModel {
       return Number((peso / (alturaEmMetros * alturaEmMetros)).toFixed(2));
     }
     return null;
-  }
+  },
 
-  async getPacientes() {
+  async getPacientes(pagina, limite) {
     // Obter dados dos pacientes cadastrados no AGHU
     const result = await db.query(`
       SELECT
@@ -226,88 +226,34 @@ class PacienteModel {
       }
     }
 
-    const pacientes = await db.query(`SELECT * FROM pacientes_aux`);
+    // Calcula offset para paginação
+    const offset = (pagina - 1) * limite;
 
-    return pacientes.rows;
-  }
+    // Query para contar total de pacientes
+    const totalResult = await db.query(`SELECT COUNT(*) FROM pacientes_aux`);
+    const total = parseInt(totalResult.rows[0].count, 10);
 
-  async getPaciente(pac_codigo) {
+    // Query para pegar pacientes paginados
+    const pacientesResult = await db.query(
+      `SELECT * FROM pacientes_aux ORDER BY nome LIMIT $1 OFFSET $2`,
+      [limite, offset]
+    );
+
+    return {
+      total,
+      pacientes: pacientesResult.rows,
+    };
+  },
+
+  async getPaciente(pacienteCodigo) {
     // Obter dados do paciente
     const result = await db.query(
       `SELECT * FROM pacientes_aux WHERE pac_codigo = $1`,
-      [pac_codigo]
+      [pacienteCodigo]
     );
 
     return result.rows[0];
-  }
-
-  async atualizarPaciente(pac_codigo, dadosAtualizados) {
-    // Atualizar dados do paciente
-    const {
-      internacao,
-      nome,
-      nascimento,
-      cor,
-      sexo,
-      altura_consulta,
-      peso_consulta,
-      altura_controle,
-      peso_controle,
-      qrt_numero,
-      lto_lto_id,
-      criticidade_alergica,
-      grau_certeza,
-      medicamento,
-      agente_causador,
-      classificacao_alergica,
-    } = dadosAtualizados;
-
-    const result = await db.query(
-      `
-      UPDATE pacientes_aux SET
-        internacao = $1,
-        nome = $2,
-        nascimento = $3,
-        cor = $4,
-        sexo = $5,
-        altura_consulta = $6,
-        peso_consulta = $7,
-        altura_controle = $8,
-        peso_controle = $9,
-        qrt_numero = $10,
-        lto_lto_id = $11,
-        criticidade_alergica = $12,
-        grau_certeza = $13,
-        medicamento = $14,
-        agente_causador = $15,
-        classificacao_alergica = $16,
-        data_sincronizacao = CURRENT_TIMESTAMP
-      WHERE pac_codigo = $17
-      RETURNING *
-      `,
-      [
-        internacao,
-        nome,
-        nascimento,
-        cor,
-        sexo,
-        altura_consulta,
-        peso_consulta,
-        altura_controle,
-        peso_controle,
-        qrt_numero,
-        lto_lto_id,
-        criticidade_alergica,
-        grau_certeza,
-        medicamento,
-        agente_causador,
-        classificacao_alergica,
-        pac_codigo,
-      ]
-    );
-
-    return result.rows[0];
-  }
-}
+  },
+};
 
 export default PacienteModel;

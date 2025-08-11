@@ -24,12 +24,12 @@ const PerfilPage = () => {
     resolver: zodResolver(PerfilUsuarioSchema),
     defaultValues: {
       nome: usuarioAtual?.nome || "",
-      tipo: usuarioAtual?.tipo ?? "",
+      tipo: usuarioAtual?.tipo || "",
       email: usuarioAtual?.email || "",
       ultimo_acesso: usuarioAtual?.ultimo_acesso || "",
     },
   });
-
+  
   const firstLetter = usuarioAtual?.nome?.charAt(0).toUpperCase() || "?";
 
   const onSubmit: SubmitHandler<PerfilUsuarioFields> = async (data) => {
