@@ -1,4 +1,5 @@
 import db from "../config/db.js";
+import EnderecoModel from "../models/EnderecoModel.js";
 
 const UsuarioModel = {
   // Retorna todos os tipos de usuário cadastrados no sistema.
@@ -33,11 +34,13 @@ const UsuarioModel = {
     const result = await db.query(
       `
       SELECT 
-        u.cpf, u.nome, u.email, tu.nome AS tipo, u.senha, u.criado_em,
-        TO_CHAR(u.ultimo_acesso, 'DD/MM/YYYY HH24:MI:SS') AS ultimo_acesso
+        u.cpf, u.nome, u.email, tu.nome AS tipo, 
+        u.criado_em, TO_CHAR(u.ultimo_acesso, 'DD/MM/YYYY HH24:MI:SS') AS ultimo_acesso,
+        e.cep, e.logradouro, e.bairro, e.cidade, e.estado, e.numero
       FROM usuarios u
-      JOIN tipos_usuario tu ON u.tipo_id = tu.id
-      WHERE u.cpf = $1
+        JOIN tipos_usuario tu ON u.tipo_id = tu.id
+        JOIN enderecos e ON u.cpf = e.cpf_usuario
+      WHERE u.cpf = $1;
       `,
       [cpf]
     );
@@ -67,9 +70,15 @@ const UsuarioModel = {
     await db.query("DELETE FROM usuarios WHERE cpf = $1", [cpf]);
   },
 
-  // Atualiza o nome do usuário.
-  async atualizarPerfil(nome, cpf) {
-    await db.query("UPDATE usuarios SET nome = $1 WHERE cpf = $2", [nome, cpf]);
+  // Atualiza os dados do usuário.
+  async atualizarPerfil(dados, cpf) {
+    await db.query("UPDATE usuarios SET nome = $1 WHERE cpf = $2", [
+      dados.nome,
+      cpf,
+    ]);
+
+    // Atualizando dados do endereço do usuário
+    await EnderecoModel.atualizarEndereco(dados, cpf);
   },
 };
 

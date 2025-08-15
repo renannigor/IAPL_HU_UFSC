@@ -32,7 +32,11 @@ export const FormCadastroUsuarioSchema = z
     bairro: z.string().min(1, "Campo obrigatório!"),
     cidade: z.string().min(1, "Campo obrigatório!"),
     estado: z.string().min(2, "Campo obrigatório!"),
-    numeroResidencial: z.string().optional(),
+    numeroResidencial: z
+      .number({ invalid_type_error: "Informe um número" })
+      .int("O valor deve ser um número inteiro")
+      .min(0, "O valor deve ser maior que 0")
+      .optional(),
     senha: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
     confirmarSenha: z.string(),
   })
@@ -41,4 +45,6 @@ export const FormCadastroUsuarioSchema = z
     message: "As senhas não coincidem",
   });
 
-export type FormCadastroUsuarioFields = z.infer<typeof FormCadastroUsuarioSchema>;
+export type FormCadastroUsuarioFields = z.infer<
+  typeof FormCadastroUsuarioSchema
+>;

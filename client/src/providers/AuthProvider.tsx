@@ -26,7 +26,7 @@ interface AuthContextType {
     bairro: string,
     cidade: string,
     estado: string,
-    numero: string
+    numero: number
   ) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -132,7 +132,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     bairro: string,
     cidade: string,
     estado: string,
-    numero: string
+    numero: number
   ) => {
     const data = await AuthService.cadastrarUsuario(
       cpf,

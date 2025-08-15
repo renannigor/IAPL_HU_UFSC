@@ -6,15 +6,21 @@ class UsuarioService {
     await UsuarioModel.deletarUsuario(cpf);
   }
 
-  // Atualiza as informações pessoais de um usuário (nesse caso, apenas o nome).
-  static async atualizarPerfil(nome, cpf) {
-    await UsuarioModel.atualizarPerfil(nome, cpf);
+  // Atualiza as informações pessoais de um usuário.
+  static async atualizarPerfil(dados, cpf) {
+    await UsuarioModel.atualizarPerfil(dados, cpf);
   }
 
   // Lista todos os tipos de usuário disponíveis no sistema.
   static async getTiposUsuario() {
     const tiposLesao = await UsuarioModel.getTiposUsuario();
     return tiposLesao;
+  }
+
+  // Obtém os dados de um paciente específico.
+  static async getUsuario(cpf) {
+    const usuario = await UsuarioModel.getPorCPF(cpf);
+    return usuario;
   }
 }
 

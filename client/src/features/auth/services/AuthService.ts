@@ -55,7 +55,7 @@ class AuthService {
     bairro: string,
     cidade: string,
     estado: string,
-    numero: string
+    numero: number
   ) {
     try {
       // POST para "/api/auth/cadastro" com dados do usuário no corpo e envio de cookies

@@ -82,6 +82,7 @@ export default function CardLesaoHistorico({
             size="sm"
             className="bg-[#1F4D2C]/90 text-white hover:bg-[#1F4D2C]"
             onClick={onDuplicar}
+            disabled={dados.precisa_aprovacao ? true : false}
           >
             <CopyIcon size={16} className="mr-1" /> Duplicar
           </Button>

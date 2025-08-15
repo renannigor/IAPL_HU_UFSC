@@ -77,8 +77,6 @@ export default function HistoricoPacientePage() {
   async function handleDeletar() {
     if (!lesaoIdParaDeletar) return;
 
-    console.log("Excluindo lesão com ID:", lesaoIdParaDeletar);
-
     try {
       await LesaoService.deletarLesao(lesaoIdParaDeletar);
       fetchHistorico();
@@ -119,7 +117,6 @@ export default function HistoricoPacientePage() {
               onDuplicar={() => handleDuplicar(item.lesao_versao_id)}
               onExcluir={() => {
                 setLesaoIdParaDeletar(item.lesao_versao_id);
-                console.log(item.lesao_versao_id);
                 setOpenDialog(true);
               }}
               usuarioAtual={usuarioAtual}

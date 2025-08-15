@@ -114,7 +114,10 @@ const CadastroUsuarioPage = () => {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-4"
+        >
           <div className="grid gap-4 md:grid-cols-2">
             <Editor
               id="nome"
@@ -194,7 +197,7 @@ const CadastroUsuarioPage = () => {
               id="numeroResidencial"
               label="Número"
               ehCampoSenha={false}
-              register={register("numeroResidencial")}
+              register={register("numeroResidencial", { valueAsNumber: true })}
               error={errors.numeroResidencial?.message}
               placeholder="Ex: 83"
               className="h-12 w-full border p-2 rounded-md"

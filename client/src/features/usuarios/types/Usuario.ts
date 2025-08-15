@@ -1,11 +1,14 @@
 export type Usuario = {
-  id: number;
+  cpf: string;
+  nome: string;
   email: string;
-  cpf?: string;
-  nome?: string;
   tipo: string;
-  online?: boolean;
-  senha?: string;
-  criado_em?: string;
-  ultimo_acesso?: string;
+  criado_em: string;
+  ultimo_acesso: string;
+  cep: string;
+  logradouro: string;
+  bairro: string;
+  cidade: string;
+  estado: string;
+  numero: number;
 };

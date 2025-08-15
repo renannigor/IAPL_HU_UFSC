@@ -26,6 +26,18 @@ class UsuarioService {
       throw error;
     }
   }
+
+  // Método para obter os dados de uma usuário específico
+  static async getUsuario(cpf: string) {
+    try {
+      await api.get(`/api/usuarios/${cpf}`, {
+        withCredentials: true,
+      });
+    } catch (error) {
+      console.error("Erro ao obter informações do usuário: ", error);
+      throw error;
+    }
+  }
 }
 
 export default UsuarioService;

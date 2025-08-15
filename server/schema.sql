@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS enderecos (
     bairro VARCHAR(255) NOT NULL,
     cidade VARCHAR(255) NOT NULL,
     estado VARCHAR(2) NOT NULL,
-    numero VARCHAR(10)
+    numero INTEGER
 );
 
 -- PACIENTES
