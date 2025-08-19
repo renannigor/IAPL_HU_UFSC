@@ -1,22 +1,23 @@
-import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Paciente } from "@/features/pacientes/types/Paciente";
+import { useParams, useNavigate } from "react-router-dom";
+import { Card, CardContent } from "@/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/ui/tabs";
-import Editor from "@/shared/components/form/Editor";
 import { Button } from "@/ui/button";
-import { UserIcon, Plus } from "lucide-react";
-import PacienteService from "@/features/pacientes/services/PacienteService";
-import CardLesao from "@/features/lesoes/components/CardLesao";
-import LesaoService from "@/features/lesoes/services/LesaoService";
+import { User } from "lucide-react";
+import PacienteService from "../services/PacienteService";
+import { cores } from "@/shared/constants/cores";
+import { Paciente } from "../types/Paciente";
 import { Lesao } from "@/features/lesoes/types/Lesao";
-import { BreadcrumbNav } from "@/shared/components/layout/BreadcrumbNav";
+import LesaoService from "@/features/lesoes/services/LesaoService";
+import BreadcrumbNav from "@/shared/components/layout/BreadcrumbNav";
+import Info from "../components/Info";
+import LesaoCard from "@/features/lesoes/components/LesaoCard";
 
-const DetalhesPacientePage = () => {
+function DetalhesPacientePage() {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [paciente, setPaciente] = useState<Paciente | null>(null);
-  const [refetchLesoes, setRefetchLesoes] = useState(false);
   const [lesoesPrecisaAprovacao, setLesoesPrecisaAprovacao] = useState<Lesao[]>(
     []
   );
@@ -46,218 +47,151 @@ const DetalhesPacientePage = () => {
       );
     };
     if (id) fetchLesoes();
-  }, [id, refetchLesoes]);
+  }, [id]);
 
-  if (!paciente) return <p>Carregando...</p>;
+  if (!paciente) {
+    return (
+      <div className="p-6 text-gray-500">
+        Carregando informações do paciente...
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 space-y-8">
-      <BreadcrumbNav
-        itens={[
-          { titulo: "Home", href: "/" },
-          { titulo: "Pacientes", href: "/dashboard/pacientes" },
-          { titulo: id!, href: `/dashboard/pacientes/${id}` },
-        ]}
-      />
+    <div className="min-h-screen bg-gray-50">
+        {/* Breadcrumb */}
+        <BreadcrumbNav
+          items={[
+            { label: "Início", href: "/dashboard" },
+            { label: "Pacientes", href: "/dashboard/pacientes" },
+            { label: paciente.nome },
+          ]}
+        />
 
-      {/* Cabeçalho */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-green-200 flex items-center justify-center text-xl font-semibold text-green-800">
-            <UserIcon className="w-8 h-8" />
+        {/* Cabeçalho */}
+        <div className="flex items-center justify-between mb-10">
+          <div className="flex items-center gap-4">
+            <div className="bg-gray-200 p-4 rounded-full">
+              <User size={48} className="text-gray-600" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-semibold text-gray-800">
+                {paciente.nome}
+              </h2>
+              <p className="text-gray-500 text-sm">{paciente.idade} anos</p>
+            </div>
           </div>
-          <div>
-            <p className="text-lg font-semibold">{paciente.nome}</p>
-            <p className="text-sm text-muted-foreground">
-              {paciente.idade} anos
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
+
+          {/* Botão de cadastro de lesão */}
           <Button
-            className="bg-green-800 text-white hover:bg-green-900 h-fit flex items-center gap-2"
+            className="text-white"
+            style={{ backgroundColor: cores.primary }}
             onClick={() =>
               navigate(`/dashboard/pacientes/${id}/lesoes/cadastrar`)
             }
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = cores.primaryLight)
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = cores.primary)
+            }
           >
-            <Plus size={16} />
-            Cadastrar Lesão
+            + Cadastrar Lesão
           </Button>
         </div>
-      </div>
 
-      {/* Abas */}
-      <Tabs defaultValue="info" className="w-full">
-        <TabsList className="mb-6">
-          <TabsTrigger value="info">Informações do Paciente</TabsTrigger>
-          <TabsTrigger value="lesoes">Lesões</TabsTrigger>
-          <TabsTrigger value="pendencias">Pendentes de Aprovação</TabsTrigger>
-        </TabsList>
+        {/* Tabs */}
+        <Tabs defaultValue="info" className="w-full">
+          <TabsList className="flex gap-2 border-b bg-transparent">
+            <TabsTrigger value="info">Informações</TabsTrigger>
+            <TabsTrigger value="lesoes">Lesões</TabsTrigger>
+            <TabsTrigger value="pendentes">Pendentes</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="info">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Editor
-              id="dataNascimento"
-              label="Data de Nascimento"
-              placeholder="Data de nascimento do paciente"
-              ehCampoSenha={false}
-              value={paciente.nascimento}
-              disabled
-              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
-            />
-            <Editor
-              id="cor"
-              label="Cor da Pele"
-              placeholder="Cor da pele do paciente"
-              ehCampoSenha={false}
-              value={paciente.cor}
-              disabled
-              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
-            />
-            <Editor
-              id="alturaConsultada"
-              label="Altura Consultada"
-              placeholder="Altura consultada do paciente"
-              ehCampoSenha={false}
-              value={paciente.altura_consultada?.toString()}
-              disabled
-              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
-            />
-            <Editor
-              id="pesoConsultado"
-              label="Peso Consultado"
-              placeholder="Peso consultado do paciente"
-              ehCampoSenha={false}
-              value={paciente.peso_consultada?.toString()}
-              disabled
-              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
-            />
-            <Editor
-              id="alturaControle"
-              label="Altura Controle"
-              placeholder="Altura controle do paciente"
-              ehCampoSenha={false}
-              value={paciente.altura_controle?.toString()}
-              disabled
-              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
-            />
-            <Editor
-              id="pesoControle"
-              label="Peso Controle"
-              placeholder="Peso controle do paciente"
-              ehCampoSenha={false}
-              value={paciente.peso_controle?.toString()}
-              disabled
-              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
-            />
-            <Editor
-              id="imc"
-              label="IMC"
-              placeholder="IMC do paciente"
-              ehCampoSenha={false}
-              value={paciente.imc?.toString()}
-              disabled
-              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
-            />
-            <Editor
-              id="sexo"
-              label="Sexo"
-              placeholder="Sexo do paciente"
-              ehCampoSenha={false}
-              value={paciente.sexo}
-              disabled
-              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
-            />
-            <Editor
-              id="quarto"
-              label="Número do Quarto"
-              placeholder="Número do Quarto"
-              ehCampoSenha={false}
-              value={paciente.qrt_numero?.toString()}
-              disabled
-              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
-            />
-            <Editor
-              id="leito"
-              label="Leito"
-              placeholder="Leito do paciente"
-              ehCampoSenha={false}
-              value={paciente.lto_lto_id?.toString()}
-              disabled
-              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
-            />
-            <Editor
-              id="criticidadeAlergica"
-              label="Criticidade Alérgica"
-              placeholder="Criticidade Alérgica do paciente"
-              ehCampoSenha={false}
-              value={paciente.criticidade_alergica!}
-              disabled
-              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
-            />
-            <Editor
-              id="grauCerteza"
-              label="Grau de Certeza"
-              placeholder="Grau de Certeza"
-              ehCampoSenha={false}
-              value={paciente.grau_certeza!}
-              disabled
-              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
-            />
-            <Editor
-              id="medicamentos"
-              label="Medicamentos em Uso"
-              placeholder="Medicamentos em uso pelo paciente"
-              ehCampoSenha={false}
-              value={paciente.medicamento!}
-              disabled
-              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
-            />
-            <Editor
-              id="agenteCausador"
-              label="Agente Causador"
-              placeholder="Agente Causador"
-              ehCampoSenha={false}
-              value={paciente.agente_causador!}
-              disabled
-              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
-            />
-            <Editor
-              id="classificacaoAlergica"
-              label="Classificação Alérgica"
-              placeholder="Classificação Alérgica"
-              ehCampoSenha={false}
-              value={paciente.classificacao_alergica!}
-              disabled
-              inputClassName="h-12 w-full border p-2 rounded-md bg-gray-100"
-            />
-          </div>
-        </TabsContent>
+          {/* Aba: Informações */}
+          <TabsContent value="info">
+            <Card className="mt-6 shadow-sm border rounded-xl">
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-4">
+                  Informações do Paciente
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4">
+                  <Info label="Internação" value={paciente.internacao} />
+                  <Info label="Nascimento" value={paciente.nascimento} />
+                  <Info label="Sexo" value={paciente.sexo} />
+                  <Info label="Cor" value={paciente.cor} />
+                  <Info label="Quarto" value={paciente.qrt_numero || "-"} />
+                  <Info label="Leito" value={paciente.lto_lto_id || "-"} />
+                  <Info
+                    label="Peso Consultado"
+                    value={paciente.peso_consultada || "-"}
+                  />
+                  <Info
+                    label="Altura Consultada"
+                    value={paciente.altura_consultada || "-"}
+                  />
+                  <Info
+                    label="Peso Controle"
+                    value={paciente.peso_controle || "-"}
+                  />
+                  <Info
+                    label="Altura Controle"
+                    value={paciente.altura_controle || "-"}
+                  />
+                  <Info label="IMC" value={paciente.imc || "-"} />
+                  <Info
+                    label="Criticidade Alérgica"
+                    value={paciente.criticidade_alergica || "-"}
+                  />
+                  <Info
+                    label="Classificação Alérgica"
+                    value={paciente.classificacao_alergica || "-"}
+                  />
+                  <Info
+                    label="Grau de Certeza"
+                    value={paciente.grau_certeza || "-"}
+                  />
+                  <Info
+                    label="Medicamento"
+                    value={paciente.medicamento || "-"}
+                  />
+                  <Info
+                    label="Agente Causador"
+                    value={paciente.agente_causador || "-"}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <TabsContent value="lesoes">
-          <div className="space-y-6">
-            <p className="text-muted-foreground">Lesões do paciente</p>
-            <CardLesao
-              lesoes={lesoesNaoPrecisaAprovacao}
-              onRefresh={() => setRefetchLesoes((prev) => !prev)}
-            />
-          </div>
-        </TabsContent>
+          {/* Aba: Lesões */}
+          <TabsContent value="lesoes">
+            <div className="mt-6 space-y-4">
+              {lesoesNaoPrecisaAprovacao.length > 0 ? (
+                lesoesNaoPrecisaAprovacao.map((lesao) => (
+                  <LesaoCard key={lesao.id} lesao={lesao} tipo="normal" />
+                ))
+              ) : (
+                <p className="text-gray-500">Nenhuma lesão registrada.</p>
+              )}
+            </div>
+          </TabsContent>
 
-        <TabsContent value="pendencias">
-          <div className="space-y-6">
-            <p className="text-muted-foreground">
-              Lesões do paciente, cadastradas pelos acadêmicos, para revisão.
-            </p>
-            <CardLesao
-              lesoes={lesoesPrecisaAprovacao}
-              onRefresh={() => setRefetchLesoes((prev) => !prev)}
-            />
-          </div>
-        </TabsContent>
-      </Tabs>
+          {/* Aba: Pendentes */}
+          <TabsContent value="pendentes">
+            <div className="mt-6 space-y-4">
+              {lesoesPrecisaAprovacao.length > 0 ? (
+                lesoesPrecisaAprovacao.map((lesao) => (
+                  <LesaoCard key={lesao.id} lesao={lesao} tipo="pendente" />
+                ))
+              ) : (
+                <p className="text-gray-500">Nenhuma lesão pendente.</p>
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
     </div>
   );
-};
+}
 
 export default DetalhesPacientePage;

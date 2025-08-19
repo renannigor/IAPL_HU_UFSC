@@ -6,7 +6,7 @@ function parseTamanho(data: any) {
   return {
     comprimento: Number(data?.comprimento ?? 0),
     largura: Number(data?.largura ?? 0),
-    profundidade: Number(data?.profundidade ?? 0),
+    profundidade: data?.profundidade ?? undefined,
   };
 }
 
@@ -42,7 +42,9 @@ function parseCamposComuns(data: any) {
     escalaNumericaDor: data.escalaNumericaDor
       ? Number(data.escalaNumericaDor)
       : undefined,
-    dataProximaAvaliacao: new Date(data.dataProximaAvaliacao),
+    dataProximaAvaliacao: data.dataProximaAvaliacao
+      ? new Date(data.dataProximaAvaliacao).toISOString().split("T")[0]
+      : undefined,
     localizacaoLesao: data.localizacaoLesao ?? undefined,
     tamanho: parseTamanho(data.tamanho),
     tecidos: parseItensComValor(data.tecidos),

@@ -119,13 +119,11 @@ export const FormLesaoSchema = (
           .int("O valor deve ser um número inteiro")
           .min(0, "O valor deve ser maior que 0"),
         profundidade: z
-          .number({
-            invalid_type_error: "Informe um número",
-            required_error: "Informe a profundidade.",
-          })
-          .int("O valor deve ser um número inteiro")
-          .min(0, "O valor deve ser maior que 0")
-          .optional(),
+          .string()
+          .optional()
+          .refine((val) => !val || /^\d+$/.test(val), {
+            message: "Número residencial deve conter apenas números",
+          }),
       }),
 
       // Limpeza
@@ -187,7 +185,7 @@ export const FormLesaoSchema = (
       ),
 
       // Data da Próxima Avaliação
-      dataProximaAvaliacao: z.date({
+      dataProximaAvaliacao: z.string({
         required_error: "A data da próxima avaliação é obrigatória",
       }),
 

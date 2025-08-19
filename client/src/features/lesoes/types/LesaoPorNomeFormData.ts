@@ -30,6 +30,6 @@ export interface LesaoPorNomeFormData {
   tecidos: ItemComValor[];
   coberturas: ItemComValor[];
   tiposFechamentoCurativo: ItemComValor[];
-  dataProximaAvaliacao: Date;
+  dataProximaAvaliacao?: string;
   localizacaoLesao: string;
 }

@@ -44,18 +44,18 @@ class AuthService {
   }
 
   // Cadastra um novo usuário com vários dados pessoais e endereço
-  static async cadastrarUsuario(
+  static async cadastro(
     cpf: string,
     nome: string,
     email: string,
-    tipo: number,
+    tipo: string,
     senha: string,
     cep: string,
     logradouro: string,
     bairro: string,
     cidade: string,
     estado: string,
-    numero: number
+    numero: string
   ) {
     try {
       // POST para "/api/auth/cadastro" com dados do usuário no corpo e envio de cookies

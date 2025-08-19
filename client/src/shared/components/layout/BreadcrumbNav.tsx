@@ -5,30 +5,35 @@ import {
   BreadcrumbLink,
   BreadcrumbSeparator,
 } from "@/ui/breadcrumb";
-import { Slash as SlashIcon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-type Crumb = {
-  titulo: string;
-  href: string;
-};
+/** Componente Breadcrumb reutilizável */
+function BreadcrumbNav({
+  items,
+}: {
+  items: { label: string; href?: string }[];
+}) {
+  const navigate = useNavigate();
 
-type BreadcrumbNavProps = {
-  itens: Crumb[];
-};
-
-export function BreadcrumbNav({ itens }: BreadcrumbNavProps) {
   return (
-    <Breadcrumb>
+    <Breadcrumb className="mb-6">
       <BreadcrumbList>
-        {itens.map((item, index) => (
-          <div key={item.href} className="flex items-center">
+        {items.map((item, index) => (
+          <div key={index} className="flex items-center">
             <BreadcrumbItem>
-              <BreadcrumbLink href={item.href}>{item.titulo}</BreadcrumbLink>
+              {item.href ? (
+                <BreadcrumbLink
+                  className="cursor-pointer"
+                  onClick={() => navigate(item.href!)}
+                >
+                  {item.label}
+                </BreadcrumbLink>
+              ) : (
+                <span className="text-gray-800 font-medium">{item.label}</span>
+              )}
             </BreadcrumbItem>
-            {index < itens.length - 1 && (
-              <BreadcrumbSeparator>
-                <SlashIcon className="w-4 h-4 mx-2" />
-              </BreadcrumbSeparator>
+            {index < items.length - 1 && (
+              <BreadcrumbSeparator className="mx-2" />
             )}
           </div>
         ))}
@@ -36,3 +41,5 @@ export function BreadcrumbNav({ itens }: BreadcrumbNavProps) {
     </Breadcrumb>
   );
 }
+
+export default BreadcrumbNav;

@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+// Validação com Zod
 export const FormLoginUsuarioSchema = z.object({
   email: z.string().email({ message: "Email inválido" }),
   senha: z

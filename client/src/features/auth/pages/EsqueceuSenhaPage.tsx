@@ -1,38 +1,73 @@
-import { Link } from "react-router-dom";
-import { Button } from "@/ui/button";
+import { Link, useNavigate } from "react-router-dom";
+import { cores } from "@/shared/constants/cores";
 
-const EsqueceuSenhaPage = () => {
-  const redirectToExternalSite = () => {
-    window.location.href = "https://site-externo-para-redefinir-senha.com"; // coloque a URL correta aqui
+export const EsqueceuSenhaPage = () => {
+  const navigate = useNavigate();
+
+  const handleRedefinir = () => {
+    // Redireciona para outro site
+    window.open("https://exemplo.com/redefinir-senha", "_blank");
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
-      <div className="w-full max-w-4xl min-h-screen bg-white p-16 flex flex-col justify-center overflow-y-auto">
-        <div className="text-left mb-6">
-          <h1 className="text-3xl font-bold">Recuperar senha</h1>
-          <p className="text-gray-600">
-            Você será redirecionado para um site externo para modificar sua
-            senha.
-          </p>
-        </div>
+    <div
+      className="min-h-screen flex flex-col items-center justify-center px-4"
+      style={{ backgroundColor: cores.background }}
+    >
+      <div className="w-full max-w-md bg-white rounded-xl shadow-md p-8 space-y-6">
+        <h1
+          className="text-2xl font-medium text-center"
+          style={{ color: cores.textPrimary }}
+        >
+          Esqueceu sua senha?
+        </h1>
+        <p
+          className="text-center text-sm"
+          style={{ color: cores.textSecondary }}
+        >
+          Você será redirecionado para um site externo para modificar sua senha.
+        </p>
 
-        <div className="space-y-6">
-          <Button
-            type="button"
-            className="h-12 w-full bg-[#1F4D2C] text-white p-2 rounded-md hover:bg-[#173B21] transition"
-            onClick={redirectToExternalSite}
+        <div className="flex flex-col space-y-3">
+          <button
+            onClick={handleRedefinir}
+            className="w-full py-2 px-4 text-white font-medium rounded-md transition-colors duration-200"
+            style={{ backgroundColor: cores.primary }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = cores.primaryLight)
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = cores.primary)
+            }
           >
             Redefinir senha
-          </Button>
+          </button>
+
+          <button
+            onClick={() => navigate(-1)}
+            className="w-full py-2 px-4 font-medium rounded-md transition-colors duration-200 border"
+            style={{
+              color: cores.primary,
+              borderColor: cores.primary,
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = cores.primaryLighter)
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = "transparent")
+            }
+          >
+            Voltar
+          </button>
         </div>
 
-        <div className="text-right text-sm text-gray-500 mt-4">
+        <div className="text-center">
           <Link
             to="/entrar"
-            className="h-12 w-full bg-green-100 text-[#1F4D2C] font-medium rounded-md hover:bg-green-200 transition flex items-center justify-center"
+            style={{ color: cores.primary }}
+            className="hover:underline text-sm"
           >
-            Voltar ao Login
+            Lembrado da senha? Faça login
           </Link>
         </div>
       </div>

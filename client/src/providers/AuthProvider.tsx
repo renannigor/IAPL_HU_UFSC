@@ -15,18 +15,18 @@ interface AuthContextType {
   usuarioAtual: Usuario | null;
   loading: boolean;
   login: (email: string, senha: string) => Promise<void>;
-  cadastrarUsuario: (
+  cadastro: (
     cpf: string,
     nome: string,
     email: string,
-    tipo: number,
+    tipo: string,
     senha: string,
     cep: string,
     logradouro: string,
     bairro: string,
     cidade: string,
     estado: string,
-    numero: number
+    numero: string
   ) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -120,21 +120,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     };
   }, [accessToken]);
 
-  // Função de cadastro
-  const cadastrarUsuario = async (
+  // Função de cadastro de usuário
+  const cadastro = async (
     cpf: string,
     nome: string,
     email: string,
-    tipo: number,
+    tipo: string,
     senha: string,
     cep: string,
     logradouro: string,
     bairro: string,
     cidade: string,
     estado: string,
-    numero: number
+    numero: string
   ) => {
-    const data = await AuthService.cadastrarUsuario(
+    const data = await AuthService.cadastro(
       cpf,
       nome,
       email,
@@ -172,7 +172,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         usuarioAtual,
         loading,
         login,
-        cadastrarUsuario,
+        cadastro,
         logout,
       }}
     >

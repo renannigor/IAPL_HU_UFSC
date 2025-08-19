@@ -1,14 +1,17 @@
+// HistoricoPacientePage.tsx
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/providers/AuthProvider";
 import LesaoService from "../services/LesaoService";
-import { BreadcrumbNav } from "@/shared/components/layout/BreadcrumbNav";
+import BreadcrumbNav from "@/shared/components/layout/BreadcrumbNav";
 import { Lesao } from "../types/Lesao";
 import { HistoricoItem } from "../types/HistoricoItem";
 import CardLesaoHistorico from "../components/CardLesaoHistorico";
 import ConfirmDialog from "@/shared/components/ConfirmDialog";
 import { Trash2 } from "lucide-react";
+import { Paciente } from "@/features/pacientes/types/Paciente";
+import PacienteService from "@/features/pacientes/services/PacienteService";
 
 export default function HistoricoPacientePage() {
   const { id_lesao, id_paciente } = useParams();
@@ -18,11 +21,33 @@ export default function HistoricoPacientePage() {
   const [historicoLesoes, setHistoricoLesoes] = useState<
     { item: HistoricoItem; dados: Lesao }[]
   >([]);
-
   const [openDialog, setOpenDialog] = useState(false);
   const [lesaoIdParaDeletar, setLesaoIdParaDeletar] = useState<string | null>(
     null
   );
+  const [paciente, setPaciente] = useState<Paciente | null>(null);
+
+  useEffect(() => {
+    const fetchPaciente = async () => {
+      const data = await PacienteService.getPaciente(id_paciente!);
+      setPaciente(data);
+    };
+    if (id_paciente) fetchPaciente();
+  }, [id_paciente]);
+
+  useEffect(() => {
+    fetchLesaoOriginal();
+    fetchHistorico();
+  }, [id_lesao, id_paciente]);
+
+  async function fetchLesaoOriginal() {
+    try {
+      const dados = await LesaoService.getLesao(id_lesao!);
+      setLesaoOriginal(dados);
+    } catch {
+      toast.error("Erro ao carregar a lesão original");
+    }
+  }
 
   async function fetchHistorico() {
     try {
@@ -46,20 +71,6 @@ export default function HistoricoPacientePage() {
     }
   }
 
-  async function fetchLesaoOriginal() {
-    try {
-      const dados = await LesaoService.getLesao(id_lesao!);
-      setLesaoOriginal(dados);
-    } catch {
-      toast.error("Erro ao carregar a lesão original");
-    }
-  }
-
-  useEffect(() => {
-    fetchLesaoOriginal();
-    fetchHistorico();
-  }, [id_lesao, id_paciente]);
-
   async function handleDuplicar(idVersao: string) {
     try {
       await LesaoService.duplicarLesao(
@@ -69,6 +80,7 @@ export default function HistoricoPacientePage() {
         idVersao
       );
       fetchHistorico();
+      toast.success("Lesão duplicada com sucesso!");
     } catch {
       toast.error("Erro ao duplicar lesão");
     }
@@ -80,6 +92,7 @@ export default function HistoricoPacientePage() {
     try {
       await LesaoService.deletarLesao(lesaoIdParaDeletar);
       fetchHistorico();
+      toast.success("Lesão excluída com sucesso!");
     } catch {
       toast.error("Erro ao excluir lesão");
     } finally {
@@ -92,18 +105,25 @@ export default function HistoricoPacientePage() {
     return <div className="p-6 text-gray-500">Carregando...</div>;
 
   return (
-    <div className="space-y-8 px-4 md:px-6 pb-12">
+    <div className="min-h-screen bg-gray-50">
       <BreadcrumbNav
-        itens={[
-          { titulo: "Home", href: "/" },
-          { titulo: "Pacientes", href: "/dashboard/pacientes" },
-          { titulo: id_paciente!, href: `/dashboard/pacientes/${id_paciente}` },
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Pacientes", href: "/dashboard/pacientes" },
           {
-            titulo: "Histórico",
+            label: paciente?.nome!,
+            href: `/dashboard/pacientes/${id_paciente}`,
+          },
+          {
+            label: "Histórico",
             href: `/dashboard/pacientes/${id_paciente}/lesoes/${id_lesao}/historico`,
           },
         ]}
       />
+
+      <h1 className="text-xl font-bold text-gray-800 mb-6">
+        Histórico da Lesão
+      </h1>
 
       {/* Histórico */}
       <div className="relative border-l border-gray-300 ml-4 pl-6 space-y-8">

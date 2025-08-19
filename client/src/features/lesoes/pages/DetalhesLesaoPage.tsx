@@ -1,43 +1,37 @@
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
 import { useNavigate, useParams } from "react-router-dom";
-import { ClipboardCopyIcon, CheckCheckIcon } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/ui/button";
-import { BreadcrumbNav } from "@/shared/components/layout/BreadcrumbNav";
-import LesaoService from "../services/LesaoService";
-import { useAuth } from "@/providers/AuthProvider";
-import { TiposUsuario } from "@/features/usuarios/constants/TiposUsuario.enum";
 import { LesaoPorNomeFormData } from "../types/LesaoPorNomeFormData";
+import { useAuth } from "@/providers/AuthProvider";
+import LesaoService from "../services/LesaoService";
+import BreadcrumbNav from "@/shared/components/layout/BreadcrumbNav";
+import { TiposUsuario } from "@/features/usuarios/constants/TiposUsuario.enum";
+import { Paciente } from "@/features/pacientes/types/Paciente";
+import PacienteService from "@/features/pacientes/services/PacienteService";
 
-function LabelValue({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-start justify-between gap-4 p-1 border-b last:border-none">
-      <div>
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <p className="text-base text-black whitespace-pre-line">{value}</p>
-      </div>
-    </div>
-  );
-}
-
-const DetalhesLesaoPage = () => {
+export default function DetalhesLesaoPage() {
   const { id_lesao, id_paciente } = useParams();
-  // Estado para armazenar os dados carregados da lesão
   const [dadosLesao, setDadosLesao] = useState<LesaoPorNomeFormData>();
-
+  const [paciente, setPaciente] = useState<Paciente | null>(null);
   const { usuarioAtual } = useAuth();
   const navigate = useNavigate();
 
-  // Efeito para carregar os dados da lesão quando o componente for montado
   useEffect(() => {
     const fetchLesao = async () => {
       const { dados } = await LesaoService.getLesaoPorNome(id_lesao!);
-      console.log(dados);
       setDadosLesao(dados);
     };
     fetchLesao();
   }, [id_paciente, id_lesao]);
+
+  useEffect(() => {
+    const fetchPaciente = async () => {
+      const data = await PacienteService.getPaciente(id_paciente!);
+      setPaciente(data);
+    };
+    if (id_paciente) fetchPaciente();
+  }, [id_paciente]);
 
   if (!dadosLesao) {
     return (
@@ -45,7 +39,6 @@ const DetalhesLesaoPage = () => {
     );
   }
 
-  // Desestruturando campos da lesão para uso mais prático
   const {
     etiologias,
     classificacoesLesaoPressao,
@@ -71,73 +64,74 @@ const DetalhesLesaoPage = () => {
     protecaoOutro,
     coberturas,
     tiposFechamentoCurativo,
+    dataProximaAvaliacao,
+    localizacaoLesao,
   } = dadosLesao;
 
-  // Função para gerar um resumo textual de todos os campos
+  // Função para gerar resumo textual
   const gerarResumoTexto = () => {
     const texto = [
-      `Presença de Túnel: ${presencaTunel}`,
-      `Dor: ${dor}`,
-      dor !== "nao" ? `Nível da dor: ${escalaNumericaDor ?? "-"}` : null,
-      `Quantidade de Exsudato: ${quantidadeExsudato}`,
-      `Tipo de Exsudato: ${tipoExsudato}`,
-      `Odor: ${odor}`,
-      tamanho.comprimento > 0 || tamanho.largura > 0 || tamanho.profundidade > 0
+      `Localização: ${localizacaoLesao}`,
+      `Possui Dor: ${dor === "sim" ? "Sim" : "Não"}`,
+      dor === "sim" && escalaNumericaDor
+        ? `Escala da Dor: ${escalaNumericaDor}`
+        : null,
+      classificacoesDor?.length
+        ? `Classificações da Dor: ${classificacoesDor.join(", ")}`
+        : null,
+      `Presença de Túnel: ${presencaTunel === "sim" ? "Sim" : "Não"}`,
+      quantidadeExsudato
+        ? `Quantidade de Exsudato: ${quantidadeExsudato}`
+        : null,
+      tipoExsudato ? `Tipo de Exsudato: ${tipoExsudato}` : null,
+      odor ? `Odor: ${odor}` : null,
+      tamanho.comprimento || tamanho.largura || tamanho.profundidade
         ? `Tamanho:\n  Comprimento: ${tamanho.comprimento} cm\n  Largura: ${tamanho.largura} cm\n  Profundidade: ${tamanho.profundidade} cm`
         : null,
-      `Etiologias: ${etiologias.join(", ")}`,
+      etiologias?.length ? `Etiologias: ${etiologias.join(", ")}` : null,
       classificacoesLesaoPressao?.length
         ? `Classificações Lesão por Pressão: ${classificacoesLesaoPressao.join(
             ", "
           )}`
         : null,
-      `Bordas: ${bordas.join(", ")}`,
-      tecidos
-        .filter((t) => t.valor > 0)
-        .map((t) => `${t.nome} (${t.valor}%)`)
-        .join(", ")
-        ? `Tecidos: ${tecidos
-            .filter((t) => t.valor > 0)
-            .map((t) => `${t.nome} (${t.valor}%)`)
-            .join(", ")}`
+      bordas?.length ? `Bordas: ${bordas.join(", ")}` : null,
+      regioesPerilesionais?.length
+        ? `Regiões Perilesionais: ${regioesPerilesionais.join(", ")}`
         : null,
-      `Regiões Perilesionais: ${regioesPerilesionais.join(", ")}`,
       regiaoPerilesionalOutro
         ? `Outra Região Perilesional: ${regiaoPerilesionalOutro}`
         : null,
-      `Estruturas Nobres: ${estruturasNobres.join(", ")}`,
+      estruturasNobres?.length
+        ? `Estruturas Nobres: ${estruturasNobres.join(", ")}`
+        : null,
       estruturaNobreOutro
         ? `Outra Estrutura Nobre: ${estruturaNobreOutro}`
         : null,
-      dor !== "nao" && classificacoesDor?.length
-        ? `Classificações de Dor: ${classificacoesDor.join(", ")}`
-        : null,
-      `Limpezas: ${limpezas.join(", ")}`,
+      limpezas?.length ? `Limpezas: ${limpezas.join(", ")}` : null,
       limpezaOutro ? `Outra Limpeza: ${limpezaOutro}` : null,
-      `Desbridamentos: ${desbridamentos.join(", ")}`,
+      desbridamentos?.length
+        ? `Desbridamentos: ${desbridamentos.join(", ")}`
+        : null,
       desbridamentoOutro ? `Outro Desbridamento: ${desbridamentoOutro}` : null,
-      `Proteções: ${
-        protecaoOutro
-          ? protecoes.join(", ") + ", " + protecaoOutro
-          : protecoes.join(", ")
-      }`,
-      coberturas
-        .filter((c) => c.valor > 0)
-        .map((c) => `${c.nome} (${c.valor})`)
-        .join(", ")
+      protecoes?.length || protecaoOutro
+        ? `Proteções: ${protecoes.join(", ")}${
+            protecaoOutro ? ", " + protecaoOutro : ""
+          }`
+        : null,
+      coberturas.filter((c) => c.valor > 0).length
         ? `Coberturas: ${coberturas
             .filter((c) => c.valor > 0)
             .map((c) => `${c.nome} (${c.valor})`)
             .join(", ")}`
         : null,
-      tiposFechamentoCurativo
-        .filter((f) => f.valor > 0)
-        .map((f) => `${f.nome} (${f.valor})`)
-        .join(", ")
+      tiposFechamentoCurativo.filter((f) => f.valor > 0).length
         ? `Tipos de Fechamento Curativo: ${tiposFechamentoCurativo
             .filter((f) => f.valor > 0)
             .map((f) => `${f.nome} (${f.valor})`)
             .join(", ")}`
+        : null,
+      dataProximaAvaliacao
+        ? `Próxima Avaliação: ${dataProximaAvaliacao}`
         : null,
     ]
       .filter(Boolean)
@@ -146,13 +140,11 @@ const DetalhesLesaoPage = () => {
     return texto;
   };
 
-  // Copia o resumo para a área de transferência
   const copiarResumo = () => {
     navigator.clipboard.writeText(gerarResumoTexto());
     toast.success("Resumo copiado para a área de transferência!");
   };
 
-  // Aprovação da lesão
   const aprovarLesao = async () => {
     try {
       await LesaoService.setAprovacao(usuarioAtual?.cpf!, id_lesao!);
@@ -162,196 +154,205 @@ const DetalhesLesaoPage = () => {
     }
   };
 
-  return (
-    <div className="space-y-8 px-6 pb-12">
-      <div className="flex items-center justify-between">
-        <BreadcrumbNav
-          itens={[
-            { titulo: "Home", href: "/" },
-            { titulo: "Pacientes", href: "/dashboard/pacientes" },
-            {
-              titulo: id_paciente!,
-              href: `/dashboard/pacientes/${id_paciente}`,
-            },
-            {
-              titulo: "Informações Adicionais",
-              href: `/dashboard/pacientes/${id_paciente}/lesoes/${id_lesao}/detalhes`,
-            },
-          ]}
-        />
+  const Section = ({
+    title,
+    children,
+  }: {
+    title: string;
+    children: React.ReactNode;
+  }) => (
+    <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition">
+      <h2 className="text-base font-semibold mb-2 text-gray-700">{title}</h2>
+      <div className="text-gray-600 space-y-1 text-sm">{children}</div>
+    </div>
+  );
 
-        <div className="flex items-center gap-2">
-          {/* Botão para copiar resumo */}
-          <Button
-            variant="outline"
-            onClick={copiarResumo}
-            className="flex items-center gap-1"
-          >
-            <ClipboardCopyIcon size={16} />
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <BreadcrumbNav
+        items={[
+          { label: "Início", href: "/dashboard" },
+          { label: "Pacientes", href: "/dashboard/pacientes" },
+          {
+            label: paciente?.nome!,
+            href: `/dashboard/pacientes/${id_paciente}`,
+          },
+          { label: "Detalhes da Lesão" },
+        ]}
+      />
+
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
+        <h1 className="text-xl font-bold text-gray-800">{`Detalhes da Lesão`}</h1>
+
+        <div className="flex flex-wrap gap-3">
+          <Button variant="outline" size="sm" onClick={copiarResumo}>
             Copiar Resumo
           </Button>
 
-          {/* Botão para aprovar lesão */}
           {usuarioAtual?.tipo != TiposUsuario.Academico && (
-            <Button
-              variant="outline"
-              onClick={aprovarLesao}
-              className="flex items-center gap-1"
-            >
-              <CheckCheckIcon size={16} />
+            <Button size="sm" onClick={aprovarLesao}>
               Aprovar Lesão
             </Button>
           )}
         </div>
       </div>
 
-      {/* RESUMO GERAL */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Resumo Geral</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <LabelValue label="Presença de Túnel" value={presencaTunel} />
-          <LabelValue label="Dor" value={dor} />
-          {dor !== "nao" && escalaNumericaDor !== undefined && (
-            <LabelValue
-              label="Nível da dor"
-              value={String(escalaNumericaDor)}
-            />
-          )}
-          <LabelValue
-            label="Quantidade de Exsudato"
-            value={quantidadeExsudato}
-          />
-          <LabelValue label="Tipo de Exsudato" value={tipoExsudato} />
-          <LabelValue label="Odor" value={odor} />
-          {(tamanho.comprimento > 0 ||
-            tamanho.largura > 0 ||
-            tamanho.profundidade > 0) && (
-            <LabelValue
-              label="Tamanho"
-              value={`Comprimento: ${tamanho.comprimento} cm\nLargura: ${tamanho.largura} cm\nProfundidade: ${tamanho.profundidade} cm`}
-            />
-          )}
-        </CardContent>
-      </Card>
+      <div className="grid md:grid-cols-2 gap-5">
+        {localizacaoLesao && (
+          <Section title="Localização">
+            <p>{localizacaoLesao}</p>
+          </Section>
+        )}
 
-      {/* ETIOLOGIAS E CLASSIFICAÇÕES */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Etiologias e Classificações</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <LabelValue label="Etiologias" value={etiologias.join(", ")} />
-          {classificacoesLesaoPressao?.length! > 0 && (
-            <LabelValue
-              label="Classificações Lesão por Pressão"
-              value={classificacoesLesaoPressao!.join(", ")}
-            />
-          )}
-        </CardContent>
-      </Card>
+        {etiologias?.length > 0 && (
+          <Section title="Etiologias">
+            <p>{etiologias.join(", ")}</p>
+          </Section>
+        )}
 
-      {/* ASPECTOS VISUAIS */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Aspectos Visuais</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <LabelValue label="Bordas" value={bordas.join(", ")} />
-          {tecidos.filter((t) => t.valor > 0).length > 0 && (
-            <LabelValue
-              label="Tecidos"
-              value={tecidos
-                .filter((t) => t.valor > 0)
-                .map((t) => `${t.nome} (${t.valor}%)`)
-                .join(", ")}
-            />
-          )}
-        </CardContent>
-      </Card>
+        {tamanho &&
+        (tamanho.comprimento || tamanho.largura || tamanho.profundidade) ? (
+          <Section title="Tamanho">
+            <p>Comprimento: {tamanho.comprimento} cm</p>
+            <p>Largura: {tamanho.largura} cm</p>
+            <p>Profundidade: {tamanho.profundidade} cm</p>
+          </Section>
+        ) : null}
 
-      {/* REGIÕES E ESTRUTURAS */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Regiões e Estruturas</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <LabelValue
-            label="Regiões Perilesionais"
-            value={regioesPerilesionais.join(", ")}
-          />
-          {regiaoPerilesionalOutro && (
-            <LabelValue
-              label="Outra Região Perilesional"
-              value={regiaoPerilesionalOutro}
-            />
-          )}
-          <LabelValue
-            label="Estruturas Nobres"
-            value={estruturasNobres.join(", ")}
-          />
-          {estruturaNobreOutro && (
-            <LabelValue
-              label="Outra Estrutura Nobre"
-              value={estruturaNobreOutro}
-            />
-          )}
-        </CardContent>
-      </Card>
+        {bordas?.length > 0 && (
+          <Section title="Bordas">
+            <p>{bordas.join(", ")}</p>
+          </Section>
+        )}
 
-      {/* TRATAMENTO */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Tratamento Aplicado</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {dor !== "nao" && classificacoesDor?.length! > 0 && (
-            <LabelValue
-              label="Classificações da Dor"
-              value={classificacoesDor!.join(", ")}
-            />
-          )}
-          <LabelValue label="Limpezas" value={limpezas.join(", ")} />
-          {limpezaOutro && (
-            <LabelValue label="Outra Limpeza" value={limpezaOutro} />
-          )}
-          <LabelValue
-            label="Desbridamentos"
-            value={desbridamentos.join(", ")}
-          />
-          {desbridamentoOutro && (
-            <LabelValue
-              label="Outro Desbridamento"
-              value={desbridamentoOutro}
-            />
-          )}
-          <LabelValue label="Proteções" value={protecoes.join(", ")} />
-          {protecaoOutro && (
-            <LabelValue label="Outra Proteção" value={protecaoOutro} />
-          )}
-          {coberturas.filter((c) => c.valor > 0).length > 0 && (
-            <LabelValue
-              label="Coberturas"
-              value={coberturas
-                .filter((c) => c.valor > 0)
-                .map((c) => `${c.nome} (${c.valor})`)
-                .join(", ")}
-            />
-          )}
-          {tiposFechamentoCurativo.filter((f) => f.valor > 0).length > 0 && (
-            <LabelValue
-              label="Tipos de Fechamento Curativo"
-              value={tiposFechamentoCurativo
-                .filter((f) => f.valor > 0)
-                .map((f) => `${f.nome} (${f.valor})`)
-                .join(", ")}
-            />
-          )}
-        </CardContent>
-      </Card>
+        {tecidos.filter((t) => t.valor > 0).length > 0 && (
+          <Section title="Tecidos">
+            {tecidos
+              .filter((t) => t.valor > 0)
+              .map((t) => (
+                <p key={t.id}>
+                  {t.nome} ({t.valor}%)
+                </p>
+              ))}
+          </Section>
+        )}
+
+        {estruturasNobres?.length > 0 || estruturaNobreOutro ? (
+          <Section title="Estruturas Nobres">
+            {estruturasNobres.map((e) => (
+              <p key={e}>{e}</p>
+            ))}
+            {estruturaNobreOutro && <p>Outro: {estruturaNobreOutro}</p>}
+          </Section>
+        ) : null}
+
+        {regioesPerilesionais?.length > 0 || regiaoPerilesionalOutro ? (
+          <Section title="Regiões Perilesionais">
+            {regioesPerilesionais.map((r) => (
+              <p key={r}>{r}</p>
+            ))}
+            {regiaoPerilesionalOutro && <p>Outro: {regiaoPerilesionalOutro}</p>}
+          </Section>
+        ) : null}
+
+        {classificacoesLesaoPressao?.length! > 0 && (
+          <Section title="Classificação Lesão por Pressão">
+            <p>{classificacoesLesaoPressao!.join(", ")}</p>
+          </Section>
+        )}
+
+        {dor && (
+          <Section title="Dor">
+            <p>{dor === "sim" ? "Sim" : "Não"}</p>
+            {escalaNumericaDor && <p>Escala: {escalaNumericaDor}</p>}
+            {classificacoesDor?.length! > 0 && (
+              <p>Classificações: {classificacoesDor!.join(", ")}</p>
+            )}
+          </Section>
+        )}
+
+        {presencaTunel && (
+          <Section title="Presença de Túnel">
+            <p>{presencaTunel === "sim" ? "Sim" : "Não"}</p>
+          </Section>
+        )}
+
+        {quantidadeExsudato && tipoExsudato && (
+          <Section title="Exsudato">
+            <p>Quantidade: {quantidadeExsudato}</p>
+            <p>Tipo: {tipoExsudato}</p>
+          </Section>
+        )}
+
+        {odor && (
+          <Section title="Odor">
+            <p>{odor}</p>
+          </Section>
+        )}
+
+        {limpezas?.length > 0 || limpezaOutro ? (
+          <Section title="Limpeza">
+            {limpezas.map((l) => (
+              <p key={l}>{l}</p>
+            ))}
+            {limpezaOutro && <p>Outro: {limpezaOutro}</p>}
+          </Section>
+        ) : null}
+
+        {desbridamentos?.length > 0 || desbridamentoOutro ? (
+          <Section title="Desbridamento">
+            {desbridamentos.map((d) => (
+              <p key={d}>{d}</p>
+            ))}
+            {desbridamentoOutro && <p>Outro: {desbridamentoOutro}</p>}
+          </Section>
+        ) : null}
+
+        {protecoes?.length > 0 || protecaoOutro ? (
+          <Section title="Proteções">
+            {protecoes.map((p) => (
+              <p key={p}>{p}</p>
+            ))}
+            {protecaoOutro && <p>Outro: {protecaoOutro}</p>}
+          </Section>
+        ) : null}
+
+        {coberturas.filter((c) => c.valor > 0).length > 0 && (
+          <Section title="Coberturas">
+            {coberturas
+              .filter((c) => c.valor > 0)
+              .map((c) => (
+                <p key={c.id}>
+                  {c.nome} ({c.valor})
+                </p>
+              ))}
+          </Section>
+        )}
+
+        {tiposFechamentoCurativo.filter((f) => f.valor > 0).length > 0 && (
+          <Section title="Fechamento do Curativo">
+            {tiposFechamentoCurativo
+              .filter((f) => f.valor > 0)
+              .map((f) => (
+                <p key={f.id}>
+                  {f.nome} ({f.valor})
+                </p>
+              ))}
+          </Section>
+        )}
+
+        {dataProximaAvaliacao && (
+          <Section title="Próxima Avaliação">
+            <p>
+              {new Date(dataProximaAvaliacao).toLocaleDateString("pt-BR", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })}
+            </p>
+          </Section>
+        )}
+      </div>
     </div>
   );
-};
-
-export default DetalhesLesaoPage;
+}

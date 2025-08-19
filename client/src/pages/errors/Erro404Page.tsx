@@ -1,27 +1,33 @@
 import { Link } from "react-router-dom";
-import { AlertTriangle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
+import { cores } from "@/shared/constants/cores";
 
-const Erro404Page = () => {
+export const Erro404Page = () => {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
-      <div className="w-full max-w-4xl min-h-screen bg-white p-16 flex flex-col justify-center overflow-y-auto">
-        <div className="flex justify-center mb-6">
-          <div className="bg-green-100 p-6 rounded-full">
-            <AlertTriangle className="w-12 h-12 text-gray-400" />
-          </div>
-        </div>
-        <h2 className="text-2xl font-semibold text-gray-900 text-center">
-          Página não encontrada
-        </h2>
-        <p className="text-gray-500 text-center mt-2">
-          Opa! Parece que você tentou acessar uma página que não existe ou foi
-          movida.
+    <div
+      className="min-h-screen flex flex-col items-center justify-center px-4"
+      style={{ backgroundColor: cores.background }}
+    >
+      <div className="bg-white rounded-xl shadow-md p-12 text-center max-w-md w-full space-y-4">
+        <AlertCircle size={64} color={cores.primary} className="mx-auto" />
+        <h1 className="text-6xl font-bold" style={{ color: cores.primary }}>
+          404
+        </h1>
+        <p className="text-lg" style={{ color: cores.textSecondary }}>
+          Ops! Página não encontrada.
         </p>
         <Link
-          to="/"
-          className="mt-6 h-12 w-full bg-[#1F4D2C] text-white p-2 rounded-md text-center hover:bg-[#173B21] transition"
+          to="/entrar"
+          className="inline-block px-6 py-2 rounded-md text-white font-medium transition-colors duration-200"
+          style={{ backgroundColor: cores.primary }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.backgroundColor = cores.primaryLight)
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.backgroundColor = cores.primary)
+          }
         >
-          Voltar para a Home
+          Voltar para Login
         </Link>
       </div>
     </div>

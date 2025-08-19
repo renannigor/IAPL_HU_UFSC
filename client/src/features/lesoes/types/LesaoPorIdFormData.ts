@@ -25,11 +25,11 @@ export interface LesaoPorIdFormData {
   tamanho: {
     comprimento: number;
     largura: number;
-    profundidade: number;
+    profundidade: string;
   };
   tecidos: ItemComValor[];
   coberturas: ItemComValor[];
   tiposFechamentoCurativo: ItemComValor[];
-  dataProximaAvaliacao: Date;
+  dataProximaAvaliacao?: string;
   localizacaoLesao: string;
 }

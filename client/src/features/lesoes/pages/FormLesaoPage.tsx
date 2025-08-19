@@ -1,56 +1,37 @@
-import { SubmitHandler, useForm, Controller } from "react-hook-form";
-import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  FormLesaoSchema,
-  FormLesaoFields,
-  Tecido,
-  Cobertura,
-  TipoFechamentoCurativo,
-} from "@/features/lesoes/schemas/LesaoSchema";
-import DadosFormLesaoService from "@/features/lesoes/services/DadosFormLesaoService";
-import { CarregarCheckboxGroup } from "@/features/lesoes/components/CarregarCheckboxGroup";
-import Editor from "@/shared/components/form/Editor";
+import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/providers/AuthProvider";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/ui/tooltip";
-import { Popover, PopoverContent, PopoverTrigger } from "@/ui/popover";
-import { Button } from "@/ui/button";
-import { Calendar } from "@/ui/calendar";
-import { cn } from "@/lib/utils";
-import { Label } from "@/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/ui/radio-group";
-import { Slider } from "@/ui/slider";
-import { DadosFormLesao } from "@/features/lesoes/types/DadosFormLesao";
-import { CamposCondicionaisFormulario } from "@/features/lesoes/types/CamposCondicionaisFormulario";
-import { ChevronDownIcon, Pencil, Plus } from "lucide-react";
-import { ZodSchema } from "zod";
-import { toast } from "sonner";
+  Cobertura,
+  FormLesaoFields,
+  FormLesaoSchema,
+  Tecido,
+  TipoFechamentoCurativo,
+} from "../schemas/LesaoSchema";
+import DadosFormLesaoService from "../services/DadosFormLesaoService";
 import LesaoService from "../services/LesaoService";
+import BreadcrumbNav from "@/shared/components/layout/BreadcrumbNav";
+import { cores } from "@/shared/constants/cores";
+import { CamposCondicionaisFormulario } from "../types/CamposCondicionaisFormulario";
 import { CamposFormulario } from "../constants/camposFormulario.enum";
+import { DadosFormLesao } from "../types/DadosFormLesao";
 import { useFormularioWatch } from "../hooks/useFormularioWatch";
-import { BreadcrumbNav } from "@/shared/components/layout/BreadcrumbNav";
+import { Input } from "@/shared/components/form/Input";
+import { Opcao } from "@/types/Opcao";
+import { Check, Plus } from "lucide-react";
+import { toast } from "sonner";
+import CheckboxGroup from "../components/CheckboxGroup";
+import PacienteService from "@/features/pacientes/services/PacienteService";
+import { Paciente } from "@/features/pacientes/types/Paciente";
 
-const FormLesaoPage = () => {
+// Formulário de lesão
+function FormLesaoPage() {
   const { id_lesao, id_paciente } = useParams();
   const isEditMode = !!id_lesao;
   const navigate = useNavigate();
   const { usuarioAtual } = useAuth();
-
-  const [camposCondicionaisForm, setCamposCondicionaisForm] =
-    useState<CamposCondicionaisFormulario>({});
 
   const [dadosForm, setDadosForm] = useState<DadosFormLesao>({
     etiologias: [],
@@ -69,124 +50,115 @@ const FormLesaoPage = () => {
     coberturas: [],
     tiposFechamentoCurativo: [],
   });
-
-  const [schema, setSchema] = useState<ZodSchema<FormLesaoFields> | null>(null);
+  const [schema, setSchema] = useState<any>(null);
+  const [camposCondicionaisForm, setCamposCondicionaisForm] =
+    useState<CamposCondicionaisFormulario>({});
+  const [paciente, setPaciente] = useState<Paciente | null>(null);
 
   const form = useForm<FormLesaoFields>({
     resolver: schema ? zodResolver(schema) : undefined,
-    defaultValues: {
-      tecidos: [],
-      coberturas: [],
-      tiposFechamentoCurativo: [],
-    },
   });
-
-  const [open, setOpen] = useState(false);
 
   const {
     control,
     handleSubmit,
     reset,
-    setValue,
     formState: { errors, isSubmitting },
   } = form;
 
-  // Carregar dados da lesão (edição)
+  // Carregando os dados do formulário
   useEffect(() => {
-    if (!isEditMode) return;
-    const fetchLesao = async () => {
-      const { dados } = await LesaoService.getLesaoPorId(id_lesao!);
+    const fetchDados = async () => {
+      const response = await DadosFormLesaoService.getDadosFormLesao();
+      setDadosForm(response);
 
-      reset(dados);
-    };
-    fetchLesao();
-  }, [isEditMode, id_lesao, reset]);
+      // Atualiza os dados condicionais do formulário e schema para validação
+      const camposCondicionais: CamposCondicionaisFormulario = {
+        etiologiaLesaoPorPressao: response.etiologias.find(
+          (op) =>
+            op.nome.toLowerCase() === CamposFormulario.OpcaoLesaoPorPressao
+        ),
+        regiaoPerilesionalOutro: response.regioesPerilesionais.find(
+          (op) => op.nome.toLowerCase() === CamposFormulario.OpcaoOutro
+        ),
+        estruturaNobreOutro: response.estruturasNobres.find(
+          (op) => op.nome.toLowerCase() === CamposFormulario.OpcaoOutro
+        ),
+        limpezaOutro: response.limpezas.find(
+          (op) => op.nome.toLowerCase() === CamposFormulario.OpcaoOutro
+        ),
+        desbridamentoOutro: response.desbridamentos.find(
+          (op) => op.nome.toLowerCase() === CamposFormulario.OpcaoOutro
+        ),
+        protecaoOutro: response.protecoes.find(
+          (op) => op.nome.toLowerCase() === CamposFormulario.OpcaoOutro
+        ),
+      };
 
-  // Carregar opções dos checkboxes e selects
-  useEffect(() => {
-    const fetchDadosForm = async () => {
-      try {
-        // Recebendo os dados
-        const response = await DadosFormLesaoService.getDadosFormLesao();
+      setCamposCondicionaisForm(camposCondicionais);
+      setSchema(FormLesaoSchema(camposCondicionais));
 
-        // Atualizando os valores iniciais dos tecidos
-        const tecidosComValor = response.tecidos.map((item) => ({
-          id: item.id,
-          nome: item.nome,
-          valor: 0,
-        }));
-
-        // Atualizando os valores iniciais das coberturas
-        const coberturasComValor = response.coberturas.map((item) => ({
-          id: item.id,
-          nome: item.nome,
-          valor: 0,
-        }));
-
-        // Atualizando os valores iniciais dos tipos de fechamento de curativo
-        const tiposFechamentoCurativoComValor =
-          response.tiposFechamentoCurativo.map((item) => ({
-            id: item.id,
-            nome: item.nome,
-            valor: 0,
-          }));
-
-        // Atualiza os dados condicionais e schema
-        const novosCamposCondicionais: CamposCondicionaisFormulario = {
-          etiologiaLesaoPorPressao: response.etiologias.find(
-            (op) =>
-              op.nome.toLowerCase() === CamposFormulario.OpcaoLesaoPorPressao
+      if (!isEditMode) {
+        reset({
+          tecidos: response.tecidos.map((t: any) => ({ ...t, valor: 0 })),
+          coberturas: response.coberturas.map((c: any) => ({ ...c, valor: 0 })),
+          tiposFechamentoCurativo: response.tiposFechamentoCurativo.map(
+            (c: any) => ({ ...c, valor: 0 })
           ),
-          regiaoPerilesionalOutro: response.regioesPerilesionais.find(
-            (op) => op.nome.toLowerCase() === CamposFormulario.OpcaoOutro
-          ),
-          estruturaNobreOutro: response.estruturasNobres.find(
-            (op) => op.nome.toLowerCase() === CamposFormulario.OpcaoOutro
-          ),
-          limpezaOutro: response.limpezas.find(
-            (op) => op.nome.toLowerCase() === CamposFormulario.OpcaoOutro
-          ),
-          desbridamentoOutro: response.desbridamentos.find(
-            (op) => op.nome.toLowerCase() === CamposFormulario.OpcaoOutro
-          ),
-          protecaoOutro: response.protecoes.find(
-            (op) => op.nome.toLowerCase() === CamposFormulario.OpcaoOutro
-          ),
-        };
-
-        setCamposCondicionaisForm(novosCamposCondicionais);
-        setSchema(FormLesaoSchema(novosCamposCondicionais));
-
-        // Atualiza os dados de formulário
-        setDadosForm({
-          ...response,
         });
-
-        if (!isEditMode) {
-          // Resetando o formulário com os dados carregados
-          reset({
-            tecidos: tecidosComValor,
-            coberturas: coberturasComValor,
-            tiposFechamentoCurativo: tiposFechamentoCurativoComValor,
-          });
-        }
-      } catch (error) {
-        console.error("Erro ao carregar dados do formulário", error);
       }
     };
-    fetchDadosForm();
-  }, [reset]);
 
-  // Submissão do formulário de cadastro de lesão
+    fetchDados();
+  }, [reset, isEditMode]);
+
+  useEffect(() => {
+    if (!isEditMode) return;
+
+    // Carregando os dados da lesão para edição
+    const fetchLesao = async () => {
+      const { dados } = await LesaoService.getLesaoPorId(id_lesao!);
+      reset(dados);
+    };
+
+    fetchLesao();
+  }, [id_lesao, isEditMode, reset]);
+
+  useEffect(() => {
+    const fetchPaciente = async () => {
+      const data = await PacienteService.getPaciente(id_paciente!);
+      setPaciente(data);
+    };
+    if (id_paciente) fetchPaciente();
+  }, [id_paciente]);
+
+  // Submissão dos dados do formulário
   const onSubmit: SubmitHandler<FormLesaoFields> = async (data) => {
+    const payload = {
+      ...data,
+      tamanho: {
+        comprimento: data.tamanho.comprimento,
+        largura: data.tamanho.comprimento,
+        profundidade: data.tamanho.profundidade
+          ? Number(data.tamanho.profundidade)
+          : undefined,
+      },
+      dataProximaAvaliacao: data.dataProximaAvaliacao
+        ? new Date(data.dataProximaAvaliacao)
+        : undefined,
+    };
+
     if (isEditMode) {
       // Atualizando a lesão
-      await LesaoService.atualizarLesao(usuarioAtual?.cpf!, id_lesao, data);
+      await LesaoService.atualizarLesao(usuarioAtual?.cpf!, id_lesao, payload);
     } else {
       // Cadastrando a lesão
-      await LesaoService.cadastrarLesao(usuarioAtual?.cpf!, id_paciente!, data);
+      await LesaoService.cadastrarLesao(
+        usuarioAtual?.cpf!,
+        id_paciente!,
+        payload
+      );
     }
-    // Retornando a tela com a listagem das lesões do paciente
     navigate(`/dashboard/pacientes/${id_paciente}`);
   };
 
@@ -202,7 +174,6 @@ const FormLesaoPage = () => {
     tecidos,
     coberturas,
     tiposFechamentoCurativo,
-    selectedDate,
     somaTecidos,
     volume,
     algumValorPreenchido,
@@ -219,34 +190,24 @@ const FormLesaoPage = () => {
     somaTecidos > 100 ? " (excede 100%)" : somaTecidos === 100 ? " (ok!)" : "";
 
   return (
-    <div className="space-y-8">
-      <div>
-        <BreadcrumbNav
-          itens={[
-            { titulo: "Home", href: "/" },
-            { titulo: "Pacientes", href: "/dashboard/pacientes" },
-            {
-              titulo: id_paciente!,
-              href: `/dashboard/pacientes/${id_paciente}`,
-            },
-            {
-              titulo: isEditMode ? "Editar Lesão" : "Cadastrar Lesão",
-              href: `/dashboard/pacientes/${id_paciente}/lesoes/${
-                isEditMode ? `${id_lesao}/editar` : "cadastrar"
-              }`,
-            },
-          ]}
-        />
-      </div>
+    <div className="min-h-screen" style={{ backgroundColor: cores.background }}>
+      <BreadcrumbNav
+        items={[
+          { label: "Início", href: "/dashboard" },
+          { label: "Pacientes", href: "/dashboard/pacientes" },
+          {
+            label: paciente?.nome!,
+            href: `/dashboard/pacientes/${id_paciente}`,
+          },
+          {
+            label: isEditMode ? "Editar Lesão" : "Cadastrar Lesão",
+          },
+        ]}
+      />
 
-      <div>
-        <h1 className="text-2xl font-bold text-[#1F4D2C]">
-          {isEditMode ? "Editar" : "Cadastrar"} Lesão
-        </h1>
-        <p className="text-sm text-gray-600">
-          Preencha os campos abaixo para salvar as informações da lesão.
-        </p>
-      </div>
+      <h2 className="text-2xl font-semibold text-gray-800 text-center mb-10">
+        {isEditMode ? "Editar Lesão" : "Cadastrar Lesão"}
+      </h2>
 
       <form
         onSubmit={handleSubmit(onSubmit, (errors) => {
@@ -254,155 +215,157 @@ const FormLesaoPage = () => {
           // Aviso para preenchimento dos campos obrigatórios
           toast("Preencha todos os campos obrigatórios.");
         })}
-        className="space-y-6"
+        className="grid grid-cols-1 md:grid-cols-1 gap-8"
       >
-        <div className="border rounded p-4 mb-6">
-          <h2 className="text-xl font-bold mb-4 text-[#1F4D2C]">Etiologia</h2>
-          {/* Etiologia */}
-          <CarregarCheckboxGroup
-            control={control}
-            fieldName="etiologias"
-            options={dadosForm.etiologias}
-            error={errors.etiologias?.message}
-            errorClassName="mt-4 text-red-500 text-sm"
-          />
+        {/* Etiologia */}
+        <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition border border-gray-200">
+          {dadosForm.etiologias && (
+            <Controller
+              name="etiologias"
+              control={control}
+              render={({ field }) => (
+                <CheckboxGroup
+                  options={dadosForm.etiologias}
+                  value={field.value || []}
+                  onChange={field.onChange}
+                  label="Etiologias"
+                  error={errors.etiologias?.message?.toString()}
+                />
+              )}
+            />
+          )}
         </div>
 
-        {/* Classificações (condicional) */}
+        {/* Classificação Lesão Por Pressão */}
         {etiologias.includes(
           camposCondicionaisForm.etiologiaLesaoPorPressao?.id!
         ) && (
-          <div className="border rounded p-4 mb-6">
-            <h2 className="text-xl font-bold mb-4 text-[#1F4D2C]">
-              Classificação da Lesão Por Pressão
-            </h2>
-
-            {/* Classificação Lesão Por Pressão */}
-            <CarregarCheckboxGroup
-              control={control}
-              fieldName="classificacoesLesaoPressao"
-              options={dadosForm.classificacoesLesaoPressao}
-              error={errors.classificacoesLesaoPressao?.message}
-              errorClassName="mt-4 text-red-500 text-sm"
-            />
+          <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition border border-gray-200">
+            {dadosForm.classificacoesLesaoPressao && (
+              <Controller
+                name="classificacoesLesaoPressao"
+                control={control}
+                render={({ field }) => (
+                  <CheckboxGroup
+                    options={dadosForm.classificacoesLesaoPressao}
+                    value={field.value || []}
+                    onChange={field.onChange}
+                    label=" Classificação da Lesão Por Pressão"
+                    error={errors.classificacoesLesaoPressao?.message?.toString()}
+                  />
+                )}
+              />
+            )}
           </div>
         )}
 
-        <div className="border rounded p-4 mb-6">
-          <h2 className="text-xl font-bold mb-4 text-[#1F4D2C]">
-            Região Perilesional
-          </h2>
-          {/* Região Perilesional */}
-          <CarregarCheckboxGroup
-            control={control}
-            fieldName="regioesPerilesionais"
-            options={dadosForm.regioesPerilesionais}
-            error={errors.regioesPerilesionais?.message}
-            errorClassName="mt-4 text-red-500 text-sm"
-          />
+        {/* Região Perilesional */}
+        <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition border border-gray-200">
+          {dadosForm.regioesPerilesionais && (
+            <Controller
+              name="regioesPerilesionais"
+              control={control}
+              render={({ field }) => (
+                <CheckboxGroup
+                  options={dadosForm.regioesPerilesionais}
+                  value={field.value || []}
+                  onChange={field.onChange}
+                  label="Região Perilesional"
+                  error={errors.regioesPerilesionais?.message?.toString()}
+                />
+              )}
+            />
+          )}
 
           {regioesPerilesionais.includes(
             camposCondicionaisForm.regiaoPerilesionalOutro?.id!
           ) && (
-            <div className="mt-4">
-              <Editor
-                id="regiaoPerilesionalOutro"
-                label="Região Perilesional"
-                ehCampoSenha={false}
-                register={control.register("regiaoPerilesionalOutro")}
-                error={errors.regiaoPerilesionalOutro?.message}
-                placeholder="Região Perilesional"
-                className="h-12 w-full border p-2 rounded-md"
-                labelClassName="block font-medium mb-1"
-                errorClassName="text-red-500 text-sm mt-1"
-              />
-            </div>
+            <Input
+              label="Outra Região Perilesional"
+              placeholder="Digite uma outra região perilesional"
+              error={errors.regiaoPerilesionalOutro?.message}
+              register={control.register("regiaoPerilesionalOutro")}
+              focusColor={cores.primaryLighter}
+            />
           )}
         </div>
 
-        <div className="border rounded p-4 mb-6">
-          <h2 className="text-xl font-bold mb-4 text-[#1F4D2C]">Borda</h2>
-          {/* Borda */}
-          <CarregarCheckboxGroup
-            control={control}
-            fieldName="bordas"
-            options={dadosForm.bordas}
-            error={errors.bordas?.message}
-            errorClassName="mt-4 text-red-500 text-sm"
-          />
+        {/* Borda */}
+        <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition border border-gray-200">
+          {dadosForm.bordas && (
+            <Controller
+              name="bordas"
+              control={control}
+              render={({ field }) => (
+                <CheckboxGroup
+                  options={dadosForm.bordas}
+                  value={field.value || []}
+                  onChange={field.onChange}
+                  label="Bordas"
+                  error={errors.bordas?.message?.toString()}
+                />
+              )}
+            />
+          )}
         </div>
 
-        {/* Tecido */}
-        <div className="border rounded p-4 mb-6">
-          <h2 className="text-xl font-bold mb-4 text-[#1F4D2C]">Tecido</h2>
-
-          <div className="flex flex-col lg:flex-row flex-wrap gap-8">
-            {/* Estruturas Nobres */}
-            <div className="flex-1 min-w-[250px]">
-              <Label className="block font-medium text-gray-500 mb-1">
-                Estruturas Nobres
-              </Label>
-              <CarregarCheckboxGroup
+        <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition border border-gray-200">
+          {/* Estruturas Nobres */}
+          <div>
+            {dadosForm.estruturasNobres && (
+              <Controller
+                name="estruturasNobres"
                 control={control}
-                fieldName="estruturasNobres"
-                options={dadosForm.estruturasNobres}
-                error={errors.estruturasNobres?.message}
-                errorClassName="mt-4 text-red-500 text-sm"
-              />
-              {estruturasNobres.includes(
-                camposCondicionaisForm.estruturaNobreOutro?.id!
-              ) && (
-                <div className="mt-4">
-                  <Editor
-                    id="estruturaNobreOutro"
-                    label="Estrutura Nobre"
-                    ehCampoSenha={false}
-                    register={control.register("estruturaNobreOutro")}
-                    error={errors.estruturaNobreOutro?.message}
-                    placeholder="Estrutura Nobre"
-                    className="h-12 w-full border p-2 rounded-md"
-                    labelClassName="block font-medium mb-1"
-                    errorClassName="text-red-500 text-sm mt-1"
+                render={({ field }) => (
+                  <CheckboxGroup
+                    options={dadosForm.estruturasNobres}
+                    value={field.value || []}
+                    onChange={field.onChange}
+                    label="Estruturas Nobres"
+                    error={errors.estruturasNobres?.message?.toString()}
                   />
-                </div>
-              )}
-            </div>
+                )}
+              />
+            )}
 
-            {/* Porcentagens */}
-            <div className="flex-1 min-w-[250px]">
-              <Label className="block text-sm font-normal text-gray-400 mb-1">
-                Porcentagens (0 a 100%)
-              </Label>
-              <div className="space-y-3 mt-2">
-                {tecidos.map((item: Tecido, index: number) => {
-                  const errorMessage = errors.tecidos?.[index]?.valor?.message;
-
-                  return (
-                    <Editor
-                      key={`${item.id}-${item.nome}`}
-                      id={`${item.id}-${item.nome}`}
-                      label={item.nome}
-                      ehCampoSenha={false}
-                      register={control.register(`tecidos.${index}.valor`, {
-                        valueAsNumber: true,
-                      })}
-                      error={errorMessage}
-                      placeholder={item.nome}
-                      className="h-12 w-full border p-2 rounded-md"
-                      labelClassName="block font-medium mb-1"
-                      errorClassName="text-red-500 text-sm mt-1"
-                    />
-                  );
-                })}
-              </div>
-
-              {errors.tecidos?.root && (
-                <p className="text-red-500 text-sm mt-3">
-                  {errors.tecidos?.root?.message}
-                </p>
-              )}
-            </div>
+            {estruturasNobres.includes(
+              camposCondicionaisForm.estruturaNobreOutro?.id!
+            ) && (
+              <Input
+                label="Outra Estrutura Nobre"
+                placeholder="Digite uma outra estrutura nobre"
+                error={errors.estruturaNobreOutro?.message}
+                register={control.register("estruturaNobreOutro")}
+                focusColor={cores.primaryLighter}
+              />
+            )}
           </div>
+
+          {/* Porcentagens */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+            {tecidos.map((item: Tecido, index: number) => {
+              const errorMessage = errors.tecidos?.[index]?.valor?.message;
+
+              return (
+                <Input
+                  key={item.id}
+                  label={item.nome}
+                  placeholder={item.nome}
+                  error={errorMessage}
+                  register={control.register(`tecidos.${index}.valor`, {
+                    valueAsNumber: true,
+                  })}
+                  focusColor={cores.primaryLighter}
+                />
+              );
+            })}
+          </div>
+
+          {errors.tecidos?.root && (
+            <p className="text-red-500 text-sm mt-3">
+              {errors.tecidos?.root?.message}
+            </p>
+          )}
 
           {/* Soma das porcentagens */}
           <p className={`text-sm font-medium mt-6 ${corSoma}`}>
@@ -410,426 +373,395 @@ const FormLesaoPage = () => {
           </p>
         </div>
 
-        <div className="border rounded p-4 mb-6">
-          <h2 className="text-xl font-bold mb-4 text-[#1F4D2C]">
+        {/* Presença de Túnel */}
+        <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition border border-gray-200">
+          <label className="font-semibold text-gray-700 mb-2 block">
             Presença de Túnel
-          </h2>
+          </label>
 
-          {/* RadioGroup */}
-          <div>
-            <Controller
-              name="presencaTunel"
-              control={control}
-              render={({ field }) => (
-                <RadioGroup
-                  onValueChange={field.onChange}
-                  value={field.value ?? ""}
-                  defaultValue={field.value}
-                  className="flex gap-6"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="sim" id="presencaTunelSim" />
-                    <Label htmlFor="presencaTunelSim">Sim</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="nao" id="presencaTunelNao" />
-                    <Label htmlFor="presencaTunelNao">Não</Label>
-                  </div>
-                </RadioGroup>
-              )}
-            />
-            {errors.presencaTunel && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.presencaTunel.message}
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Dor */}
-        <div className="border rounded p-4 mb-6">
-          <h2 className="text-xl font-bold mb-4 text-[#1F4D2C]">Dor</h2>
-
-          <div className="flex flex-col gap-6">
-            {/* RadioGroup */}
-            <div>
-              <Controller
-                name="dor"
-                control={control}
-                render={({ field }) => (
-                  <RadioGroup
-                    onValueChange={field.onChange}
-                    value={field.value ?? ""}
-                    defaultValue={field.value}
-                    className="flex gap-6"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="sim" id="dorSim" />
-                      <Label htmlFor="dorSim">Sim</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="nao" id="dorNao" />
-                      <Label htmlFor="dorNao">Não</Label>
-                    </div>
-                  </RadioGroup>
-                )}
-              />
-              {errors.dor && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.dor.message}
-                </p>
-              )}
-            </div>
-
-            {/* Campos adicionais se dor == sim */}
-            {dor === CamposFormulario.OpcaoSim && (
-              <div className="flex flex-col gap-6 lg:flex-row">
-                {/* Classificação */}
-                <div className="flex-1">
-                  <Label className="block mb-2">Classificação</Label>
-                  <CarregarCheckboxGroup
-                    control={control}
-                    fieldName="classificacoesDor"
-                    options={dadosForm.classificacoesDor}
-                    error={errors.classificacoesDor?.message}
-                    errorClassName="mt-2 text-red-500 text-sm"
+          <Controller
+            name="presencaTunel"
+            control={control}
+            render={({ field }) => (
+              <div className="flex gap-6 mt-2">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    value="sim"
+                    checked={field.value === "sim"}
+                    onChange={() => field.onChange("sim")}
+                    className="h-4 w-4 text-green-700 border-gray-300"
                   />
-                </div>
+                  <span className="text-gray-600">Sim</span>
+                </label>
 
-                {/* Nível de dor */}
-                <div className="flex-1">
-                  <Controller
-                    control={control}
-                    name="escalaNumericaDor"
-                    defaultValue={0}
-                    render={({ field }) => (
-                      <div>
-                        <Label
-                          htmlFor="escalaNumericaDor"
-                          className="block mb-2"
-                        >
-                          Escala Numérica da Dor
-                        </Label>
-                        <Slider
-                          id="escalaNumericaDor"
-                          min={0}
-                          max={10}
-                          step={1}
-                          value={[field.value!]}
-                          onValueChange={(val) => field.onChange(val[0])}
-                        />
-                        <p className="text-sm mt-2">
-                          Valor selecionado: {field.value}
-                        </p>
-                      </div>
-                    )}
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    value="nao"
+                    checked={field.value === "nao"}
+                    onChange={() => field.onChange("nao")}
+                    className="h-4 w-4 text-green-700 border-gray-300"
                   />
-                  {errors.escalaNumericaDor && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.escalaNumericaDor.message}
-                    </p>
-                  )}
-                </div>
+                  <span className="text-gray-600">Não</span>
+                </label>
               </div>
             )}
-          </div>
-        </div>
+          />
 
-        <div className="border rounded p-4 mb-6">
-          <div className="flex flex-col lg:flex-row gap-x-6 gap-y-6">
-            <div className="flex-1 space-y-6">
-              {/* Quantidade de Exsudato */}
-              <Controller
-                control={control}
-                name="quantidadeExsudato"
-                render={({ field }) => (
-                  <div className="space-y-2">
-                    <Label className="text-xl font-bold mb-4 text-[#1F4D2C]">
-                      Quantidade de Exsudato
-                    </Label>
-                    <Select
-                      value={String(field.value ?? "")}
-                      onValueChange={(val) => field.onChange(Number(val))}
-                    >
-                      <SelectTrigger className="min-h-[48px] w-full border p-2 rounded-md">
-                        <SelectValue placeholder="Selecione a quantidade de exsudato" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {dadosForm.quantidadesExsudato.map((item) => (
-                          <SelectItem key={item.id} value={String(item.id)}>
-                            {item.nome}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {errors.quantidadeExsudato && (
-                      <p className="text-red-500 text-sm">
-                        {errors.quantidadeExsudato.message}
-                      </p>
-                    )}
-                  </div>
-                )}
-              />
-
-              {/* Tipo de Exsudato */}
-              <Controller
-                control={control}
-                name="tipoExsudato"
-                render={({ field }) => (
-                  <div className="space-y-2">
-                    <Label className="text-xl font-bold mb-4 text-[#1F4D2C]">
-                      Tipo de Exsudato
-                    </Label>
-                    <Select
-                      value={String(field.value ?? "")}
-                      onValueChange={(val) => field.onChange(Number(val))}
-                    >
-                      <SelectTrigger className="min-h-[48px] w-full border p-2 rounded-md">
-                        <SelectValue placeholder="Selecione o tipo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {dadosForm.tiposExsudato.map((item) => (
-                          <SelectItem key={item.id} value={String(item.id)}>
-                            {item.nome}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {errors.tipoExsudato && (
-                      <p className="text-red-500 text-sm">
-                        {errors.tipoExsudato.message}
-                      </p>
-                    )}
-                  </div>
-                )}
-              />
-            </div>
-
-            <div className="flex-1 space-y-6">
-              {/* Odor */}
-              <Controller
-                control={control}
-                name="odor"
-                render={({ field }) => (
-                  <div className="space-y-2">
-                    <Label className="text-xl font-bold mb-4 text-[#1F4D2C]">
-                      Odor
-                    </Label>
-                    <Select
-                      value={String(field.value ?? "")}
-                      onValueChange={(val) => field.onChange(Number(val))}
-                    >
-                      <SelectTrigger className="min-h-[48px] w-full border p-2 rounded-md">
-                        <SelectValue placeholder="Selecione o odor" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {dadosForm.odores.map((item) => (
-                          <SelectItem key={item.id} value={String(item.id)}>
-                            {item.nome}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {errors.odor && (
-                      <p className="text-red-500 text-sm">
-                        {errors.odor.message}
-                      </p>
-                    )}
-                  </div>
-                )}
-              />
-
-              {/* Tamanho */}
-              <div>
-                <Label className="text-xl font-bold mb-4 text-[#1F4D2C]">
-                  Tamanho (em centímetros)
-                </Label>
-                <div className="flex flex-col lg:flex-row gap-4">
-                  {/* Comprimento */}
-                  <Editor
-                    id="comprimento"
-                    ehCampoSenha={false}
-                    helperText="Comprimento"
-                    register={control.register("tamanho.comprimento", {
-                      valueAsNumber: true,
-                    })}
-                    error={errors.tamanho?.comprimento?.message}
-                    placeholder="Comprimento da Lesão"
-                    className="h-12 w-full border p-2 rounded-md"
-                    labelClassName="block font-medium mb-1"
-                    errorClassName="text-red-500 text-sm mt-1"
-                  />
-
-                  {/* Largura */}
-                  <Editor
-                    id="largura"
-                    ehCampoSenha={false}
-                    helperText="Largura"
-                    register={control.register("tamanho.largura", {
-                      valueAsNumber: true,
-                    })}
-                    error={errors.tamanho?.largura?.message}
-                    placeholder="Largura da Lesão"
-                    className="h-12 w-full border p-2 rounded-md"
-                    labelClassName="block font-medium mb-1"
-                    errorClassName="text-red-500 text-sm mt-1"
-                  />
-
-                  {/* Profundidade */}
-                  <Editor
-                    id="profundidade"
-                    ehCampoSenha={false}
-                    helperText="Profundidade"
-                    register={control.register("tamanho.profundidade", {
-                      valueAsNumber: true,
-                    })}
-                    error={errors.tamanho?.profundidade?.message}
-                    placeholder="Profundidade da Lesão"
-                    className="h-12 w-full border p-2 rounded-md"
-                    labelClassName="block font-medium mb-1"
-                    errorClassName="text-red-500 text-sm mt-1"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {algumValorPreenchido && (
-            <p className="text-sm text-muted-foreground mt-2 text-right">
-              Volume estimado:{" "}
-              <span className="font-semibold">{volume.toFixed(2)} cm³</span>
+          {errors.presencaTunel && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.presencaTunel.message?.toString()}
             </p>
           )}
         </div>
 
-        <div className="border rounded p-4 mb-6 space-y-8">
-          <h2 className="text-xl font-bold mb-4 text-[#1F4D2C]">
-            Preparo do Leito
-          </h2>
+        {/* Dor */}
+        <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition border border-gray-200 space-y-4">
+          <label className="font-semibold text-gray-700 mb-2 block">Dor</label>
 
-          <div className="flex flex-col gap-6 lg:flex-row lg:gap-12">
-            <div className="w-full lg:w-1/2">
-              <Label className="block font-medium text-gray-500 mb-1">
-                Limpeza
-              </Label>
-              {/* Limpeza */}
-              <CarregarCheckboxGroup
-                control={control}
-                fieldName="limpezas"
-                options={dadosForm.limpezas}
-                error={errors.limpezas?.message}
-                errorClassName="mt-4 text-red-500 text-sm"
-              />
-
-              {limpezas.includes(camposCondicionaisForm.limpezaOutro?.id!) && (
-                <div className="mt-4">
-                  <Editor
-                    id="limpezaOutro"
-                    label="Limpeza"
-                    ehCampoSenha={false}
-                    register={control.register("limpezaOutro")}
-                    error={errors.limpezaOutro?.message}
-                    placeholder="Limpeza"
-                    className="h-12 w-full border p-2 rounded-md"
-                    labelClassName="block font-medium mb-1"
-                    errorClassName="text-red-500 text-sm mt-1"
+          <Controller
+            name="dor"
+            control={control}
+            render={({ field }) => (
+              <div className="flex gap-6 mt-2">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    value="sim"
+                    checked={field.value === "sim"}
+                    onChange={() => field.onChange("sim")}
+                    className="h-4 w-4 text-green-700 border-gray-300"
                   />
-                </div>
+                  <span className="text-gray-600">Sim</span>
+                </label>
+
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    value="nao"
+                    checked={field.value === "nao"}
+                    onChange={() => field.onChange("nao")}
+                    className="h-4 w-4 text-green-700 border-gray-300"
+                  />
+                  <span className="text-gray-600">Não</span>
+                </label>
+              </div>
+            )}
+          />
+          {errors.dor && (
+            <p className="text-red-500 text-sm mt-1">
+              {errors.dor.message?.toString()}
+            </p>
+          )}
+
+          {dor === CamposFormulario.OpcaoSim && (
+            <div className="space-y-4 mt-4">
+              {/* Classificação da dor */}
+              {dadosForm.classificacoesDor && (
+                <Controller
+                  name="classificacoesDor"
+                  control={control}
+                  render={({ field }) => (
+                    <CheckboxGroup
+                      options={dadosForm.classificacoesDor}
+                      value={field.value || []}
+                      onChange={field.onChange}
+                      label="Classificação da Dor"
+                      error={errors.classificacoesDor?.message?.toString()}
+                    />
+                  )}
+                />
               )}
+
+              {/* Escala Numérica da Dor */}
+              <div>
+                <label className="font-semibold text-gray-700 mb-2 block">
+                  Escala Numérica da Dor (1 a 10)
+                </label>
+                <Controller
+                  name="escalaNumericaDor"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="flex flex-wrap gap-3">
+                      {Array.from({ length: 10 }, (_, i) => i + 1).map(
+                        (num) => (
+                          <label key={num} className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              value={num}
+                              checked={field.value === num}
+                              onChange={() => field.onChange(num)}
+                              className="h-4 w-4 text-green-700 border-gray-300"
+                            />
+                            <span className="text-gray-600">{num}</span>
+                          </label>
+                        )
+                      )}
+                    </div>
+                  )}
+                />
+                {errors.escalaNumericaDor && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.escalaNumericaDor.message?.toString()}
+                  </p>
+                )}
+              </div>
             </div>
+          )}
+        </div>
 
-            <div className="w-full lg:w-1/2">
-              <Label className="block font-medium text-gray-500 mb-1">
-                Desbridamento
-              </Label>
-              {/* Desbridamento */}
-              <CarregarCheckboxGroup
+        <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition border border-gray-200 space-y-6">
+          {/* Grid de selects */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Quantidade de Exsudato */}
+            {dadosForm.quantidadesExsudato && (
+              <Controller
+                name="quantidadeExsudato"
                 control={control}
-                fieldName="desbridamentos"
-                options={dadosForm.desbridamentos}
-                error={errors.desbridamentos?.message}
-                errorClassName="mt-4 text-red-500 text-sm"
+                render={({ field }) => (
+                  <div>
+                    <label className="font-semibold text-gray-700 mb-2 block">
+                      Quantidade de Exsudato
+                    </label>
+                    <select
+                      {...field}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-700"
+                    >
+                      <option value="">Selecione</option>
+                      {dadosForm.quantidadesExsudato.map((opt: Opcao) => (
+                        <option key={opt.id} value={opt.id}>
+                          {opt.nome}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.quantidadeExsudato && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.quantidadeExsudato.message?.toString()}
+                      </p>
+                    )}
+                  </div>
+                )}
               />
+            )}
 
-              {desbridamentos.includes(
-                camposCondicionaisForm.desbridamentoOutro?.id!
-              ) && (
-                <div className="mt-4">
-                  <Editor
-                    id="desbridamentoOutro"
-                    label="Desbridamento"
-                    ehCampoSenha={false}
-                    register={control.register("desbridamentoOutro")}
-                    error={errors.desbridamentoOutro?.message}
-                    placeholder="Desbridamento"
-                    className="h-12 w-full border p-2 rounded-md"
-                    labelClassName="block font-medium mb-1"
-                    errorClassName="text-red-500 text-sm mt-1"
-                  />
-                </div>
-              )}
+            {/* Tipo de Exsudato */}
+            {dadosForm.tiposExsudato && (
+              <Controller
+                name="tipoExsudato"
+                control={control}
+                render={({ field }) => (
+                  <div>
+                    <label className="font-semibold text-gray-700 mb-2 block">
+                      Tipo de Exsudato
+                    </label>
+                    <select
+                      {...field}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-700"
+                    >
+                      <option value="">Selecione</option>
+                      {dadosForm.tiposExsudato.map((opt: Opcao) => (
+                        <option key={opt.id} value={opt.id}>
+                          {opt.nome}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.tipoExsudato && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.tipoExsudato.message?.toString()}
+                      </p>
+                    )}
+                  </div>
+                )}
+              />
+            )}
+
+            {/* Odor */}
+            {dadosForm.odores && (
+              <Controller
+                name="odor"
+                control={control}
+                render={({ field }) => (
+                  <div>
+                    <label className="font-semibold text-gray-700 mb-2 block">
+                      Odor
+                    </label>
+                    <select
+                      {...field}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-700"
+                    >
+                      <option value="">Selecione</option>
+                      {dadosForm.odores.map((opt: Opcao) => (
+                        <option key={opt.id} value={opt.id}>
+                          {opt.nome}
+                        </option>
+                      ))}
+                    </select>
+                    {errors.odor && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.odor.message?.toString()}
+                      </p>
+                    )}
+                  </div>
+                )}
+              />
+            )}
+          </div>
+
+          {/* Tamanho */}
+          <div>
+            <label className="font-semibold text-gray-700 mb-2 block">
+              Tamanho (em cm)
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Input
+                label="Comprimento"
+                placeholder="Digite o comprimento"
+                error={errors.tamanho?.comprimento?.message}
+                register={control.register("tamanho.comprimento", {
+                  valueAsNumber: true,
+                })}
+                focusColor={cores.primaryLighter}
+              />
+              <Input
+                label="Largura"
+                placeholder="Digite a largura"
+                error={errors.tamanho?.largura?.message}
+                register={control.register("tamanho.largura", {
+                  valueAsNumber: true,
+                })}
+                focusColor={cores.primaryLighter}
+              />
+              <Input
+                label="Profundidade"
+                placeholder="Digite a profundidade"
+                error={errors.tamanho?.profundidade?.message}
+                register={control.register("tamanho.profundidade")}
+                focusColor={cores.primaryLighter}
+              />
             </div>
           </div>
         </div>
 
-        <div className="border rounded p-4 mb-6 space-y-8">
-          <h2 className="text-xl font-bold mb-4 text-[#1F4D2C]">
-            Prevenção e Tratamento de Lesões
-          </h2>
+        <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition border border-gray-200 space-y-6">
+          <label className="font-semibold text-gray-700 mb-2 block">
+            Preparo de Leito
+          </label>
 
           <div>
-            <Label className="block font-medium text-gray-500 mb-1">
-              Proteção
-            </Label>
-            {/* Proteção */}
-            <CarregarCheckboxGroup
-              control={control}
-              fieldName="protecoes"
-              options={dadosForm.protecoes}
-              error={errors.protecoes?.message}
-              errorClassName="mt-4 text-red-500 text-sm"
-            />
+            {dadosForm.limpezas && (
+              <Controller
+                name="limpezas"
+                control={control}
+                render={({ field }) => (
+                  <CheckboxGroup
+                    options={dadosForm.limpezas}
+                    value={field.value || []}
+                    onChange={field.onChange}
+                    label="Limpeza"
+                    error={errors.limpezas?.message?.toString()}
+                  />
+                )}
+              />
+            )}
 
-            {protecoes.includes(camposCondicionaisForm.protecaoOutro?.id!) && (
-              <div className="mt-4">
-                <Editor
-                  id="protecaoOutro"
-                  label="Proteção"
-                  ehCampoSenha={false}
-                  register={control.register("protecaoOutro")}
-                  error={errors.protecaoOutro?.message}
-                  placeholder="Proteção"
-                  className="h-12 w-full border p-2 rounded-md"
-                  labelClassName="block font-medium mb-1"
-                  errorClassName="text-red-500 text-sm mt-1"
-                />
-              </div>
+            {limpezas.includes(camposCondicionaisForm.limpezaOutro?.id!) && (
+              <Input
+                label="Outra Limpeza"
+                placeholder="Digite uma outra limpeza"
+                error={errors.limpezaOutro?.message}
+                register={control.register("limpezaOutro")}
+                focusColor={cores.primaryLighter}
+              />
             )}
           </div>
 
           <div>
-            <Label className="block font-medium text-gray-500 mb-1">
+            {dadosForm.desbridamentos && (
+              <Controller
+                name="desbridamentos"
+                control={control}
+                render={({ field }) => (
+                  <CheckboxGroup
+                    options={dadosForm.desbridamentos}
+                    value={field.value || []}
+                    onChange={field.onChange}
+                    label="Desbridamento"
+                    error={errors.desbridamentos?.message?.toString()}
+                  />
+                )}
+              />
+            )}
+
+            {desbridamentos.includes(
+              camposCondicionaisForm.desbridamentoOutro?.id!
+            ) && (
+              <Input
+                label="Outro Desbridamento"
+                placeholder="Digite um outro desbridamento"
+                error={errors.desbridamentoOutro?.message}
+                register={control.register("desbridamentoOutro")}
+                focusColor={cores.primaryLighter}
+              />
+            )}
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition border border-gray-200 space-y-6">
+          <label className="font-semibold text-gray-700 mb-2 block">
+            Prevenção e Tratamento de Lesões
+          </label>
+
+          <div>
+            {dadosForm.protecoes && (
+              <Controller
+                name="protecoes"
+                control={control}
+                render={({ field }) => (
+                  <CheckboxGroup
+                    options={dadosForm.protecoes}
+                    value={field.value || []}
+                    onChange={field.onChange}
+                    label="Proteção"
+                    error={errors.protecoes?.message?.toString()}
+                  />
+                )}
+              />
+            )}
+
+            {protecoes.includes(camposCondicionaisForm.protecaoOutro?.id!) && (
+              <Input
+                label="Outra Proteção"
+                placeholder="Digite uma outra proteção"
+                error={errors.protecaoOutro?.message}
+                register={control.register("protecaoOutro")}
+                focusColor={cores.primaryLighter}
+              />
+            )}
+          </div>
+
+          {/* Cobertura Utilizada */}
+          <div>
+            <label className="font-semibold text-gray-700 mb-2 block">
               Cobertura Utilizada
-            </Label>
-            {/* Cobertura Utilizada */}
+            </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
               {coberturas.map((item: Cobertura, index: number) => {
                 const errorMessage = errors.coberturas?.[index]?.valor?.message;
 
                 return (
-                  <Editor
-                    key={`${item.id}-${item.nome}`}
-                    id={`${item.id}-${item.nome}`}
+                  <Input
+                    key={item.id}
                     label={item.nome}
-                    ehCampoSenha={false}
+                    placeholder={item.nome}
+                    error={errorMessage}
                     register={control.register(`coberturas.${index}.valor`, {
                       valueAsNumber: true,
                     })}
-                    error={errorMessage}
-                    placeholder={item.nome}
-                    className="h-12 w-full border p-2 rounded-md"
-                    labelClassName="block font-medium mb-1"
-                    errorClassName="text-red-500 text-sm mt-1"
+                    focusColor={cores.primaryLighter}
                   />
                 );
               })}
@@ -837,9 +769,9 @@ const FormLesaoPage = () => {
           </div>
 
           <div>
-            <Label className="block font-medium text-gray-500 mb-1">
+            <label className="font-semibold text-gray-700 mb-2 block">
               Fechamento do curativo
-            </Label>
+            </label>
             {/* Fechamento do curativo */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
               {tiposFechamentoCurativo.map(
@@ -848,22 +780,18 @@ const FormLesaoPage = () => {
                     errors.tiposFechamentoCurativo?.[index]?.valor?.message;
 
                   return (
-                    <Editor
-                      key={`${item.id}-${item.nome}`}
-                      id={`${item.id}-${item.nome}`}
+                    <Input
+                      key={item.id}
                       label={item.nome}
-                      ehCampoSenha={false}
+                      placeholder={item.nome}
+                      error={errorMessage}
                       register={control.register(
                         `tiposFechamentoCurativo.${index}.valor`,
                         {
                           valueAsNumber: true,
                         }
                       )}
-                      error={errorMessage}
-                      placeholder={item.nome}
-                      className="h-12 w-full border p-2 rounded-md"
-                      labelClassName="block font-medium mb-1"
-                      errorClassName="text-red-500 text-sm mt-1"
+                      focusColor={cores.primaryLighter}
                     />
                   );
                 }
@@ -872,111 +800,56 @@ const FormLesaoPage = () => {
           </div>
         </div>
 
-        <div className="border rounded p-4 mb-6 space-y-8">
-          <h2 className="text-xl font-bold mb-4 text-[#1F4D2C]">
+        <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition border border-gray-200 space-y-6">
+          <label className="font-semibold text-gray-700 mb-2 block">
             Informações adicionais
-          </h2>
+          </label>
 
-          <div className="flex flex-col md:flex-row gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Data da Próxima Avaliação */}
-            <div className="flex-1 flex flex-col gap-3">
-              <Label className="block font-medium text-gray-500 mb-1">
+            <div>
+              <label className="font-semibold text-gray-700 mb-2 block">
                 Data da Próxima Avaliação
-              </Label>
-
-              <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full md:w-48 justify-between font-normal",
-                      !selectedDate && "text-muted-foreground"
-                    )}
-                  >
-                    {selectedDate
-                      ? selectedDate.toLocaleDateString()
-                      : "Selecionar data"}
-                    <ChevronDownIcon className="ml-2 h-4 w-4" />
-                  </Button>
-                </PopoverTrigger>
-
-                <PopoverContent
-                  className="w-auto overflow-hidden p-0"
-                  align="start"
-                >
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    captionLayout="dropdown"
-                    disabled={(date) => date < new Date()}
-                    onSelect={(date) => {
-                      if (date) {
-                        setValue("dataProximaAvaliacao", date, {
-                          shouldValidate: true,
-                        });
-                        setOpen(false);
-                      }
-                    }}
-                  />
-                </PopoverContent>
-              </Popover>
-
+              </label>
+              <input
+                type="date"
+                {...control.register("dataProximaAvaliacao")}
+                min={new Date().toISOString().split("T")[0]}
+                className="w-full border border-gray-300 rounded px-4 h-10 focus:outline-none focus:ring-2 focus:ring-green-700"
+              />
               {errors.dataProximaAvaliacao && (
-                <span className="text-sm text-red-500">
-                  {errors.dataProximaAvaliacao.message}
-                </span>
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.dataProximaAvaliacao.message?.toString()}
+                </p>
               )}
             </div>
 
             {/* Localização da Lesão */}
-            <div className="flex-1">
-              <Label className="block font-medium text-gray-500 mb-1">
-                Localização da Lesão
-              </Label>
-              <Editor
-                id="localizacaoLesao"
-                ehCampoSenha={false}
-                helperText="Localização da Lesão"
-                register={control.register("localizacaoLesao")}
+            <div>
+              <Input
+                label="Localização"
+                placeholder="Digite a localização da lesão"
                 error={errors.localizacaoLesao?.message}
-                placeholder="Localização da Lesão"
-                className="h-12 w-full border p-2 rounded-md"
-                labelClassName="block font-medium mb-1"
-                errorClassName="text-red-500 text-sm mt-1"
+                register={control.register("localizacaoLesao")}
+                focusColor={cores.primaryLighter}
               />
             </div>
           </div>
         </div>
 
-        {errors.root && (
-          <p className="text-red-500 text-sm">{errors.root.message}</p>
-        )}
-
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="fixed bottom-8 right-8 w-[60px] h-[60px] rounded-full shadow-xl text-white flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ backgroundColor: "#1F4D2C" }}
-                aria-label={isEditMode ? "Atualizar" : "Cadastrar"}
-              >
-                {isEditMode ? (
-                  <Pencil className="w-7 h-7" />
-                ) : (
-                  <Plus className="w-7 h-7" />
-                )}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="left">
-              <p>{isEditMode ? "Atualizar" : "Cadastrar"}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        {/* Botão flutuante */}
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="fixed bottom-8 right-8 p-4 rounded-full shadow-lg text-white flex items-center justify-center"
+          style={{ backgroundColor: cores.primary }}
+          title={isEditMode ? "Atualizar Lesão" : "Cadastrar Lesão"} // tooltip
+        >
+          {isEditMode ? <Check size={24} /> : <Plus size={24} />}
+        </button>
       </form>
     </div>
   );
-};
+}
 
 export default FormLesaoPage;

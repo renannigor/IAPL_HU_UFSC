@@ -25,7 +25,6 @@ export default function CardLesaoHistorico({
   const { id_paciente } = useParams();
   const navigate = useNavigate();
 
-  // Verifica se usuário é acadêmico
   const isAcademico = usuarioAtual?.tipo === TiposUsuario.Academico;
 
   return (
@@ -49,7 +48,7 @@ export default function CardLesaoHistorico({
           )}
         </div>
 
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-3 mt-2 md:mt-0">
           <Button
             size="sm"
             variant="outline"
@@ -70,9 +69,7 @@ export default function CardLesaoHistorico({
                 `/dashboard/pacientes/${id_paciente}/lesoes/${lesaoId}/editar`
               )
             }
-            disabled={
-              dados.precisa_aprovacao ? false : isAcademico ? true : false
-            }
+            disabled={isAcademico && !dados.precisa_aprovacao}
           >
             <Pencil className="w-4 h-4 mr-1" /> Editar
           </Button>
@@ -82,7 +79,7 @@ export default function CardLesaoHistorico({
             size="sm"
             className="bg-[#1F4D2C]/90 text-white hover:bg-[#1F4D2C]"
             onClick={onDuplicar}
-            disabled={dados.precisa_aprovacao ? true : false}
+            disabled={dados.precisa_aprovacao}
           >
             <CopyIcon size={16} className="mr-1" /> Duplicar
           </Button>

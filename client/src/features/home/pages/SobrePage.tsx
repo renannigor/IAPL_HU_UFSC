@@ -1,50 +1,67 @@
-import { BreadcrumbNav } from "@/shared/components/layout/BreadcrumbNav";
-
-const SobrePage = () => {
+function SobrePage() {
   return (
-    <div className="w-full max-w-full px-6 py-8 bg-white rounded shadow space-y-6">
-      <BreadcrumbNav
-        itens={[
-          { titulo: "Home", href: "/" },
-          { titulo: "Sobre", href: "/dashboard/sobre" },
-        ]}
-      />
+    <div className="min-h-screen bg-gray-50">
+      <main className="pt-28 max-w-6xl mx-auto px-6">
+        <h2 className="text-2xl font-semibold text-gray-800 text-center mb-10">
+          Sobre o Sistema IAPL
+        </h2>
 
-      <h1 className="text-3xl font-bold text-green-800">Sobre o Sistema</h1>
-      <p className="text-muted-foreground text-lg">
-        Lorem Ipsum is simply dummy text of the printing and typesetting
-        industry. Lorem Ipsum has been the industry's standard dummy text ever
-        since the 1500s, when an unknown printer took a galley of type and
-        scrambled it to make a type specimen book.
-      </p>
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-8">
+          {/* Sobre o Sistema */}
+          <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition">
+            <h3 className="text-lg font-semibold text-gray-700 mb-3">
+              Sobre o Sistema
+            </h3>
+            <p className="text-gray-600">
+              O IAPL é uma ferramenta desenvolvida para auxiliar os
+              profissionais do HU-UFSC no tratamento e na avaliação de lesões de
+              pacientes atendidos em ambientes hospitalares e ambulatoriais. Seu
+              objetivo é agilizar o registro e o acompanhamento das lesões,
+              proporcionando mais eficiência e organização no trabalho da equipe
+              de saúde.
+            </p>
+          </div>
 
-      <div className="space-y-4">
-        <h2 className="text-2xl font-semibold">Funcionalidades</h2>
-        <ul className="list-disc list-inside text-muted-foreground space-y-1">
-          <li>Lorem Ipsum</li>
-          <li>Lorem Ipsum</li>
-          <li>Lorem Ipsum</li>
-          <li>Lorem Ipsum</li>
-        </ul>
-      </div>
+          {/* Principais Funcionalidades */}
+          <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition">
+            <h3 className="text-lg font-semibold text-gray-700 mb-3">
+              Principais Funcionalidades
+            </h3>
+            <ul className="list-disc list-inside text-gray-600">
+              <li>Registro de lesões dos pacientes</li>
+              <li>Consulta detalhada de cada registro</li>
+              <li>
+                Geração de histórico individual para cada lesão cadastrada
+              </li>
+              <li>Edição de informações pessoais do usuário</li>
+            </ul>
+          </div>
 
-      <div className="space-y-4">
-        <h2 className="text-2xl font-semibold">Tecnologias Utilizadas</h2>
-        <p className="text-muted-foreground">
-          Lorem Ipsum is simply dummy text of the printing and typesetting
-          industry.
-        </p>
-      </div>
+          {/* Tecnologias Utilizadas */}
+          <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition">
+            <h3 className="text-lg font-semibold text-gray-700 mb-3">
+              Tecnologias Utilizadas
+            </h3>
+            <p className="text-gray-600">
+              O sistema foi desenvolvido utilizando as seguintes tecnologias:
+              React, Node.js e PostgreSQL.
+            </p>
+          </div>
 
-      <div className="space-y-2">
-        <h2 className="text-2xl font-semibold">Desenvolvedor</h2>
-        <p className="text-muted-foreground">
-          Lorem Ipsum is simply dummy text of the printing and typesetting
-          industry.
-        </p>
-      </div>
+          {/* Desenvolvedor */}
+          <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition">
+            <h3 className="text-lg font-semibold text-gray-700 mb-3">
+              Desenvolvedor
+            </h3>
+            <p className="text-gray-600">
+              O sistema foi criado por Renan Igor de Lima Ferreira, estudante de
+              Ciências da Computação na UFSC e bolsista do projeto.
+            </p>
+          </div>
+        </div>
+      </main>
     </div>
   );
-};
+}
 
 export default SobrePage;

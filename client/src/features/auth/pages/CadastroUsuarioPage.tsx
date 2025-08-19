@@ -1,29 +1,26 @@
-import { Controller, SubmitHandler, useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useState } from "react";
+import { cores } from "@/shared/constants/cores.ts";
+import { useAuth } from "@/providers/AuthProvider.tsx";
 import {
   FormCadastroUsuarioFields,
   FormCadastroUsuarioSchema,
-} from "../schemas/CadastroUsuarioSchema";
-import { obterEndereco } from "../../usuarios/services/EnderecoService";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
-import { useAuth } from "../../../providers/AuthProvider";
+} from "../schemas/FormCadastroUsuarioSchema.ts";
 import { isAxiosError } from "axios";
-import { Button } from "@/ui/button";
-import AuthNavCard from "../components/AuthNavCard";
-import Editor from "../../../shared/components/form/Editor";
-import { Opcao } from "@/types/Opcao";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/ui/select";
-import UsuarioService from "@/features/usuarios/services/UsuarioService";
+import { Input } from "@/shared/components/form/Input.tsx";
+import UsuarioService from "@/features/usuarios/services/UsuarioService.ts";
+import { Opcao } from "@/types/Opcao.ts";
+import { Select } from "@/shared/components/form/Select.tsx";
+import EnderecoService from "@/features/usuarios/services/EnderecoService.ts";
 
-const CadastroUsuarioPage = () => {
+export const CadastroUsuarioPage = () => {
+  const { cadastro } = useAuth();
+  const [isReadOnly, setIsReadOnly] = useState(true);
+  const [tiposUsuario, setTiposUsuario] = useState<Opcao[]>([]);
+
   const {
-    control,
     register,
     handleSubmit,
     setValue,
@@ -33,23 +30,18 @@ const CadastroUsuarioPage = () => {
     resolver: zodResolver(FormCadastroUsuarioSchema),
   });
 
-  const { cadastrarUsuario } = useAuth();
-  const [isReadOnly, setIsReadOnly] = useState(true);
-  const [tiposUsuario, setTiposUsuario] = useState<Opcao[]>([]);
-
-  // Carregar tipos de usuários
+  // Carregando os tipos de usuários
   useEffect(() => {
     const fetchTiposUsuario = async () => {
-      const dados = await UsuarioService.getTiposUsuario();
-      console.log(dados);
-      setTiposUsuario(dados);
+      const tipos = await UsuarioService.getTiposUsuario();
+      setTiposUsuario(tipos);
     };
     fetchTiposUsuario();
   }, []);
 
-  const onSubmit: SubmitHandler<FormCadastroUsuarioFields> = async (data) => {
+  const onSubmit = async (data: FormCadastroUsuarioFields) => {
     try {
-      await cadastrarUsuario(
+      await cadastro(
         data.cpf,
         data.nome,
         data.email,
@@ -70,31 +62,6 @@ const CadastroUsuarioPage = () => {
     }
   };
 
-  const verificaMudancaCep = async (cep: string) => {
-    if (!cep || cep.length !== 8) {
-      setError("cep", { message: "CEP inválido" });
-      redefinirCamposEndereco();
-      return;
-    }
-
-    try {
-      const endereco = await obterEndereco(cep);
-      if (!endereco) {
-        setError("cep", { message: "CEP não encontrado" });
-        redefinirCamposEndereco();
-      } else {
-        setValue("logradouro", endereco.logradouro);
-        setValue("bairro", endereco.bairro);
-        setValue("cidade", endereco.cidade);
-        setValue("estado", endereco.uf);
-        setIsReadOnly(false);
-      }
-    } catch {
-      setError("cep", { message: "Erro ao buscar CEP" });
-      redefinirCamposEndereco();
-    }
-  };
-
   const redefinirCamposEndereco = () => {
     setValue("logradouro", "");
     setValue("bairro", "");
@@ -103,195 +70,177 @@ const CadastroUsuarioPage = () => {
     setIsReadOnly(true);
   };
 
+  const verificaMudancaCep = async (cep: string) => {
+    const cepLimpo = cep.replace(/\D/g, "");
+    if (!cepLimpo || cepLimpo.length !== 8) {
+      setError("cep", { message: "CEP inválido" });
+      redefinirCamposEndereco();
+      return;
+    }
+
+    const endereco = await EnderecoService.obterEndereco(cepLimpo);
+    if (!endereco) {
+      setError("cep", { message: "CEP não encontrado" });
+      redefinirCamposEndereco();
+    } else {
+      setValue("logradouro", endereco.logradouro || "");
+      setValue("bairro", endereco.bairro || "");
+      setValue("cidade", endereco.localidade || "");
+      setValue("estado", endereco.uf || "");
+      setIsReadOnly(false);
+    }
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
-      <div className="w-full max-w-4xl min-h-screen bg-white p-16 flex flex-col justify-center overflow-y-auto">
-        {/* Título */}
-        <div className="text-left mb-6">
-          <h1 className="text-3xl font-bold">Cadastro</h1>
-          <p className="text-gray-600">
-            Preencha suas informações para criar uma conta.
-          </p>
-        </div>
+    <div
+      className="min-h-screen flex flex-col items-center justify-center px-4"
+      style={{ backgroundColor: cores.background }}
+    >
+      <div className="w-full max-w-2xl bg-white rounded-xl shadow-md p-8 space-y-4">
+        <h1
+          className="text-2xl font-medium text-center"
+          style={{ color: cores.textPrimary }}
+        >
+          Cadastro
+        </h1>
+        <p
+          className="text-center text-sm"
+          style={{ color: cores.textSecondary }}
+        >
+          Preencha os dados abaixo para criar sua conta
+        </p>
 
         <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="space-y-4"
+          className="grid grid-cols-1 md:grid-cols-2 gap-4"
+          onSubmit={handleSubmit(onSubmit, (errors) => {
+            console.log(errors);
+          })}
         >
-          <div className="grid gap-4 md:grid-cols-2">
-            <Editor
-              id="nome"
-              label="Nome"
-              ehCampoSenha={false}
-              register={register("nome")}
-              error={errors.nome?.message}
-              placeholder="Seu nome completo"
-              className="h-12 w-full border p-2 rounded-md"
-            />
+          <Input
+            label="Nome"
+            placeholder="Digite seu nome"
+            error={errors.nome?.message}
+            register={register("nome")}
+            focusColor={cores.primaryLighter}
+          />
+          <Select
+            label="Sou"
+            options={tiposUsuario}
+            error={errors.tipoUsuario?.message}
+            register={register("tipoUsuario")}
+          />
+          <Input
+            label="Email"
+            placeholder="Digite seu email"
+            error={errors.email?.message}
+            register={register("email")}
+            focusColor={cores.primaryLighter}
+          />
+          <Input
+            label="CPF"
+            placeholder="Digite seu CPF"
+            error={errors.cpf?.message}
+            register={register("cpf")}
+            focusColor={cores.primaryLighter}
+          />
+          <Input
+            label="CEP"
+            placeholder="Digite seu CEP"
+            error={errors.cep?.message}
+            register={register("cep")}
+            focusColor={cores.primaryLighter}
+            onBlur={(e) => verificaMudancaCep(e.target.value)}
+            maxLength={8}
+          />
+          <Input
+            label="Logradouro"
+            placeholder="Digite seu logradouro"
+            error={errors.logradouro?.message}
+            register={register("logradouro")}
+            focusColor={cores.primaryLighter}
+            disabled={isReadOnly}
+          />
+          <Input
+            label="Bairro"
+            placeholder="Digite seu bairro"
+            error={errors.bairro?.message}
+            register={register("bairro")}
+            focusColor={cores.primaryLighter}
+            disabled={isReadOnly}
+          />
+          <Input
+            label="Cidade"
+            placeholder="Digite sua cidade"
+            error={errors.cidade?.message}
+            register={register("cidade")}
+            focusColor={cores.primaryLighter}
+            disabled={isReadOnly}
+          />
+          <Input
+            label="Estado"
+            placeholder="Digite seu estado"
+            error={errors.estado?.message}
+            register={register("estado")}
+            focusColor={cores.primaryLighter}
+            disabled={isReadOnly}
+          />
+          <Input
+            label="Número residencial (opcional)"
+            placeholder="Digite o número da residência"
+            error={errors.numeroResidencial?.message}
+            register={register("numeroResidencial")}
+            focusColor={cores.primaryLighter}
+          />
+          <Input
+            label="Senha"
+            placeholder="Digite sua senha"
+            type="password"
+            error={errors.senha?.message}
+            register={register("senha")}
+            focusColor={cores.primaryLighter}
+          />
+          <Input
+            label="Confirmar senha"
+            placeholder="Confirme sua senha"
+            type="password"
+            error={errors.confirmarSenha?.message}
+            register={register("confirmarSenha")}
+            focusColor={cores.primaryLighter}
+          />
 
-            <Editor
-              id="email"
-              label="Email"
-              ehCampoSenha={false}
-              register={register("email")}
-              error={errors.email?.message}
-              placeholder="exemplo@email.com"
-              className="h-12 w-full border p-2 rounded-md"
-              type="email"
-            />
+          <div className="md:col-span-2">
+            <button
+              type="submit"
+              className="w-full py-2 px-4 text-white font-medium rounded-md transition-colors duration-200"
+              style={{ backgroundColor: cores.primary }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = cores.primaryLight)
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = cores.primary)
+              }
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Carregando..." : "Cadastrar"}
+            </button>
 
-            <div className="flex flex-col">
-              <label className="block font-medium mb-1 text-sm">Sou:</label>
-              <Controller
-                control={control}
-                name="tipoUsuario"
-                render={({ field }) => (
-                  <Select
-                    value={String(field.value ?? "")}
-                    onValueChange={(val) => field.onChange(Number(val))}
-                  >
-                    <SelectTrigger className="min-h-[48px] w-full border p-2 rounded-md">
-                      <SelectValue placeholder="Selecione um tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {tiposUsuario.map((tipo, index) => (
-                        <SelectItem key={index} value={String(tipo.id)}>
-                          {tipo.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {errors.tipoUsuario && (
-                <p className="text-sm text-red-500 mt-1">
-                  {errors.tipoUsuario.message}
-                </p>
-              )}
-            </div>
-
-            <Editor
-              id="cpf"
-              label="CPF"
-              ehCampoSenha={false}
-              register={register("cpf")}
-              error={errors.cpf?.message}
-              placeholder="Apenas números"
-              className="h-12 w-full border p-2 rounded-md"
-              maxLength={11}
-            />
-
-            <Editor
-              id="cep"
-              label="CEP"
-              ehCampoSenha={false}
-              register={register("cep")}
-              error={errors.cep?.message}
-              placeholder="Somente números"
-              maxLength={8}
-              className="h-12 w-full border p-2 rounded-md"
-              onChange={(e) => verificaMudancaCep(e.target.value)}
-            />
-
-            <Editor
-              id="numeroResidencial"
-              label="Número"
-              ehCampoSenha={false}
-              register={register("numeroResidencial", { valueAsNumber: true })}
-              error={errors.numeroResidencial?.message}
-              placeholder="Ex: 83"
-              className="h-12 w-full border p-2 rounded-md"
-              min={1}
-            />
-
-            <Editor
-              id="logradouro"
-              label="Rua"
-              ehCampoSenha={false}
-              register={register("logradouro")}
-              error={errors.logradouro?.message}
-              placeholder="Sua rua"
-              className="h-12 w-full border p-2 rounded-md"
-              readOnly={isReadOnly}
-            />
-
-            <Editor
-              id="bairro"
-              label="Bairro"
-              ehCampoSenha={false}
-              register={register("bairro")}
-              error={errors.bairro?.message}
-              placeholder="Seu bairro"
-              className="h-12 w-full border p-2 rounded-md"
-              readOnly={isReadOnly}
-            />
-
-            <Editor
-              id="cidade"
-              label="Cidade"
-              ehCampoSenha={false}
-              register={register("cidade")}
-              error={errors.cidade?.message}
-              placeholder="Sua cidade"
-              className="h-12 w-full border p-2 rounded-md"
-              readOnly={isReadOnly}
-            />
-
-            <Editor
-              id="estado"
-              label="Estado"
-              ehCampoSenha={false}
-              register={register("estado")}
-              error={errors.estado?.message}
-              placeholder="Seu estado"
-              className="h-12 w-full border p-2 rounded-md"
-              readOnly={isReadOnly}
-            />
-
-            <Editor
-              id="senha"
-              label="Senha"
-              ehCampoSenha={true}
-              register={register("senha")}
-              error={errors.senha?.message}
-              placeholder="Sua senha"
-              inputClassName="h-12 w-full border p-2 rounded-md"
-              labelClassName="block font-medium mb-1"
-            />
-
-            <Editor
-              id="confirmarSenha"
-              label="Confirmar senha"
-              ehCampoSenha={true}
-              register={register("confirmarSenha")}
-              error={errors.confirmarSenha?.message}
-              placeholder="Repetir senha"
-              inputClassName="h-12 w-full border p-2 rounded-md"
-              labelClassName="block font-medium mb-1"
-            />
+            {errors.root && (
+              <p className="text-red-500 text-sm text-center mt-2">
+                {errors.root.message}
+              </p>
+            )}
           </div>
-
-          {errors.root && (
-            <p className="text-red-500 text-sm text-center mt-2">
-              {errors.root.message}
-            </p>
-          )}
-
-          <Button
-            type="submit"
-            className="h-12 w-full bg-[#1F4D2C] text-white p-2 rounded-md hover:bg-[#173B21] transition"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Cadastrando..." : "Cadastrar"}
-          </Button>
         </form>
 
-        <AuthNavCard
-          title="Login"
-          subtitle="Você já tem uma conta?"
-          buttonText="Voltar ao Login"
-          linkTo="/entrar"
-        />
+        <div className="text-center mt-2 md:col-span-2">
+          <Link
+            to="/entrar"
+            style={{ color: cores.primary }}
+            className="hover:underline text-sm"
+          >
+            Já tem conta? Faça login
+          </Link>
+        </div>
       </div>
     </div>
   );

@@ -17,7 +17,6 @@ import HistoricoLesaoPage from "./features/lesoes/pages/HistoricoLesaoPage.tsx";
 import DetalhesPacientePage from "./features/pacientes/pages/DetalhesPacientePage.tsx";
 import PacientesPage from "./features/pacientes/pages/PacientesPage.tsx";
 import PerfilPage from "./features/usuarios/pages/PerfilPage.tsx";
-import AcessoNegadoPage from "./pages/errors/AcessoNegadoPage.tsx";
 import RotaPublica from "./routes/RotaPublica.tsx";
 import FormLesaoPage from "./features/lesoes/pages/FormLesaoPage.tsx";
 
@@ -62,7 +61,6 @@ createRoot(document.getElementById("root")!).render(
           />
 
           {/* Rotas protegidas */}
-          <Route path="/sem-acesso" element={<AcessoNegadoPage />} />
           <Route
             path="/dashboard"
             element={

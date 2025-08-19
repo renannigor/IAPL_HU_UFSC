@@ -23,7 +23,7 @@ export const FormCadastroUsuarioSchema = z
   .object({
     nome: z.string().min(3, "Campo obrigatório!"),
     email: z.string().email("Email inválido!"),
-    tipoUsuario: z.number({ required_error: "Campo obrigatório!" }),
+    tipoUsuario: z.string().min(1, "Campo obrigatório!"),
     cpf: z.string().refine(validaCPF, {
       message: "CPF inválido",
     }),
@@ -33,10 +33,11 @@ export const FormCadastroUsuarioSchema = z
     cidade: z.string().min(1, "Campo obrigatório!"),
     estado: z.string().min(2, "Campo obrigatório!"),
     numeroResidencial: z
-      .number({ invalid_type_error: "Informe um número" })
-      .int("O valor deve ser um número inteiro")
-      .min(0, "O valor deve ser maior que 0")
-      .optional(),
+      .string()
+      .optional()
+      .refine((val) => !val || /^\d+$/.test(val), {
+        message: "Número residencial deve conter apenas números",
+      }),
     senha: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
     confirmarSenha: z.string(),
   })

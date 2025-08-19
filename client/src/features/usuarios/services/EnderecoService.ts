@@ -1,18 +1,15 @@
-export const obterEndereco = async (cep: string) => {
-  try {
-    const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-    const data = await response.json();
+import axios from "axios";
 
-    if (data.erro) return null;
-
-    return {
-      logradouro: data.logradouro || "",
-      bairro: data.bairro || "",
-      cidade: data.localidade || "",
-      uf: data.uf || "",
-    };
-  } catch (error) {
-    console.error("Erro ao buscar endereço:", error);
-    return null;
+class EnderecoService {
+  static async obterEndereco(cep: string) {
+    try {
+      const { data } = await axios.get(`https://viacep.com.br/ws/${cep}/json/`);
+      if (data.erro) return null;
+      return data;
+    } catch {
+      return null;
+    }
   }
-};
+}
+
+export default EnderecoService;

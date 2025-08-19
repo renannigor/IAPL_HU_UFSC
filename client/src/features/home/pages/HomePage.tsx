@@ -1,61 +1,37 @@
-import { useAuth } from "@/providers/AuthProvider";
-import { Users2, Info, UserCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { cardsData } from "../utils/CardsData";
+import { Link } from "react-router-dom";
+import { cardsData } from "../repository/cards";
 
-const iconMap = {
-  Users2: <Users2 size={40} />,
-  UserCircle: <UserCircle size={40} />,
-  Info: <Info size={40} />,
-};
-
-const HomePage = () => {
-  const { usuarioAtual } = useAuth();
-  const navigate = useNavigate();
-
-  // Mapeia os dados, adicionando o ícone e a função de navegação
-  const cards = cardsData.map(({ title, description, route, iconName }) => ({
-    title,
-    description,
-    icon: iconMap[iconName as keyof typeof iconMap],
-    onClick: () => navigate(route),
-  }));
-
+function HomePage() {
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-1">
-            Olá, {usuarioAtual?.nome}
-          </h1>
-          <p className="text-gray-600">
-            Escolha uma opção abaixo para continuar.
-          </p>
-        </div>
+    <div className="min-h-screen bg-gray-50">
+      <main className="pt-28 max-w-6xl mx-auto px-6">
+        <h2 className="text-2xl font-semibold text-gray-800 text-center mb-10">
+          Bem-vindo ao Sistema IAPL
+        </h2>
 
-        {/* Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {cards.map((card, index) => (
-            <div
-              key={index}
-              onClick={card.onClick}
-              className="bg-white p-6 rounded-2xl shadow-md cursor-pointer border border-gray-100 hover:shadow-lg transition hover:border-green-200 hover:bg-green-50 group"
-            >
-              <div className="flex flex-col items-center justify-center text-center space-y-4">
-                <div className="text-green-600 group-hover:scale-105 transition">
-                  {card.icon}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {cardsData.map((card, index) => {
+            const Icon = card.icon;
+            return (
+              <Link
+                key={index}
+                to={card.to}
+                className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition flex flex-col gap-4"
+              >
+                <div className="flex items-center gap-4">
+                  <Icon className={card.color} size={28} />
+                  <h3 className="text-lg font-semibold text-gray-700">
+                    {card.title}
+                  </h3>
                 </div>
-                <h2 className="text-xl font-semibold text-gray-800">
-                  {card.title}
-                </h2>
-                <p className="text-sm text-gray-500">{card.description}</p>
-              </div>
-            </div>
-          ))}
+                <p className="text-gray-600">{card.description}</p>
+              </Link>
+            );
+          })}
         </div>
-      </div>
+      </main>
     </div>
   );
-};
+}
 
 export default HomePage;
