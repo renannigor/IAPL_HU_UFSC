@@ -1,9 +1,11 @@
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EyeIcon, Pencil, CopyIcon, UserCircle, Trash2 } from "lucide-react";
-import { Button } from "@/ui/button";
+import { Button } from "@/components/ui/button";
 import { Lesao } from "../types/Lesao";
 import { TiposUsuario } from "@/features/usuarios/constants/TiposUsuario.enum";
+import { Usuario } from "@/features/usuarios/types/Usuario";
 
 interface Props {
   titulo: string;
@@ -11,10 +13,10 @@ interface Props {
   lesaoId: string;
   onDuplicar: () => void;
   onExcluir?: () => void;
-  usuarioAtual: { tipo: string } | null;
+  usuarioAtual: Usuario;
 }
 
-export default function CardLesaoHistorico({
+export default function LesaoCardHistorico({
   titulo,
   dados,
   lesaoId,
@@ -25,7 +27,17 @@ export default function CardLesaoHistorico({
   const { id_paciente } = useParams();
   const navigate = useNavigate();
 
-  const isAcademico = usuarioAtual?.tipo === TiposUsuario.Academico;
+  // Estado local para controlar se o usuário é acadêmico
+  const [isAcademico, setIsAcademico] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (usuarioAtual) {
+      setIsAcademico(usuarioAtual.tipo === TiposUsuario.Academico);
+    }
+  }, [usuarioAtual]);
+
+  // Enquanto não sabemos o tipo do usuário, podemos exibir um loader ou nada
+  if (isAcademico === null) return null;
 
   return (
     <Card

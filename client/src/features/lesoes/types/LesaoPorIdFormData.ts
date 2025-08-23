@@ -25,7 +25,7 @@ export interface LesaoPorIdFormData {
   tamanho: {
     comprimento: number;
     largura: number;
-    profundidade: string;
+    profundidade: number;
   };
   tecidos: ItemComValor[];
   coberturas: ItemComValor[];

@@ -1,10 +1,8 @@
-import { Opcao } from "@/types/Opcao";
-
 export interface CamposCondicionaisFormulario {
-  etiologiaLesaoPorPressao?: Opcao;
-  regiaoPerilesionalOutro?: Opcao;
-  estruturaNobreOutro?: Opcao;
-  limpezaOutro?: Opcao;
-  desbridamentoOutro?: Opcao;
-  protecaoOutro?: Opcao;
+  etiologiaLesaoPorPressaoId?: number;
+  regiaoPerilesionalOutroId?: number;
+  estruturaNobreOutroId?: number;
+  limpezaOutroId?: number;
+  desbridamentoOutroId?: number;
+  protecaoOutroId?: number;
 }

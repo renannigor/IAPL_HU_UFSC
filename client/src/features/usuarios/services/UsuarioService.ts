@@ -1,16 +1,19 @@
 import api from "@/api/api";
+import { toast } from "sonner";
 import { Opcao } from "@/types/Opcao";
 
 class UsuarioService {
-  // Método  para obter os tipos de usuário do sistema
+  // Método para obter os tipos de usuário do sistema
   static async getTiposUsuario() {
     try {
       const response = await api.get<Opcao[]>(`/api/usuarios/tipos`, {
         withCredentials: true,
       });
       return response.data;
-    } catch (error) {
-      console.error("Erro ao obter os tipos de usuário: ", error);
+    } catch (error: any) {
+      const mensagemErro =
+        error.response?.data?.mensagem || "Erro ao obter os tipos de usuário";
+      toast.error(mensagemErro);
       throw error;
     }
   }
@@ -18,23 +21,31 @@ class UsuarioService {
   // Método para atualizar as informações pessoais do usuário pelo CPF
   static async atualizarPerfil(cpf: string, data: {}) {
     try {
-      await api.patch(`/api/usuarios/atualizar/${cpf}`, data, {
+      const response = await api.patch(`/api/usuarios/atualizar/${cpf}`, data, {
         withCredentials: true,
       });
-    } catch (error) {
-      console.error("Erro ao atualizar informações pessoais: ", error);
+      toast.success(response.data.mensagem || "Perfil atualizado com sucesso");
+    } catch (error: any) {
+      const mensagemErro =
+        error.response?.data?.mensagem ||
+        "Erro ao atualizar informações pessoais";
+      toast.error(mensagemErro);
       throw error;
     }
   }
 
-  // Método para obter os dados de uma usuário específico
+  // Método para obter os dados de um usuário específico
   static async getUsuario(cpf: string) {
     try {
-      await api.get(`/api/usuarios/${cpf}`, {
+      const response = await api.get(`/api/usuarios/${cpf}`, {
         withCredentials: true,
       });
-    } catch (error) {
-      console.error("Erro ao obter informações do usuário: ", error);
+      return response.data;
+    } catch (error: any) {
+      const mensagemErro =
+        error.response?.data?.mensagem ||
+        "Erro ao obter informações do usuário";
+      toast.error(mensagemErro);
       throw error;
     }
   }

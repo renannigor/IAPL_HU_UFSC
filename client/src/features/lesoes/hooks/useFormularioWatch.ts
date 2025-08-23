@@ -20,17 +20,12 @@ export function useFormularioWatch(control: Control<any>) {
     useWatch({ control, name: CamposFormulario.Coberturas }) || [];
   const tiposFechamentoCurativo =
     useWatch({ control, name: CamposFormulario.TiposFechamentoCurativo }) || [];
-  const selectedDate = useWatch({
-    control,
-    name: CamposFormulario.DataProximaAvaliacao,
-  });
+  const tamanho = useWatch({ control, name: CamposFormulario.Tamanho }) || {};
 
   const somaTecidos = tecidos.reduce(
     (acc: number, t: Tecido) => acc + (Number.isNaN(t.valor) ? 0 : t.valor),
     0
   );
-
-  const tamanho = useWatch({ control, name: CamposFormulario.Tamanho });
   const comprimento = Number(tamanho?.comprimento) || 1;
   const largura = Number(tamanho?.largura) || 1;
   const profundidade = Number(tamanho?.profundidade) || 1;
@@ -51,7 +46,6 @@ export function useFormularioWatch(control: Control<any>) {
     tecidos,
     coberturas,
     tiposFechamentoCurativo,
-    selectedDate,
     tamanho,
     comprimento,
     largura,

@@ -1,26 +1,28 @@
 import { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
-import { menuItems } from "../repository/MenuItems";
 import { DashboardHeader } from "./navigation/DashboardHeader";
 import { DashboardSidebar } from "./navigation/DashboardSidebar";
 
 export default function DashboardLayout() {
-  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
+  const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
-    const handleResize = () => setIsDesktop(window.innerWidth >= 768);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    const mediaQuery = window.matchMedia("(min-width: 768px)");
+    setIsDesktop(mediaQuery.matches);
+
+    const handleResize = (e: MediaQueryListEvent) => {
+      setIsDesktop(e.matches);
+    };
+
+    mediaQuery.addEventListener("change", handleResize);
+
+    return () => mediaQuery.removeEventListener("change", handleResize);
   }, []);
 
   return (
     <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar desktop ou mobile */}
-      {isDesktop ? (
-        <DashboardHeader />
-      ) : (
-        <DashboardSidebar menuItems={menuItems} />
-      )}
+      {isDesktop ? <DashboardHeader /> : <DashboardSidebar />}
 
       {/* Conteúdo principal */}
       <div className="flex-1 flex flex-col pt-16 md:pt-20">

@@ -12,19 +12,20 @@ import {
 } from "../schemas/LesaoSchema";
 import DadosFormLesaoService from "../services/DadosFormLesaoService";
 import LesaoService from "../services/LesaoService";
-import BreadcrumbNav from "@/shared/components/layout/BreadcrumbNav";
+import BreadcrumbNav from "@/shared/components/BreadcrumbNav";
 import { cores } from "@/shared/constants/cores";
 import { CamposCondicionaisFormulario } from "../types/CamposCondicionaisFormulario";
 import { CamposFormulario } from "../constants/camposFormulario.enum";
 import { DadosFormLesao } from "../types/DadosFormLesao";
 import { useFormularioWatch } from "../hooks/useFormularioWatch";
-import { Input } from "@/shared/components/form/Input";
-import { Opcao } from "@/types/Opcao";
+import { Input } from "@/shared/components/Input";
 import { Check, Plus } from "lucide-react";
 import { toast } from "sonner";
 import CheckboxGroup from "../components/CheckboxGroup";
 import PacienteService from "@/features/pacientes/services/PacienteService";
 import { Paciente } from "@/features/pacientes/types/Paciente";
+import { Select } from "@/shared/components/Select";
+import { Opcao } from "@/types/Opcao";
 
 // Formulário de lesão
 function FormLesaoPage() {
@@ -69,41 +70,28 @@ function FormLesaoPage() {
   // Carregando os dados do formulário
   useEffect(() => {
     const fetchDados = async () => {
-      const response = await DadosFormLesaoService.getDadosFormLesao();
-      setDadosForm(response);
+      const dadosFormulario = await DadosFormLesaoService.getDadosFormLesao();
+      // Atualiza os dados dos campos do formulário
+      setDadosForm(dadosFormulario);
 
-      // Atualiza os dados condicionais do formulário e schema para validação
-      const camposCondicionais: CamposCondicionaisFormulario = {
-        etiologiaLesaoPorPressao: response.etiologias.find(
-          (op) =>
-            op.nome.toLowerCase() === CamposFormulario.OpcaoLesaoPorPressao
-        ),
-        regiaoPerilesionalOutro: response.regioesPerilesionais.find(
-          (op) => op.nome.toLowerCase() === CamposFormulario.OpcaoOutro
-        ),
-        estruturaNobreOutro: response.estruturasNobres.find(
-          (op) => op.nome.toLowerCase() === CamposFormulario.OpcaoOutro
-        ),
-        limpezaOutro: response.limpezas.find(
-          (op) => op.nome.toLowerCase() === CamposFormulario.OpcaoOutro
-        ),
-        desbridamentoOutro: response.desbridamentos.find(
-          (op) => op.nome.toLowerCase() === CamposFormulario.OpcaoOutro
-        ),
-        protecaoOutro: response.protecoes.find(
-          (op) => op.nome.toLowerCase() === CamposFormulario.OpcaoOutro
-        ),
-      };
-
+      const camposCondicionais =
+        await DadosFormLesaoService.getIdsCamposCondicionais();
+      // Atualiza os IDs dos campos condicionais do formulário e schema para validação
       setCamposCondicionaisForm(camposCondicionais);
       setSchema(FormLesaoSchema(camposCondicionais));
 
       if (!isEditMode) {
         reset({
-          tecidos: response.tecidos.map((t: any) => ({ ...t, valor: 0 })),
-          coberturas: response.coberturas.map((c: any) => ({ ...c, valor: 0 })),
-          tiposFechamentoCurativo: response.tiposFechamentoCurativo.map(
-            (c: any) => ({ ...c, valor: 0 })
+          tecidos: dadosFormulario.tecidos.map((t: Opcao) => ({
+            ...t,
+            valor: 0,
+          })),
+          coberturas: dadosFormulario.coberturas.map((c: Opcao) => ({
+            ...c,
+            valor: 0,
+          })),
+          tiposFechamentoCurativo: dadosFormulario.tiposFechamentoCurativo.map(
+            (c: Opcao) => ({ ...c, valor: 0 })
           ),
         });
       }
@@ -238,7 +226,7 @@ function FormLesaoPage() {
 
         {/* Classificação Lesão Por Pressão */}
         {etiologias.includes(
-          camposCondicionaisForm.etiologiaLesaoPorPressao?.id!
+          camposCondicionaisForm.etiologiaLesaoPorPressaoId
         ) && (
           <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition border border-gray-200">
             {dadosForm.classificacoesLesaoPressao && (
@@ -278,7 +266,7 @@ function FormLesaoPage() {
           )}
 
           {regioesPerilesionais.includes(
-            camposCondicionaisForm.regiaoPerilesionalOutro?.id!
+            camposCondicionaisForm.regiaoPerilesionalOutroId
           ) && (
             <Input
               label="Outra Região Perilesional"
@@ -329,7 +317,7 @@ function FormLesaoPage() {
             )}
 
             {estruturasNobres.includes(
-              camposCondicionaisForm.estruturaNobreOutro?.id!
+              camposCondicionaisForm.estruturaNobreOutroId
             ) && (
               <Input
                 label="Outra Estrutura Nobre"
@@ -520,28 +508,20 @@ function FormLesaoPage() {
                 name="quantidadeExsudato"
                 control={control}
                 render={({ field }) => (
-                  <div>
-                    <label className="font-semibold text-gray-700 mb-2 block">
-                      Quantidade de Exsudato
-                    </label>
-                    <select
-                      {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-700"
-                    >
-                      <option value="">Selecione</option>
-                      {dadosForm.quantidadesExsudato.map((opt: Opcao) => (
-                        <option key={opt.id} value={opt.id}>
-                          {opt.nome}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.quantidadeExsudato && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.quantidadeExsudato.message?.toString()}
-                      </p>
-                    )}
-                  </div>
+                  <Select
+                    label="Quantidade de Exsudato"
+                    options={dadosForm.quantidadesExsudato}
+                    error={errors.quantidadeExsudato?.message?.toString()}
+                    register={{
+                      ...field,
+                      onChange: (e: React.ChangeEvent<HTMLSelectElement>) => {
+                        const value = e.target.value;
+                        field.onChange(
+                          value === "" ? undefined : Number(value)
+                        );
+                      },
+                    }}
+                  />
                 )}
               />
             )}
@@ -552,28 +532,16 @@ function FormLesaoPage() {
                 name="tipoExsudato"
                 control={control}
                 render={({ field }) => (
-                  <div>
-                    <label className="font-semibold text-gray-700 mb-2 block">
-                      Tipo de Exsudato
-                    </label>
-                    <select
-                      {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-700"
-                    >
-                      <option value="">Selecione</option>
-                      {dadosForm.tiposExsudato.map((opt: Opcao) => (
-                        <option key={opt.id} value={opt.id}>
-                          {opt.nome}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.tipoExsudato && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.tipoExsudato.message?.toString()}
-                      </p>
-                    )}
-                  </div>
+                  <Select
+                    label="Tipo de Exsudato"
+                    options={dadosForm.tiposExsudato}
+                    error={errors.tipoExsudato?.message?.toString()}
+                    register={{
+                      ...field,
+                      onChange: (e: React.ChangeEvent<HTMLSelectElement>) =>
+                        field.onChange(Number(e.target.value)),
+                    }}
+                  />
                 )}
               />
             )}
@@ -584,28 +552,16 @@ function FormLesaoPage() {
                 name="odor"
                 control={control}
                 render={({ field }) => (
-                  <div>
-                    <label className="font-semibold text-gray-700 mb-2 block">
-                      Odor
-                    </label>
-                    <select
-                      {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-700"
-                    >
-                      <option value="">Selecione</option>
-                      {dadosForm.odores.map((opt: Opcao) => (
-                        <option key={opt.id} value={opt.id}>
-                          {opt.nome}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.odor && (
-                      <p className="text-red-500 text-sm mt-1">
-                        {errors.odor.message?.toString()}
-                      </p>
-                    )}
-                  </div>
+                  <Select
+                    label="Odor"
+                    options={dadosForm.odores}
+                    error={errors.odor?.message?.toString()}
+                    register={{
+                      ...field,
+                      onChange: (e: React.ChangeEvent<HTMLSelectElement>) =>
+                        field.onChange(Number(e.target.value)),
+                    }}
+                  />
                 )}
               />
             )}
@@ -643,6 +599,17 @@ function FormLesaoPage() {
                 focusColor={cores.primaryLighter}
               />
             </div>
+
+            {errors.tamanho && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.tamanho.message?.toString()}
+              </p>
+            )}
+
+            {/* Multiplicação das dimensões da lesão */}
+            <p className={`text-sm font-medium mt-6`}>
+              Volume da lesão: {algumValorPreenchido ? volume : 0} cm³
+            </p>
           </div>
         </div>
 
@@ -668,7 +635,7 @@ function FormLesaoPage() {
               />
             )}
 
-            {limpezas.includes(camposCondicionaisForm.limpezaOutro?.id!) && (
+            {limpezas.includes(camposCondicionaisForm.limpezaOutroId) && (
               <Input
                 label="Outra Limpeza"
                 placeholder="Digite uma outra limpeza"
@@ -697,7 +664,7 @@ function FormLesaoPage() {
             )}
 
             {desbridamentos.includes(
-              camposCondicionaisForm.desbridamentoOutro?.id!
+              camposCondicionaisForm.desbridamentoOutroId
             ) && (
               <Input
                 label="Outro Desbridamento"
@@ -732,7 +699,7 @@ function FormLesaoPage() {
               />
             )}
 
-            {protecoes.includes(camposCondicionaisForm.protecaoOutro?.id!) && (
+            {protecoes.includes(camposCondicionaisForm.protecaoOutroId) && (
               <Input
                 label="Outra Proteção"
                 placeholder="Digite uma outra proteção"

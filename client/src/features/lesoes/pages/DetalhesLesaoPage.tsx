@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { Button } from "@/ui/button";
+import { Button } from "@/components/ui/button";
 import { LesaoPorNomeFormData } from "../types/LesaoPorNomeFormData";
 import { useAuth } from "@/providers/AuthProvider";
 import LesaoService from "../services/LesaoService";
-import BreadcrumbNav from "@/shared/components/layout/BreadcrumbNav";
+import BreadcrumbNav from "@/shared/components/BreadcrumbNav";
 import { TiposUsuario } from "@/features/usuarios/constants/TiposUsuario.enum";
 import { Paciente } from "@/features/pacientes/types/Paciente";
 import PacienteService from "@/features/pacientes/services/PacienteService";

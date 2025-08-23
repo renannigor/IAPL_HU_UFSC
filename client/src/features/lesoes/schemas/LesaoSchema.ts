@@ -103,28 +103,40 @@ export const FormLesaoSchema = (
       }),
 
       // Tamanho (Comprimento, Largura, Profundidade)
-      tamanho: z.object({
-        comprimento: z
-          .number({
-            invalid_type_error: "Informe um número",
-            required_error: "Informe o comprimento.",
-          })
-          .int("O valor deve ser um número inteiro")
-          .min(0, "O valor deve ser maior que 0"),
-        largura: z
-          .number({
-            invalid_type_error: "Informe um número",
-            required_error: "Informe a largura.",
-          })
-          .int("O valor deve ser um número inteiro")
-          .min(0, "O valor deve ser maior que 0"),
-        profundidade: z
-          .string()
-          .optional()
-          .refine((val) => !val || /^\d+$/.test(val), {
-            message: "Número residencial deve conter apenas números",
-          }),
-      }),
+      tamanho: z.object(
+        {
+          comprimento: z
+            .number({
+              invalid_type_error: "Informe um número",
+              required_error: "Informe o comprimento.",
+            })
+            .int("O valor deve ser um número inteiro")
+            .min(0, "O valor deve ser maior que 0"),
+          largura: z
+            .number({
+              invalid_type_error: "Informe um número",
+              required_error: "Informe a largura.",
+            })
+            .int("O valor deve ser um número inteiro")
+            .min(0, "O valor deve ser maior que 0"),
+          profundidade: z.preprocess(
+            (val) => {
+              if (val === "" || val === null || val === undefined)
+                return undefined;
+              const num = Number(val);
+              return isNaN(num) ? val : num;
+            },
+            z
+              .number({
+                invalid_type_error: "Informe um número",
+              })
+              .int("O valor deve ser um número inteiro")
+              .min(1, "O valor deve ser maior que 0")
+              .optional()
+          ),
+        },
+        { message: "Tamanho da lesão obrigatório!" }
+      ),
 
       // Limpeza
       limpezas: z
@@ -196,7 +208,7 @@ export const FormLesaoSchema = (
     })
     .superRefine((data, ctx) => {
       // 1. Valida classificacoesLesaoPressao se "Lesão por Pressão" estiver nas etiologias
-      const lesaoPorPressaoId = camposCondicionais.etiologiaLesaoPorPressao?.id;
+      const lesaoPorPressaoId = camposCondicionais.etiologiaLesaoPorPressaoId;
       const isLesaoPorPressaoSelecionada = data.etiologias.includes(
         lesaoPorPressaoId!
       );
@@ -220,7 +232,7 @@ export const FormLesaoSchema = (
       // 2. Valida regiaoPerilesionalOutro se "Outro" estiver nas regioesPerilesionais
       if (
         data.regioesPerilesionais.includes(
-          camposCondicionais.regiaoPerilesionalOutro?.id!
+          camposCondicionais.regiaoPerilesionalOutroId!
         ) &&
         (!data.regiaoPerilesionalOutro ||
           data.regiaoPerilesionalOutro.trim() === "")
@@ -235,7 +247,7 @@ export const FormLesaoSchema = (
       // 3. Valida estruturaNobreOutro se "Outro" estiver nas estruturasNobres
       if (
         data.estruturasNobres.includes(
-          camposCondicionais.estruturaNobreOutro?.id!
+          camposCondicionais.estruturaNobreOutroId!
         ) &&
         (!data.estruturaNobreOutro || data.estruturaNobreOutro.trim() === "")
       ) {
@@ -289,7 +301,7 @@ export const FormLesaoSchema = (
 
       // 6. Valida limpezaOutro se "Outro" estiver nas limpezas
       if (
-        data.limpezas.includes(camposCondicionais.limpezaOutro?.id!) &&
+        data.limpezas.includes(camposCondicionais.limpezaOutroId!) &&
         (!data.limpezaOutro || data.limpezaOutro.trim() === "")
       ) {
         ctx.addIssue({
@@ -302,7 +314,7 @@ export const FormLesaoSchema = (
       // 7. Valida desbridamentoOutro se "Outro" estiver no desbridamento
       if (
         data.desbridamentos.includes(
-          camposCondicionais.desbridamentoOutro?.id!
+          camposCondicionais.desbridamentoOutroId!
         ) &&
         (!data.desbridamentoOutro || data.desbridamentoOutro.trim() === "")
       ) {
@@ -315,7 +327,7 @@ export const FormLesaoSchema = (
 
       // 8. Valida protecaoOutro se "Outro" estiver em protecoes
       if (
-        data.protecoes.includes(camposCondicionais.protecaoOutro?.id!) &&
+        data.protecoes.includes(camposCondicionais.protecaoOutroId!) &&
         (!data.protecaoOutro || data.protecaoOutro.trim() === "")
       ) {
         ctx.addIssue({

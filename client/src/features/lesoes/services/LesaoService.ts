@@ -12,13 +12,14 @@ class LesaoService {
   static async getLesoes(pacienteId: string, precisaAprovacao: boolean) {
     try {
       const response = await api.get(`/api/lesoes/paciente/${pacienteId}`, {
-        params: {
-          precisaAprovacao: precisaAprovacao,
-        },
+        params: { precisaAprovacao },
       });
       return response.data.dados; // Retorna os dados da resposta
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao obter as lesões", error);
+      const mensagemErro =
+        error.response?.data?.mensagem || "Erro ao obter as lesões";
+      toast.error(mensagemErro);
       throw error; // Propaga o erro para quem chamar a função
     }
   }
@@ -27,11 +28,13 @@ class LesaoService {
   static async getLesao(lesaoId: string) {
     try {
       const response = await api.get(`/api/lesoes/${lesaoId}`);
-      console.log("DADOSSS: ", response.data.dados);
       return response.data.dados; // Retorna os dados da resposta
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao obter a lesão", error);
-      throw error; // Propaga o erro para quem chamar a função
+      const mensagemErro =
+        error.response?.data?.mensagem || "Erro ao obter a lesão";
+      toast.error(mensagemErro);
+      throw error;
     }
   }
 
@@ -39,10 +42,12 @@ class LesaoService {
   static async getHistoricoLesao(lesaoId: string) {
     try {
       const response = await api.get(`/api/lesoes/${lesaoId}/historico`);
-      console.log(response);
       return response.data.dados;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao obter histórico da lesão", error);
+      const mensagemErro =
+        error.response?.data?.mensagem || "Erro ao obter histórico da lesão";
+      toast.error(mensagemErro);
       throw error;
     }
   }
@@ -58,9 +63,12 @@ class LesaoService {
       const response = await api.post(
         `/api/lesoes/usuario/${cpfUsuario}/paciente/${pacienteId}/lesao/${lesaoOriginalId}/duplicar/${lesaoBaseId}`
       );
-      toast(response.data.mensagem); // Mostra notificação com a mensagem da API
-    } catch (error) {
+      toast.success(response.data.mensagem); // Mensagem de sucesso
+    } catch (error: any) {
       console.error("Erro ao duplicar lesão", error);
+      const mensagemErro =
+        error.response?.data?.mensagem || "Erro ao duplicar lesão";
+      toast.error(mensagemErro);
       throw error;
     }
   }
@@ -71,11 +79,12 @@ class LesaoService {
   ): Promise<{ dados: LesaoPorIdFormData }> {
     try {
       const response = await api.get(`/api/lesoes/${lesaoId}/ids`);
-      return {
-        dados: parseLesaoComIdsFromApi(response.data.dados), // Converte os dados brutos
-      };
-    } catch (error) {
-      console.error("Erro ao obter lesão", error);
+      return { dados: parseLesaoComIdsFromApi(response.data.dados) }; // Converte os dados brutos
+    } catch (error: any) {
+      console.error("Erro ao obter lesão por ID", error);
+      const mensagemErro =
+        error.response?.data?.mensagem || "Erro ao obter lesão";
+      toast.error(mensagemErro);
       throw error;
     }
   }
@@ -86,11 +95,12 @@ class LesaoService {
   ): Promise<{ dados: LesaoPorNomeFormData }> {
     try {
       const response = await api.get(`/api/lesoes/${lesaoId}/nomes`);
-      return {
-        dados: parseLesaoComNomesFromApi(response.data.dados),
-      };
-    } catch (error) {
-      console.error("Erro ao obter lesão", error);
+      return { dados: parseLesaoComNomesFromApi(response.data.dados) };
+    } catch (error: any) {
+      console.error("Erro ao obter lesão por nome", error);
+      const mensagemErro =
+        error.response?.data?.mensagem || "Erro ao obter lesão";
+      toast.error(mensagemErro);
       throw error;
     }
   }
@@ -106,9 +116,12 @@ class LesaoService {
         `/api/lesoes/usuario/${cpfUsuario}/paciente/${pacienteId}`,
         dados
       );
-      toast(response.data.mensagem); // Exibe mensagem de sucesso/erro
-    } catch (error) {
+      toast.success(response.data.mensagem); // Mensagem de sucesso
+    } catch (error: any) {
       console.error("Erro ao cadastrar lesão", error);
+      const mensagemErro =
+        error.response?.data?.mensagem || "Erro ao cadastrar lesão";
+      toast.error(mensagemErro);
       throw error;
     }
   }
@@ -120,9 +133,12 @@ class LesaoService {
         `/api/lesoes/usuario/${cpfUsuario}/lesao/${lesaoId}`,
         dados
       );
-      toast(response.data.mensagem);
-    } catch (error) {
+      toast.success(response.data.mensagem); // Mensagem de sucesso
+    } catch (error: any) {
       console.error("Erro ao editar lesão", error);
+      const mensagemErro =
+        error.response?.data?.mensagem || "Erro ao atualizar lesão";
+      toast.error(mensagemErro);
       throw error;
     }
   }
@@ -131,9 +147,12 @@ class LesaoService {
   static async deletarLesao(lesaoId: string) {
     try {
       const response = await api.delete(`/api/lesoes/${lesaoId}`);
-      toast(response.data.mensagem);
-    } catch (error) {
+      toast.success(response.data.mensagem); // Mensagem de sucesso
+    } catch (error: any) {
       console.error("Erro ao deletar lesão", error);
+      const mensagemErro =
+        error.response?.data?.mensagem || "Erro ao deletar lesão";
+      toast.error(mensagemErro);
       throw error;
     }
   }
@@ -143,14 +162,14 @@ class LesaoService {
     try {
       const response = await api.patch(
         `/api/lesoes/usuario/${cpfUsuario}/lesao/${lesaoId}/aprovacao`,
-        {
-          precisaAprovacao: false,
-        }
+        { precisaAprovacao: false }
       );
-      console.log("aaaaaaaaaaa: ", response);
-      toast(response.data.mensagem);
-    } catch (error) {
+      toast.success(response.data.mensagem); // Mensagem de sucesso
+    } catch (error: any) {
       console.error("Erro ao aprovar lesão", error);
+      const mensagemErro =
+        error.response?.data?.mensagem || "Erro ao aprovar lesão";
+      toast.error(mensagemErro);
       throw error;
     }
   }

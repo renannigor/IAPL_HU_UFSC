@@ -4,6 +4,7 @@ import AuthRoutes from "./routes/AuthRoutes.js";
 import UsuarioRoutes from "./routes/UsuarioRoutes.js";
 import patientRoutes from "./routes/PacienteRoutes.js";
 import LesaoRoutes from "./routes/LesaoRoutes.js";
+import errorHandler from "./middlewares/errorHandler.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
@@ -24,6 +25,8 @@ app.use("/api/auth", AuthRoutes);
 app.use("/api/usuarios", UsuarioRoutes);
 app.use("/api/pacientes", patientRoutes);
 app.use("/api/lesoes", LesaoRoutes);
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

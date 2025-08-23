@@ -6,6 +6,12 @@ const router = Router();
 // Rota para obter dados do formulário de lesão
 router.get("/formulario", LesaoController.getDadosFormulario);
 
+// Rota para obter os IDs dos campos condicionais (campos que o usuário deve preencher caso outra opção seja selecionada) para validação
+router.get(
+  "/formulario/camposCondicionais",
+  LesaoController.getIdsCamposCondicionais
+);
+
 // Rota para criar uma lesão
 router.post(
   "/usuario/:cpfUsuario/paciente/:pacienteId",

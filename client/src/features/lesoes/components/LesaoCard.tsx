@@ -3,11 +3,11 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Card, CardContent } from "@/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Lesao } from "../types/Lesao";
-import { Button } from "@/ui/button";
+import { Button } from "@/components/ui/button";
 
 /** Card para exibir informações da lesão */
 function LesaoCard({

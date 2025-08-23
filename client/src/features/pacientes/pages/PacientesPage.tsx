@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Paciente } from "../types/Paciente";
-import { Card, CardContent } from "@/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -10,8 +10,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/ui/table";
-import { Button } from "@/ui/button";
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 import PacienteService from "../services/PacienteService";
 import { atributosTabelaPacientes } from "../utils/PacientesTableConfig";
 

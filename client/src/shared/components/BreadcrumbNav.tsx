@@ -4,7 +4,7 @@ import {
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbSeparator,
-} from "@/ui/breadcrumb";
+} from "@/components/ui/breadcrumb";
 import { useNavigate } from "react-router-dom";
 
 /** Componente Breadcrumb reutilizável */

@@ -1,6 +1,15 @@
 import db from "../config/db.js";
 
 const DadosFormLesaoModel = {
+  async getIdOpcaoOutro(tabela) {
+    const result = await db.query(
+      `SELECT id FROM ${tabela} WHERE nome = 'Outro'`
+    );
+
+    const resultOutro = result.rows[0].id ?? null;
+    return resultOutro;
+  },
+
   async getEtiologias() {
     const result = await db.query("SELECT * FROM etiologias ORDER BY id");
     return result.rows;
@@ -20,23 +29,6 @@ const DadosFormLesaoModel = {
     return result.rows;
   },
 
-  async getIdOpcaoOutro(tabela) {
-    const result = await db.query(
-      `SELECT id FROM ${tabela} WHERE nome = 'Outro'`
-    );
-
-    const resultOutro = result.rows[0].id ?? null;
-    return resultOutro;
-  },
-
-  async getRegiaoPerilesional(id) {
-    const result = await db.query(
-      "SELECT * FROM regioes_perilesionais WHERE id = $1",
-      [id]
-    );
-    return result.rows;
-  },
-
   async getBordas() {
     const result = await db.query("SELECT * FROM bordas ORDER BY id");
     return result.rows;
@@ -45,14 +37,6 @@ const DadosFormLesaoModel = {
   async getEstruturasNobres() {
     const result = await db.query(
       "SELECT * FROM estruturas_nobres ORDER BY id"
-    );
-    return result.rows;
-  },
-
-  async getEstruturaNobre(id) {
-    const result = await db.query(
-      "SELECT * FROM estruturas_nobres WHERE id = $1",
-      [id]
     );
     return result.rows;
   },
@@ -117,33 +101,13 @@ const DadosFormLesaoModel = {
     return result.rows;
   },
 
-  async getLimpeza(id) {
-    const result = await db.query("SELECT * FROM limpezas WHERE id = $1", [id]);
-    return result.rows;
-  },
-
   async getDesbridamentos() {
     const result = await db.query("SELECT * FROM desbridamentos ORDER BY id");
     return result.rows;
   },
 
-  async getDesbridamento(id) {
-    const result = await db.query(
-      "SELECT * FROM desbridamentos WHERE id = $1",
-      [id]
-    );
-    return result.rows;
-  },
-
   async getProtecoes() {
     const result = await db.query("SELECT * FROM protecoes ORDER BY id");
-    return result.rows;
-  },
-
-  async getProtecao(id) {
-    const result = await db.query("SELECT * FROM protecoes WHERE id = $1", [
-      id,
-    ]);
     return result.rows;
   },
 
@@ -172,6 +136,36 @@ const DadosFormLesaoModel = {
       [id]
     );
     return result.rows[0].nome;
+  },
+
+  async getIdByNome(tabela, nome) {
+    const query = `SELECT id FROM ${tabela} WHERE nome = $1`;
+    const result = await db.query(query, [nome]);
+    return result.rows[0]?.id || null;
+  },
+
+  async getIdOpcaoLesaoPorPressao() {
+    return this.getIdByNome("etiologias", "Lesão por Pressão");
+  },
+
+  async getIdOpcaoRegiaoPerilesionalOutro() {
+    return this.getIdByNome("regioes_perilesionais", "Outro");
+  },
+
+  async getIdOpcaoEstruturaNobreOutro() {
+    return this.getIdByNome("estruturas_nobres", "Outro");
+  },
+
+  async getIdOpcaoLimpezaOutro() {
+    return this.getIdByNome("limpezas", "Outro");
+  },
+
+  async getIdOpcaoDesbridamentoOutro() {
+    return this.getIdByNome("desbridamentos", "Outro");
+  },
+
+  async getIdOpcaoProtecaoOutro() {
+    return this.getIdByNome("protecoes", "Outro");
   },
 };
 

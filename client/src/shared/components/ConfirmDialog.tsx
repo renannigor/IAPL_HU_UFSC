@@ -7,7 +7,7 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
   AlertDialogAction,
-} from "@/ui/alert-dialog";
+} from "@/components/ui/alert-dialog";
 import { ReactNode } from "react";
 
 type ConfirmColor = "danger" | "primary" | "default";

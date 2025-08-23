@@ -5,7 +5,7 @@ import {
   FormLoginUsuarioFields,
   FormLoginUsuarioSchema,
 } from "../schemas/FormLoginUsuarioSchema.ts";
-import { Input } from "@/shared/components/form/Input.tsx";
+import { Input } from "@/shared/components/Input.tsx";
 import { cores } from "@/shared/constants/cores.ts";
 import { useAuth } from "@/providers/AuthProvider.tsx";
 import { isAxiosError } from "axios";

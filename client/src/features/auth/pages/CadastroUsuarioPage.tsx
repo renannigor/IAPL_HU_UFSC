@@ -9,10 +9,10 @@ import {
   FormCadastroUsuarioSchema,
 } from "../schemas/FormCadastroUsuarioSchema.ts";
 import { isAxiosError } from "axios";
-import { Input } from "@/shared/components/form/Input.tsx";
+import { Input } from "@/shared/components/Input.tsx";
 import UsuarioService from "@/features/usuarios/services/UsuarioService.ts";
 import { Opcao } from "@/types/Opcao.ts";
-import { Select } from "@/shared/components/form/Select.tsx";
+import { Select } from "@/shared/components/Select.tsx";
 import EnderecoService from "@/features/usuarios/services/EnderecoService.ts";
 
 export const CadastroUsuarioPage = () => {

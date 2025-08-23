@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Card, CardContent } from "@/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/ui/tabs";
-import { Button } from "@/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { User } from "lucide-react";
 import PacienteService from "../services/PacienteService";
 import { cores } from "@/shared/constants/cores";
 import { Paciente } from "../types/Paciente";
 import { Lesao } from "@/features/lesoes/types/Lesao";
 import LesaoService from "@/features/lesoes/services/LesaoService";
-import BreadcrumbNav from "@/shared/components/layout/BreadcrumbNav";
+import BreadcrumbNav from "@/shared/components/BreadcrumbNav";
 import Info from "../components/Info";
 import LesaoCard from "@/features/lesoes/components/LesaoCard";
 

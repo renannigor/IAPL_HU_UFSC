@@ -1,7 +1,26 @@
+import TiposUsuario from "../enums/TiposUsuario.js";
 import DadosFormLesaoModel from "../models/DadosFormLesaoModel.js";
 import LesaoModel from "../models/LesaoModel.js";
+import UsuarioModel from "../models/UsuarioModel.js";
+import ApiError from "../utils/ApiError.js";
 
 class LesaoService {
+  // Obtém os IDs dos campos condicionais (campos que o usuário deve preencher caso outra opção seja selecionada) para validação
+  static async getIdsCamposCondicionais() {
+    return {
+      etiologiaLesaoPorPressaoId:
+        await DadosFormLesaoModel.getIdOpcaoLesaoPorPressao(),
+      regiaoPerilesionalOutroId:
+        await DadosFormLesaoModel.getIdOpcaoRegiaoPerilesionalOutro(),
+      estruturaNobreOutroId:
+        await DadosFormLesaoModel.getIdOpcaoEstruturaNobreOutro(),
+      limpezaOutroId: await DadosFormLesaoModel.getIdOpcaoLimpezaOutro(),
+      desbridamentoOutroId:
+        await DadosFormLesaoModel.getIdOpcaoDesbridamentoOutro(),
+      protecaoOutroId: await DadosFormLesaoModel.getIdOpcaoProtecaoOutro(),
+    };
+  }
+
   // Obter dados para preencher formulário de lesão
   static async getDadosFormulario() {
     return {
@@ -30,8 +49,24 @@ class LesaoService {
     await LesaoModel.cadastrarLesao(cpfUsuario, pacienteId, dadosLesao);
   }
 
-  // Atualizar lesão específica
+  // Atualiza uma lesão específica
   static async atualizarLesao(cpfUsuario, lesaoId, dadosAtualizados) {
+    // Obtém o usuário que está tentando atualizar a lesão
+    const usuarioCadastrador = await UsuarioModel.getPorCPF(cpfUsuario);
+    const lesao = await LesaoModel.getLesao(lesaoId);
+
+    // Verifica se a lesão não precisa de aprovação
+    // e se o usuário tentando editar é acadêmico (sem permissão)
+    if (
+      !lesao.precisa_aprovacao &&
+      usuarioCadastrador.tipo === TiposUsuario.ACADEMICO
+    ) {
+      throw new ApiError(
+        403, // status 403 = Forbidden
+        "Usuário acadêmico não pode modificar esta lesão."
+      );
+    }
+
     await LesaoModel.atualizarLesao(cpfUsuario, lesaoId, dadosAtualizados);
   }
 

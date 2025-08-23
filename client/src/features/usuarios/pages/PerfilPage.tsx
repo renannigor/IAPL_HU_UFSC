@@ -6,7 +6,7 @@ import {
   PerfilUsuarioSchema,
   PerfilUsuarioFields,
 } from "../schemas/PerfilUsuarioSchema";
-import { Input } from "@/shared/components/form/Input";
+import { Input } from "@/shared/components/Input";
 import { Usuario } from "../types/Usuario";
 import { User, LogOut } from "lucide-react";
 import AuthService from "@/features/auth/services/AuthService";

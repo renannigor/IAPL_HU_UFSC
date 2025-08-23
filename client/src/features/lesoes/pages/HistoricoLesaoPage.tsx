@@ -1,13 +1,11 @@
-// HistoricoPacientePage.tsx
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import { useAuth } from "@/providers/AuthProvider";
 import LesaoService from "../services/LesaoService";
-import BreadcrumbNav from "@/shared/components/layout/BreadcrumbNav";
+import BreadcrumbNav from "@/shared/components/BreadcrumbNav";
 import { Lesao } from "../types/Lesao";
 import { HistoricoItem } from "../types/HistoricoItem";
-import CardLesaoHistorico from "../components/CardLesaoHistorico";
+import LesaoCardHistorico from "../components/LesaoCardHistorico";
 import ConfirmDialog from "@/shared/components/ConfirmDialog";
 import { Trash2 } from "lucide-react";
 import { Paciente } from "@/features/pacientes/types/Paciente";
@@ -45,7 +43,7 @@ export default function HistoricoPacientePage() {
       const dados = await LesaoService.getLesao(id_lesao!);
       setLesaoOriginal(dados);
     } catch {
-      toast.error("Erro ao carregar a lesão original");
+      console.log("Erro ao carregar a lesão original");
     }
   }
 
@@ -66,8 +64,8 @@ export default function HistoricoPacientePage() {
             new Date(a.item.data_criacao).getTime()
         )
       );
-    } catch {
-      toast.error("Erro ao carregar o histórico da lesão");
+    } catch (error) {
+      console.error("Erro ao carregar o histórico da lesão: ", error);
     }
   }
 
@@ -80,9 +78,8 @@ export default function HistoricoPacientePage() {
         idVersao
       );
       fetchHistorico();
-      toast.success("Lesão duplicada com sucesso!");
-    } catch {
-      toast.error("Erro ao duplicar lesão");
+    } catch (error) {
+      console.error("Erro ao duplicar lesão:", error);
     }
   }
 
@@ -92,9 +89,8 @@ export default function HistoricoPacientePage() {
     try {
       await LesaoService.deletarLesao(lesaoIdParaDeletar);
       fetchHistorico();
-      toast.success("Lesão excluída com sucesso!");
-    } catch {
-      toast.error("Erro ao excluir lesão");
+    } catch (error) {
+      console.error("Erro ao deletar lesão:", error);
     } finally {
       setOpenDialog(false);
       setLesaoIdParaDeletar(null);
@@ -130,7 +126,7 @@ export default function HistoricoPacientePage() {
         {historicoLesoes.map(({ item, dados }) => (
           <div key={item.id} className="relative">
             <span className="absolute -left-[9px] top-2 h-3 w-3 rounded-full bg-blue-600" />
-            <CardLesaoHistorico
+            <LesaoCardHistorico
               titulo={`Versão criada em ${item.data_criacao}`}
               dados={dados}
               lesaoId={item.lesao_versao_id}
@@ -139,7 +135,7 @@ export default function HistoricoPacientePage() {
                 setLesaoIdParaDeletar(item.lesao_versao_id);
                 setOpenDialog(true);
               }}
-              usuarioAtual={usuarioAtual}
+              usuarioAtual={usuarioAtual!}
             />
           </div>
         ))}
@@ -147,12 +143,12 @@ export default function HistoricoPacientePage() {
 
       {/* Original */}
       <div className="pt-8">
-        <CardLesaoHistorico
+        <LesaoCardHistorico
           titulo="Lesão Original"
           dados={lesaoOriginal}
           lesaoId={lesaoOriginal.id}
           onDuplicar={() => handleDuplicar(lesaoOriginal.id)}
-          usuarioAtual={usuarioAtual}
+          usuarioAtual={usuarioAtual!}
         />
       </div>
 

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { dashboardHeaderLinks } from "../../repository/DashboardHeaderLinks";
+import { dashboardLinks } from "../../repository/dashboardLinks";
 
 export function DashboardHeader() {
   return (
@@ -8,7 +8,7 @@ export function DashboardHeader() {
         <h1 className="text-xl font-bold text-gray-700">Sistema IAPL</h1>
 
         <nav className="flex space-x-6">
-          {dashboardHeaderLinks.map((link) => {
+          {dashboardLinks.map((link) => {
             const Icon = link.icon;
             return (
               <Link
