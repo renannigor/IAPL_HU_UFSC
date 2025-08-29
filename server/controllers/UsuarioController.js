@@ -2,52 +2,61 @@ import UsuarioService from "../services/UsuarioService.js";
 
 class UsuarioController {
   // Deleta um usuário do sistema.
-  static async deletarUsuario(req, res) {
+  static async deletarUsuario(req, res, next) {
     try {
       const { cpf } = req.params;
       await UsuarioService.deletarUsuario(cpf);
-      res.status(200).json({ mensagem: "Usuário deletado com sucesso!" });
+      res.status(200).json({
+        sucesso: true,
+        mensagem: "Usuário deletado com sucesso!",
+      });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ erro: "Erro ao deletar usuário" });
+      next(error);
     }
   }
 
   // Atualiza as informações pessoais de um usuário
-  static async atualizarPerfil(req, res) {
+  static async atualizarPerfil(req, res, next) {
     try {
       const { cpf } = req.params;
       const dados = req.body;
 
       await UsuarioService.atualizarPerfil(dados, cpf);
-      res.status(200).json({ mensagem: "Informações atualizadas!" });
+      res.status(200).json({
+        sucesso: true,
+        mensagem: "Informações do usuário atualizadas com sucesso!",
+      });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ erro: "Erro ao atualizar informações pessoais!" });
+      next(error);
     }
   }
 
   // Lista todos os tipos de usuário disponíveis no sistema.
-  static async getTiposUsuario(req, res) {
+  static async getTiposUsuario(req, res, next) {
     try {
       const usuarios = await UsuarioService.getTiposUsuario();
-      res.status(200).json(usuarios);
+      res.status(200).json({
+        sucesso: true,
+        mensagem: "Tipos de usuário recuperados com sucesso!",
+        dados: usuarios,
+      });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ erro: "Erro ao buscar os tipos de usuário" });
+      next(error);
     }
   }
 
-  // Obtém os dados de um paciente específico
-  static async getUsuario(req, res) {
+  // Obtém os dados de um usuário específico
+  static async getUsuario(req, res, next) {
     try {
       const { cpf } = req.params;
-
-      const usuarios = await UsuarioService.getUsuario(cpf);
-      res.status(200).json(usuarios);
+      const usuario = await UsuarioService.getUsuario(cpf);
+      res.status(200).json({
+        sucesso: true,
+        mensagem: "Usuário recuperado com sucesso!",
+        dados: usuario,
+      });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ erro: "Erro ao buscar os tipos de usuário" });
+      next(error);
     }
   }
 }

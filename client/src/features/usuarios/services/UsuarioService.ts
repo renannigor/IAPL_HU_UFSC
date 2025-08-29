@@ -6,10 +6,13 @@ class UsuarioService {
   // Método para obter os tipos de usuário do sistema
   static async getTiposUsuario() {
     try {
-      const response = await api.get<Opcao[]>(`/api/usuarios/tipos`, {
-        withCredentials: true,
-      });
-      return response.data;
+      const response = await api.get<{ dados: Opcao[] }>(
+        `/api/usuarios/tipos`,
+        {
+          withCredentials: true,
+        }
+      );
+      return response.data.dados;
     } catch (error: any) {
       const mensagemErro =
         error.response?.data?.mensagem || "Erro ao obter os tipos de usuário";
@@ -40,7 +43,7 @@ class UsuarioService {
       const response = await api.get(`/api/usuarios/${cpf}`, {
         withCredentials: true,
       });
-      return response.data;
+      return response.data.dados;
     } catch (error: any) {
       const mensagemErro =
         error.response?.data?.mensagem ||

@@ -1,6 +1,7 @@
 import LesaoService from "../services/LesaoService.js";
 
 class LesaoController {
+  // Obtém os IDs dos campos condicionais (campos que o usuário deve preencher caso outra opção seja selecionada) para validação
   static async getIdsCamposCondicionais(req, res, next) {
     try {
       const ids = await LesaoService.getIdsCamposCondicionais();
@@ -14,6 +15,7 @@ class LesaoController {
     }
   }
 
+  // Obter dados para preencher formulário de lesão
   static async getDadosFormulario(req, res, next) {
     try {
       const dadosFormulario = await LesaoService.getDadosFormulario();
@@ -27,6 +29,7 @@ class LesaoController {
     }
   }
 
+  // Cadastrar nova lesão para paciente pelo usuário
   static async cadastrarLesao(req, res, next) {
     try {
       const dados = req.body;
@@ -42,6 +45,7 @@ class LesaoController {
     }
   }
 
+  // Atualiza uma lesão específica
   static async atualizarLesao(req, res, next) {
     try {
       const dados = req.body;
@@ -57,6 +61,7 @@ class LesaoController {
     }
   }
 
+  // Deletar lesão pelo ID
   static async deletarLesao(req, res, next) {
     try {
       const { lesaoId } = req.params;
@@ -70,6 +75,7 @@ class LesaoController {
     }
   }
 
+  // Obter histórico de uma lesão
   static async getHistoricoLesao(req, res, next) {
     try {
       const { lesaoId } = req.params;
@@ -84,6 +90,7 @@ class LesaoController {
     }
   }
 
+  // Duplicar lesão baseada em outra
   static async duplicarLesao(req, res, next) {
     try {
       const { cpfUsuario, pacienteId, lesaoOriginalId, lesaoBaseId } =
@@ -104,6 +111,7 @@ class LesaoController {
     }
   }
 
+  // Obter lesão pelo ID com IDs relacionados
   static async getLesaoPorId(req, res, next) {
     try {
       const { lesaoId } = req.params;
@@ -118,6 +126,7 @@ class LesaoController {
     }
   }
 
+  // Obter lesão pelo ID com nomes relacionados
   static async getLesaoPorNome(req, res, next) {
     try {
       const { lesaoId } = req.params;
@@ -132,6 +141,7 @@ class LesaoController {
     }
   }
 
+  // Obter lista de lesões de um paciente, filtrando por necessidade de aprovação
   static async getLesoesPorPaciente(req, res, next) {
     try {
       const { pacienteId } = req.params;
@@ -151,7 +161,7 @@ class LesaoController {
     }
   }
 
-  // Buscar uma lesão específica
+  // Obter lesão específica
   static async getLesao(req, res, next) {
     try {
       const { lesaoId } = req.params;
@@ -166,6 +176,7 @@ class LesaoController {
     }
   }
 
+  // Atualizar status de aprovação da lesão
   static async setAprovacao(req, res, next) {
     try {
       const { precisaAprovacao } = req.body;

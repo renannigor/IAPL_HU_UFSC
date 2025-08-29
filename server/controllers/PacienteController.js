@@ -215,79 +215,91 @@ const pacientes = [
 
 class PacienteController {
   // Método para obter dados dos pacientes
-  static async getPacientes(req, res) {
+  static async getPacientes(req, res, next) {
     try {
-      // Recebe pagina e limite da query string, com valores padrão
       const pagina = parseInt(req.query.pagina) || 1;
       const limite = parseInt(req.query.limite) || 8;
 
-      // Busca pacientes paginados e total
       const resultado = await PacienteService.getPacientes(pagina, limite);
 
-      res.status(200).json(resultado); // { total, pacientes }
+      res.status(200).json({
+        sucesso: true,
+        mensagem: "Pacientes recuperados com sucesso!",
+        dados: resultado, // { total, pacientes }
+      });
     } catch (error) {
-      console.error(error);
-      res
-        .status(500)
-        .json({ erro: "Erro ao carregar informações dos pacientes!" });
+      next(error);
     }
   }
 
   // Método para obter dados de um paciente específico
-  static async getPaciente(req, res) {
+  static async getPaciente(req, res, next) {
     try {
       const { pacienteCodigo } = req.params;
       const paciente = await PacienteService.getPaciente(pacienteCodigo);
 
       if (!paciente) {
-        return res.status(404).json({ erro: "Paciente não encontrado." });
+        return res.status(404).json({
+          sucesso: false,
+          mensagem: "Paciente não encontrado.",
+        });
       }
 
-      res.status(200).json(paciente);
+      res.status(200).json({
+        sucesso: true,
+        mensagem: "Paciente recuperado com sucesso!",
+        dados: paciente,
+      });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ erro: "Erro ao obter informações do paciente!" });
+      next(error);
     }
   }
 
-  static async getPacienteTeste(req, res) {
+  // Busca paciente do array de teste (Método para testes)
+  static async getPacienteTeste(req, res, next) {
     try {
       const { id } = req.params;
-
       const paciente = pacientes.find(
         (paciente) => paciente["pac_codigo"] == id
       );
 
-      res.status(200).json(paciente);
+      if (!paciente) {
+        return res.status(404).json({
+          sucesso: false,
+          mensagem: "Paciente de teste não encontrado.",
+        });
+      }
+
+      res.status(200).json({
+        sucesso: true,
+        mensagem: "Paciente de teste recuperado com sucesso!",
+        dados: paciente,
+      });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ erro: "Erro ao obter informações do paciente!" });
+      next(error);
     }
   }
 
-  static async getPacientesTeste(req, res) {
+  // Lista pacientes do array de teste com paginação (Método para testes)
+  static async getPacientesTeste(req, res, next) {
     try {
-      // Recebe pagina e limite da query string, com valores padrão
       const pagina = parseInt(req.query.pagina) || 1;
       const limite = parseInt(req.query.limite) || 8;
-
       const offset = (pagina - 1) * limite;
 
-      // Total de pacientes
       const total = pacientes.length;
-
-      // Pacientes da página
       const pacientesPaginados = pacientes.slice(offset, offset + limite);
 
       res.status(200).json({
-        total,
-        pacientes: pacientesPaginados,
+        sucesso: true,
+        mensagem: "Pacientes de teste recuperados com sucesso!",
+        dados: {
+          total,
+          pacientes: pacientesPaginados,
+        },
       });
     } catch (error) {
-      console.error(error);
-      res
-        .status(500)
-        .json({ erro: "Erro ao carregar informações dos pacientes!" });
+      next(error);
     }
   }
 }

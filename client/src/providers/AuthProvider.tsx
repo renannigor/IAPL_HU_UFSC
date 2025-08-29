@@ -59,9 +59,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       try {
         console.log("🔍 Buscando usuário...");
         const data = await AuthService.getUsuarioAtual();
-        console.log("✅ Usuário encontrado:", data.user);
+        console.log("✅ Usuário encontrado:", data.usuario);
         setAccessToken(data.accessToken);
-        setUsuarioAtual(data.user);
+        setUsuarioAtual(data.usuario);
       } catch {
         setAccessToken(null);
         setUsuarioAtual(null);

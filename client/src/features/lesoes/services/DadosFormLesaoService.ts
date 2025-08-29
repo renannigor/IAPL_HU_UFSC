@@ -8,8 +8,10 @@ class DadosFormLesaoService {
   // Método para obter os dados do formulário de lesões
   static async getDadosFormLesao() {
     try {
-      const response = await api.get<DadosFormLesao>(`/api/lesoes/formulario`);
-      return response.data; // Retorna os dados obtidos da resposta
+      const response = await api.get<{ dados: DadosFormLesao }>(
+        `/api/lesoes/formulario`
+      );
+      return response.data.dados; // Retorna os dados obtidos da resposta
     } catch (error: any) {
       const mensagemErro =
         error.response?.data?.mensagem ||
@@ -22,10 +24,10 @@ class DadosFormLesaoService {
   // Método para obter os IDs dos campos condicionais
   static async getIdsCamposCondicionais() {
     try {
-      const response = await api.get<CamposCondicionaisFormulario>(
+      const response = await api.get<{ dados: CamposCondicionaisFormulario }>(
         `/api/lesoes/formulario/camposCondicionais`
       );
-      return response.data; // Retorna os dados obtidos da resposta
+      return response.data.dados; // Retorna os dados obtidos da resposta
     } catch (error: any) {
       const mensagemErro =
         error.response?.data?.mensagem ||

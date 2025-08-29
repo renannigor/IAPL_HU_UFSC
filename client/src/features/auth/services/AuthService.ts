@@ -6,7 +6,7 @@ class AuthService {
   static async getUsuarioAtual() {
     try {
       const response = await api.get("/api/auth/me", { withCredentials: true });
-      return response.data;
+      return response.data.dados;
     } catch (error: any) {
       const mensagemErro =
         error.response?.data?.mensagem || "Erro ao buscar usuário atual";
@@ -21,7 +21,7 @@ class AuthService {
       const response = await api.get("/api/auth/refresh-token", {
         withCredentials: true,
       });
-      return response.data;
+      return response.data.dados;
     } catch (error: any) {
       const mensagemErro =
         error.response?.data?.mensagem || "Erro ao renovar token";
@@ -39,7 +39,7 @@ class AuthService {
         { withCredentials: true }
       );
       toast.success("Login realizado com sucesso!");
-      return response.data;
+      return response.data.dados;
     } catch (error: any) {
       const mensagemErro =
         error.response?.data?.mensagem || "Erro ao realizar login";
@@ -81,7 +81,7 @@ class AuthService {
         { withCredentials: true }
       );
       toast.success("Cadastro realizado com sucesso!");
-      return response.data;
+      return response.data.dados;
     } catch (error: any) {
       const mensagemErro =
         error.response?.data?.mensagem || "Erro ao realizar cadastro";

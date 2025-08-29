@@ -11,7 +11,7 @@ class PacienteService {
           limite: pacientesPorPagina,
         },
       });
-      return response.data; 
+      return response.data.dados; 
     } catch (error: any) {
       const mensagemErro =
         error.response?.data?.mensagem || "Erro ao carregar pacientes";
@@ -24,7 +24,7 @@ class PacienteService {
   static async getPaciente(id: string) {
     try {
       const response = await api.get(`/api/pacientes/${id}/teste`);
-      return response.data;
+      return response.data.dados;
     } catch (error: any) {
       const mensagemErro =
         error.response?.data?.mensagem || "Erro ao obter paciente";

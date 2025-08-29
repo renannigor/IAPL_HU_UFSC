@@ -37,17 +37,17 @@ function PerfilPage() {
 
   const carregarUsuario = async () => {
     const dados = await AuthService.getUsuarioAtual();
-    setUsuario(dados.user);
+    setUsuario(dados.usuario);
     reset({
-      nome: dados.user.nome || "",
-      tipo: dados.user.tipo || "",
-      email: dados.user.email || "",
-      cep: dados.user.cep || "",
-      logradouro: dados.user.logradouro || "",
-      bairro: dados.user.bairro || "",
-      cidade: dados.user.cidade || "",
-      estado: dados.user.estado || "",
-      numeroResidencial: dados.user.numero || "",
+      nome: dados.usuario.nome || "",
+      tipo: dados.usuario.tipo || "",
+      email: dados.usuario.email || "",
+      cep: dados.usuario.cep || "",
+      logradouro: dados.usuario.logradouro || "",
+      bairro: dados.usuario.bairro || "",
+      cidade: dados.usuario.cidade || "",
+      estado: dados.usuario.estado || "",
+      numeroResidencial: dados.usuario.numero || "",
     });
     setIsReadOnly(true);
   };
