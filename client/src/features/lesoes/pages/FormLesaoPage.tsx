@@ -781,7 +781,6 @@ function FormLesaoPage() {
               <input
                 type="date"
                 {...control.register("dataProximaAvaliacao")}
-                min={new Date().toISOString().split("T")[0]}
                 className="w-full border border-gray-300 rounded px-4 h-10 focus:outline-none focus:ring-2 focus:ring-green-700"
               />
               {errors.dataProximaAvaliacao && (

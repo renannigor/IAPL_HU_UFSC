@@ -179,10 +179,9 @@ class LesaoController {
   // Atualizar status de aprovação da lesão
   static async setAprovacao(req, res, next) {
     try {
-      const { precisaAprovacao } = req.body;
       const { cpfUsuario, lesaoId } = req.params;
 
-      await LesaoService.setAprovacao(precisaAprovacao, lesaoId, cpfUsuario);
+      await LesaoService.setAprovacao(lesaoId, cpfUsuario);
 
       res.status(200).json({
         sucesso: true,

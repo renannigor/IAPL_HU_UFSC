@@ -125,8 +125,19 @@ class LesaoService {
   }
 
   // Atualizar status de aprovação da lesão
-  static async setAprovacao(precisaAprovacao, lesaoId, cpfUsuario) {
-    await LesaoModel.setAprovacao(precisaAprovacao, lesaoId, cpfUsuario);
+  static async setAprovacao(lesaoId, cpfUsuario) {
+    // Obtém os dados do usuário responsável pela ação
+    const usuario = await UsuarioModel.getPorCPF(cpfUsuario);
+
+    // Verifica se o usuário é acadêmico e impede a aprovação
+    if (usuario.tipo === TiposUsuario.ACADEMICO) {
+      throw new ApiError(
+        403,
+        "Usuário não possui permissão para aprovar lesões."
+      );
+    }
+
+    await LesaoModel.setAprovacao(lesaoId, cpfUsuario);
   }
 }
 

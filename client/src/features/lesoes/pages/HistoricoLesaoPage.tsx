@@ -57,13 +57,7 @@ export default function HistoricoPacientePage() {
         })
       );
 
-      setHistoricoLesoes(
-        historicoComDados.sort(
-          (a, b) =>
-            new Date(b.item.data_criacao).getTime() -
-            new Date(a.item.data_criacao).getTime()
-        )
-      );
+      setHistoricoLesoes(historicoComDados);
     } catch (error) {
       console.error("Erro ao carregar o histórico da lesão: ", error);
     }

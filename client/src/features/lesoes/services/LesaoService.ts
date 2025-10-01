@@ -161,8 +161,7 @@ class LesaoService {
   static async setAprovacao(cpfUsuario: string, lesaoId: string) {
     try {
       const response = await api.patch(
-        `/api/lesoes/usuario/${cpfUsuario}/lesao/${lesaoId}/aprovacao`,
-        { precisaAprovacao: false }
+        `/api/lesoes/usuario/${cpfUsuario}/lesao/${lesaoId}/aprovacao`
       );
       toast.success(response.data.mensagem); // Mensagem de sucesso
     } catch (error: any) {

@@ -1,23 +1,16 @@
 import db from "../config/db.js";
 import UsuarioModel from "./UsuarioModel.js";
 import DadosFormLesao from "./DadosFormLesaoModel.js";
+import TiposUsuario from "../enums/TiposUsuario.js";
 
 const LesaoModel = {
   // Define a aprovação de uma lesão cadastrada
-  async setAprovacao(precisaAprovacao, lesaoId, cpfUsuario) {
+  async setAprovacao(lesaoId, cpfUsuario) {
     try {
-      // Obtém os dados do usuário responsável pela ação
-      const usuario = await UsuarioModel.getPorCPF(cpfUsuario);
-
-      // Verifica se o usuário é acadêmico e impede a aprovação
-      if (usuario.tipo === "Acadêmico") {
-        throw new Error("Usuário não possui permissão para aprovar lesões.");
-      }
-
       // Atualiza as informações da lesão no banco de dados
       await db.query(
-        "UPDATE lesoes SET aprovado_por = $1, precisa_aprovacao = $2 WHERE id = $3",
-        [cpfUsuario, precisaAprovacao, lesaoId]
+        "UPDATE lesoes SET aprovado_por = $1, precisa_aprovacao = false WHERE id = $2",
+        [cpfUsuario, lesaoId]
       );
     } catch (error) {
       console.error("Erro ao atualizar status de aprovação da lesão:", error);
@@ -83,7 +76,7 @@ const LesaoModel = {
           TO_CHAR(data_criacao, 'DD/MM/YYYY HH24:MI') AS data_criacao
         FROM historico_lesoes
         WHERE lesao_original_id = $1
-        ORDER BY data_criacao DESC
+        ORDER BY historico_lesoes.data_criacao DESC
         `,
         [lesaoId]
       );
@@ -530,6 +523,7 @@ const LesaoModel = {
         WHERE l.id = $1`,
         [lesaoId]
       );
+      console.log(result.rows);
       return result.rows[0];
     } catch (error) {
       console.error("Erro ao obter os dados da lesão:", error);
@@ -590,7 +584,7 @@ const LesaoModel = {
 
       // 1. Inserir Lesão
       const usuario = await UsuarioModel.getPorCPF(cpfUsuario);
-      const precisaAprovacao = usuario.tipo === "Acadêmico";
+      const precisaAprovacao = usuario.tipo === TiposUsuario.ACADEMICO;
 
       const lesaoRes = await client.query(
         `INSERT INTO lesoes (

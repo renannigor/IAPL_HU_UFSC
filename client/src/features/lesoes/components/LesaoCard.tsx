@@ -13,9 +13,11 @@ import { Button } from "@/components/ui/button";
 function LesaoCard({
   lesao,
   tipo,
+  onExcluir,
 }: {
   lesao: Lesao;
   tipo: "normal" | "pendente";
+  onExcluir?: () => void;
 }) {
   const navigate = useNavigate();
 
@@ -60,10 +62,7 @@ function LesaoCard({
                 >
                   Editar
                 </Button>
-                <Button
-                  variant="destructive"
-                  onClick={() => console.log("Excluir", lesao.id)}
-                >
+                <Button variant="destructive" onClick={onExcluir}>
                   Excluir
                 </Button>
               </>

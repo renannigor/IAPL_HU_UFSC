@@ -6,7 +6,6 @@ import { LesaoPorNomeFormData } from "../types/LesaoPorNomeFormData";
 import { useAuth } from "@/providers/AuthProvider";
 import LesaoService from "../services/LesaoService";
 import BreadcrumbNav from "@/shared/components/BreadcrumbNav";
-import { TiposUsuario } from "@/features/usuarios/constants/TiposUsuario.enum";
 import { Paciente } from "@/features/pacientes/types/Paciente";
 import PacienteService from "@/features/pacientes/services/PacienteService";
 
@@ -189,11 +188,9 @@ export default function DetalhesLesaoPage() {
             Copiar Resumo
           </Button>
 
-          {usuarioAtual?.tipo != TiposUsuario.Academico && (
-            <Button size="sm" onClick={aprovarLesao}>
-              Aprovar Lesão
-            </Button>
-          )}
+          <Button size="sm" onClick={aprovarLesao}>
+            Aprovar Lesão
+          </Button>
         </div>
       </div>
 
